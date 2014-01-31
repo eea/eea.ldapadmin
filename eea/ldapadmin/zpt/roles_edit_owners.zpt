@@ -1,0 +1,154 @@
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('.dataTable').dataTable({
+            'aaSorting': [[1, "asc"]],
+            'sPaginationType': 'full_numbers',
+            "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            "oLanguage": {
+                "sSearch": "Apply filter _INPUT_ to table"
+            },
+            "bAutoWidth":false,
+            "aoColumnDefs": [
+                {
+                    "bSortable": false,
+                    "aTargets": [0]
+                }
+            ]
+        });
+    });
+</script>
+
+<h1>Manage owners for <tt tal:content="options/role_id"/></h1>
+
+<tal:block content="structure python:common.buttons_bar('edit_owners', options['role_id'])"/>
+
+<tal:block content="structure common/message_boxes"/>
+
+<tal:block define="role_id options/role_id;
+                   role_owners options/role_owners">
+    <h2>Owners in <tt tal:content="python:role_id or '[ROOT]'" /></h2>
+    <tal:block condition="role_owners">
+    <form method="post" name="remove-owners">
+    <input type="hidden" name="action" value="remove-owners" />
+    <table class="account-datatable dataTable remove-owners-table">
+        <thead>
+            <tr>
+                <td>
+                    <input type="checkbox" class="selectall user_id_list" name="selectall"
+                           onclick="selectAll('user_id_list:list', 'remove-owners-table');"/>
+                </td>
+                
+                <td>
+                    Name
+                </td>
+                
+                <td>
+                    User ID
+                </td>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tal:block tal:repeat="user_id python:sorted(role_owners)">
+                <tr tal:define="user_info python:role_owners[user_id]">
+                    <td class="checkbox-td">
+                        <input type="checkbox" name="user_id_list:list"
+                            tal:attributes="value user_id" />
+                    </td>
+                    <td>
+                        <span tal:content="user_info/full_name"/>
+                    </td>
+                    <td>
+                        <span tal:content="user_id"/>
+                    </td>
+                </tr>
+            </tal:block>
+        </tbody>
+    </table>
+    <br />
+    <input type="submit" value="Remove selected owners" class="primary-button" />
+    </form>
+    </tal:block>
+    <tal:block condition="not: role_owners">
+        <p>
+            No owners set for this role.
+        </p>
+    </tal:block>
+
+    <h2>Search for members you want to add as owners</h2>
+    <div class="search-form">
+    <form name="search-form" method="post">
+      <input type="hidden" name="action" value="search" />
+
+      <label for="search-query">
+        Name of user:
+      </label>
+      <br />
+      <input type="search" name="name:ustring:utf8" id="search-query"
+             class="text-input large"
+             tal:attributes="value options/search_name|nothing"/>
+
+      <input type="submit" value="Search" class="primary-button" />
+      <div class="clear">&nbsp;</div>
+    </form>
+    </div>
+
+    <tal:block condition="options/search_name|nothing">
+        <tal:block condition="options/results">
+        <form name="add-form" method="post">
+        <input type="hidden" name="action" value="add-owners" />
+        <br />
+        <table class="account-datatable dataTable add-owners-table">
+            <thead>
+                <tr>
+                    <td>
+                        <input type="checkbox" class="selectall user_id_list" name="selectall"
+                               onclick="selectAll('user_id_list:list', 'add-owners-table');"/>
+                    </td>
+                    
+                    <td>
+                        Name
+                    </td>
+                    <td>
+                        User ID
+                    </td>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tal:block tal:repeat="user_id python:sorted(options['results'])">
+                    <tr tal:define="user_info python:options['results'][user_id]">
+                        <td class="checkbox-td">
+                            <input type="checkbox" name="user_id_list:list"
+                                tal:attributes="value user_id" />
+                        </td>
+                        <td>
+                            <span tal:content="user_info/full_name"/>
+                        </td>
+                        <td>
+                            <span tal:content="user_id"/>
+                        </td>
+                    </tr>
+                </tal:block>
+            </tbody>
+        </table>
+        <br />
+        <input type="submit" value="Add selected as owners" class="primary-button" />
+        </form>
+        </tal:block>
+        <tal:block condition="not:options/results">
+            <p class="search-message" tal:condition="options/search_name">
+                <img src="/++resource++eea.ldapadmin-www/info.png" class="middle-image"
+                   title="Note" alt=""/>
+                No matching <tal:block condition="options/inactive_users"><em>active</em></tal:block> users for
+                <strong tal:content="options/search_name" />.
+            </p>
+        </tal:block>
+    </tal:block>
+    <p class="search-message" tal:condition="options/empty_search|nothing">
+        <img src="/++resource++eea.ldapadmin-www/info.png" class="middle-image"
+           title="Note" alt=""/>
+        No search criteria entered.
+    </p>
+
+</tal:block>

@@ -1,0 +1,136 @@
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('.dataTable').dataTable({
+            'aaSorting': [[0, "asc"]],
+            'sPaginationType': 'full_numbers',
+            "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            "oLanguage": {
+                "sSearch": "Apply filter _INPUT_ to table"
+            },
+            "bAutoWidth":false
+        });
+    });
+</script>
+
+<h1>Add members to role <tt tal:content="options/role_id" /></h1>
+
+<tal:block content="structure python:common.buttons_bar('add_member', options['role_id'])"/>
+
+<div class="search-form">
+  <form name="search-form">
+    <input type="hidden" name="role_id" tal:attributes="value options/role_id"/>
+    
+    <label for="search-query">
+      Name of user:
+    </label>
+    <br />
+    <input type="search" name="name:ustring:utf8" id="search-query"
+           class="text-input large"
+           tal:attributes="value options/search_name"/>
+  
+    <input type="submit" value="Search" class="primary-button" />
+    <div class="clear">&nbsp;</div>
+  </form>
+</div>
+
+<tal:block define="results options/search_results"
+           condition="options/search_name">
+
+  <p class="search-message" tal:condition="python:options['search_results']['users']">
+    <img src="/++resource++eea.ldapadmin-www/search.png" class="middle-image"
+       title="Note" alt=""/>
+    Search results:
+      <a tal:condition="results/users" title="Go to users results"
+      tal:content="python:'%d users' % (len(results['users']))" href="#users-results"
+      />
+  </p>
+
+  <tal:block condition="results/users">
+  <h2 id="users-results">Users</h2>
+
+  <table class="account-datatable dataTable">
+    <thead>
+      <tr>
+        <td>
+          Name / Email
+        </td>
+        
+        <td>
+          User ID
+        </td>
+        
+        <td>
+          Tel/Fax
+        </td>
+        
+        <td>
+          Organisation
+        </td>
+        
+        <td>
+          Add as member
+        </td>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr tal:repeat="user_info results/users">
+        <td>
+          <span tal:content="user_info/full_name" />
+          <br />
+          
+          <a tal:condition="user_info/email"
+                  tal:attributes="href string:mailto:${user_info/email}"
+                  tal:content="user_info/email"
+                  class="user-email"></a>
+        </td>
+
+        <td>
+          <span tal:content="user_info/id" />
+        </td>
+
+        <td>
+          <span class="user-phone" tal:content="user_info/phone" />
+          <br />
+          <span class="user-phone" tal:content="user_info/fax" />
+        </td>
+
+        <td>
+          <span tal:content="user_info/organisation" />
+        </td>
+
+        <td class="center">
+          <form tal:attributes="action string:${common/base_url}/add_user"
+            name="add-user" method="post" style="display: inline">
+            <input type="hidden" name="role_id"
+                   tal:attributes="value options/role_id" />
+            <input type="hidden" name="user_id"
+                   tal:attributes="value user_info/id" />
+
+            <input type="submit" value="Add" class="primary-button" />
+          </form>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="clear">&nbsp;</div>
+      <div class="left-position">
+        <a href="#workarea" class="account-link button" title="Click to go back to top">
+          <img src="/++resource++eea.ldapadmin-www/up.png" alt=""
+               class="middle-image image12" title="Back to top" />
+          Back to top
+        </a>
+      </div>
+      <br />
+      <div class="clear">&nbsp;</div>
+  </tal:block>
+
+  <p class="search-message" tal:condition="not:results/users">
+    <img src="/++resource++eea.ldapadmin-www/info.png" class="middle-image"
+       title="Note" alt=""/>
+    No matching <tal:block condition="results/inactive_users"><em>active</em></tal:block> users for
+    <strong tal:content="options/search_name" />.
+  </p>
+
+</tal:block>

@@ -1,0 +1,22 @@
+<metal:block use-macro="here/standard_template.pt/macros/page">
+<metal:block fill-slot="body">
+
+<h2>Add canned query for Eionet roles editor</h2>
+
+<form name="add-editor" action="manage_add_query" method="post">
+    <p>
+        <label>Object ID: <input name="id" /></label>
+    </p>
+    <p>
+        <label>Title: <input name="title" /></label>
+    </p>
+
+    <p>
+        <label>Pattern: <input name="pattern" /></label>
+    </p>
+
+    <input type="submit" />
+</form>
+
+</metal:block>
+</metal:block>

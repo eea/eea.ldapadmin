@@ -1,0 +1,14 @@
+<h1 tal:content="string:Reset ${common/network_name} account password"></h1>
+
+<tal:block content="structure common/message_boxes"/>
+
+<p tal:condition="python:options['message-name'] == 'email-sent'">
+  E-mail message has been sent. Please check your inbox and spam folder. The
+  message contains a link that you must access.
+</p>
+
+<p tal:condition="python:options['message-name'] == 'password-reset'">
+  Your password has been successfully reset. Please allow a
+  <strong>5 minute delay</strong>
+  for the change to propagate to all Eionet services.
+</p>

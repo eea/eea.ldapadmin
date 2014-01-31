@@ -1,0 +1,96 @@
+<script type="text/javascript">
+    $(document).ready(function(){
+        var tab = $('.dataTable').dataTable({
+            'aaSorting': [[1, "asc"]],
+            'sPaginationType': 'full_numbers',
+            "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            "oLanguage": {
+                "sSearch": "Apply filter _INPUT_ to table"
+            },
+            "aoColumnDefs": [
+                {
+                    "bSortable": false,
+                    "aTargets": [0]
+                }
+            ]
+        });
+
+        $('#checkall').change(function() {
+            $this = $(this);
+            $('input', $('.dataTable').dataTable().fnGetNodes()).each( function() {
+                if ( $this.attr('checked') == true ) {
+                    $('input', $('.dataTable').dataTable().fnGetNodes()).attr('checked','checked');
+                }else {
+                    $('input', $('.dataTable').dataTable().fnGetNodes()).attr('checked',false);
+                }
+            });
+
+            return false;
+        });
+    });
+</script>
+
+<div id="operations" tal:define="org_info options/organisation"  tal:condition="common/can_edit_organisation">
+  <h2>Operations</h2>
+  <ul>
+    <li>
+      <a tal:attributes="href string:${common/base_url}/add_members_html?id=${org_info/id}"
+         >Add members</a>
+    </li>
+  </ul>
+</div>
+
+<h1>
+  <tal:block content="options/organisation/name"/>
+  (<tt tal:content="options/organisation/id"/>)
+</h1>
+
+<tal:block content="structure common/message_boxes"/>
+
+<form method="post" tal:condition="options/org_members"
+      tal:attributes="action string:${common/base_url}/remove_members">
+
+  <input type="hidden" name="id"
+         tal:attributes="value options/organisation/id"/>
+<div class="organisation-listing">
+    <table class="account-datatable dataTable">
+        <thead>
+            <tr>
+                <td width="1%" tal:condition="common/can_edit_organisation">
+                    <input type="checkbox" id="checkall" />
+                </td>
+
+                <td>
+                    UID
+                </td>
+
+                <td>
+                    Full name
+                </td>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr tal:repeat="member options/org_members">
+                <td tal:condition="common/can_edit_organisation">
+                    <input type="checkbox" name="user_id:list" tal:attributes="value member/id"/>
+                </td>
+
+                <td>
+                    <tt tal:content="member/id"></tt>
+                </td>
+
+                <td>
+                    <a tal:condition="common/can_edit_organisation"
+                    tal:attributes="href string:edit_member?user_id=${member/id}&org_id=${options/organisation/id}"
+                    tal:content="string:${member/first_name} ${member/last_name}" />
+                    <tal:block condition="not:common/can_edit_organisation" 
+                    content="string:${member/first_name} ${member/last_name}"/>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <input type="submit" value="Remove" tal:condition="common/can_edit_organisation" />
+</div>
+</form>

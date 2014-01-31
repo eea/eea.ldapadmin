@@ -1,0 +1,21 @@
+.account-links {
+	padding: 0;
+	margin: 0;
+/*	height: 25px;*/
+}
+
+a.button {
+	background-color: #F7F7F7;
+	border: 1px solid #BBBBBB;
+}
+
+a.button img, a.current img {
+	margin: 8px 0;
+}
+
+a.button.last-button {
+	margin-right: 7px;
+}
+.account-links .low-row{
+	padding-top:0px;
+}

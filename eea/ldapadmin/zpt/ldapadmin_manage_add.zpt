@@ -1,0 +1,25 @@
+<tal:block content="structure here/manage_page_header" />
+
+<style>
+    form.add-users-admin label {
+        display: inline-block;
+        width: 10em;
+    }
+</style>
+
+<h2>Add LDAP Explorer (LDAP Admin)</h2>
+
+<form action="manage_add_ldap_admin" method="post"
+      name="add-users-admin" class="add-users-admin">
+    <label for="edit-id">id</label>
+    <input name="id" id="edit-id" value="eionet_ldap_explorer" />
+    <br />
+
+    <label for="edit-title">Title</label>
+    <input name="title" id="edit-title" value="Eionet LDAP Explorer" />
+    <br />
+
+    <input type="submit" />
+</form>
+
+<tal:block content="structure here/manage_page_footer" />

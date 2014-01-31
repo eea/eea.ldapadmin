@@ -1,0 +1,71 @@
+<h1>Remove members from <span tal:content="options/role_name"/></h1>
+
+<div>
+  <div class="account-links clear" tal:condition="options/role_id">
+    
+    <div class="left">
+      <a tal:attributes="href string:${common/base_url}/nrcs?nfp=${options/country}#role_${options/role_id};
+                         title string:Back to NRC-s in ${options/country_name}"
+         class="button">
+           <img src="/++resource++eea.ldapadmin-www/back.png" class="middle-image image12"
+                alt="" tal:attributes="title string:Back to NRC-s in ${options/country}"/>
+           <span tal:content="string:Back to NRC-s in ${options/country_name}" />
+      </a>
+      &nbsp;
+    </div>
+  </div>
+  <br />
+</div>
+
+<tal:block content="structure common/message_boxes"/>
+
+<tal:block define="role_id options/role_id;
+                   role_members options/role_members">
+    <tal:block condition="role_members/users">
+    <h2><span tal:replace="options/role_name" /></h2>
+    <form tal:define="url string:${common/base_url}/remove_members"
+          tal:attributes="action url" method="post" name="remove-users">
+    <input type="hidden" name="role_id"
+           tal:attributes="value role_id" />
+    <table class="account-datatable">
+        <thead>
+            <tr>
+                <td>
+                    <input type="checkbox" class="selectall user_id_list" name="selectall"
+                           onclick="selectAll('user_id_list:list');"/>
+                </td>
+                
+                <td>
+                    Name
+                </td>
+                
+                <td>
+                    User ID
+                </td>
+            </tr>
+        </thead>
+        
+        <tbody>
+            <tal:block tal:repeat="user_id python:sorted(role_members['users'])">
+                <tr tal:define="user_info python:role_members['users'][user_id]">
+                    <td class="checkbox-td">
+                        <input type="checkbox" name="user_id_list:list"
+                            tal:attributes="value user_id" />
+                    </td>
+                    <td>
+                        <span tal:content="user_info/full_name"/>
+                    </td>
+                    
+                    <td>
+                        <span tal:content="user_id"/>
+                    </td>
+                </tr>
+            </tal:block>
+        </tbody>
+    </table>
+    <br />
+    <input type="submit" value="Remove users" class="primary-button" /> 
+    </form>
+    </tal:block>
+
+</tal:block>

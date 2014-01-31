@@ -1,0 +1,3 @@
+<p class="message" tal:content="options/message"></p>
+
+<p><a tal:attributes="href common/base_url">Back to roles</a></p>

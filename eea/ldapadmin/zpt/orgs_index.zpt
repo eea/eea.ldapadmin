@@ -1,0 +1,58 @@
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('.dataTable').dataTable({
+            'aaSorting': [[1, "asc"]],
+            'sPaginationType': 'full_numbers',
+            "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            "oLanguage": {
+                "sSearch": "Apply filter _INPUT_ to table"
+            },
+            "bAutoWidth":false,
+        });
+    });
+</script>
+
+<div id="operations" tal:condition="common/can_edit_organisations">
+  <h2>Operations</h2>
+  <ul>
+    <li>
+      <a tal:attributes="href string:${common/base_url}/create_organisation_html"
+          >Create organisation</a>
+    </li>
+    <li>
+      <a tal:attributes="href string:${common/base_url}/export_organisations"
+          >Export</a>
+    </li>
+  </ul>
+</div>
+
+<h1>Organisations</h1>
+
+<tal:block content="structure common/message_boxes"/>
+
+<div class="organisation-listing">
+    <table class="account-datatable dataTable">
+        <thead>
+            <tr>
+                <td class="firstcol">
+                    Country
+                </td>
+                <td>
+                    Organisation Name
+                </td>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            <tr tal:repeat="org options/sorted_organisations">
+                <td tal:content="string:${org/country} (${org/country_pub_code})" />
+                <td>
+                    <a tal:define="orgs_url string:${common/base_url}/organisation"
+                       tal:attributes="href string:${orgs_url}?id=${org/id}"
+                       tal:content="org/name" />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

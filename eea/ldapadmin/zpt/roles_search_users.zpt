@@ -1,0 +1,46 @@
+<h1>Search users</h1>
+
+<tal:block content="structure common/message_boxes"/>
+
+<form name="search-users">
+  <label>
+    name:
+    <input type="search" name="name:ustring:utf8" autofocus="autofocus"
+           tal:attributes="value options/search_name" />
+  </label>
+  <input type="submit" value="Search" />
+</form>
+
+<tal:block condition="options/search_name">
+  <ul tal:condition="options/search_results">
+    <li tal:repeat="user_info options/search_results">
+      <tal:block define="is_authenticated python:True">
+        <metal:block use-macro="common/macros/inline-user-info" />
+      </tal:block>
+      [<a tal:attributes="href string:?user_id=${user_info/id}">roles</a>]
+    </li>
+  </ul>
+
+  <p tal:condition="not:options/search_results" class="no-results">
+    Found no users matching <i tal:content="options/search_name"/>.
+  </p>
+</tal:block>
+
+
+<div class="user-roles" tal:condition="options/user_id">
+  <h2>User <tt tal:content="options/user_id" /> is a member of:</h2>
+
+  <ul>
+    <li tal:repeat="role_id python:options['user_roles']">
+      <tal:block content="role_id" />
+      <form style="display: inline" method="get"
+            tal:attributes="action string:${common/base_url}/remove_user_from_role_html">
+        <input type="hidden" name="role_id"
+               tal:attributes="value role_id" />
+        <input type="hidden" name="user_id"
+               tal:attributes="value options/user_id" />
+        <input type="submit" value="remove" />
+      </form>
+    </li>
+  </ul>
+</div>

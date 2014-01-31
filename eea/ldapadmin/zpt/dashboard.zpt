@@ -1,0 +1,20 @@
+<div id="content">
+
+    <h1 tal:content="string:${common/network_name} User Account Tools"></h1>
+
+    <tal:block repeat="tool options/tools" define="here common/context">
+        <div class="eionet_tool"
+            tal:define="slug python:here.get_slug(tool);
+                        info python:here.get_tool_info(tool)">
+            <img tal:attributes="src tool/icon" />
+            &nbsp;
+            <a tal:attributes="href tool/absolute_url; class string:tool_title"
+               tal:content="tool/title"></a>
+
+            <br /><br />
+
+            <span tal:content="structure info/description" />
+        </div>
+    </tal:block>
+    <div class="clear"></div>
+</div>

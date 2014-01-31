@@ -1,0 +1,83 @@
+<tal:block content="structure common/admin_menu" />
+
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('.dataTable').dataTable({
+            'aaSorting': [[0, "asc"]],
+            'sPaginationType': 'full_numbers',
+            "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            "oLanguage": {
+                "sSearch": "Apply filter _INPUT_ to table"
+            }
+        });
+    });
+</script>
+
+<div id="content">
+  <h1>User accounts</h1>
+  
+  <tal:block content="structure common/message_boxes"/>
+  
+  <div class="search-form">
+    <form name="search-form">
+      <label for="search-query">
+        Name of user:
+      </label>
+      <input type="search" name="name:ustring:utf8" id="search-query"
+             class="text-input medium"
+             tal:attributes="value options/search_name|string:"/>
+      <label for="lookup">
+        search in
+      </label>
+      <select id="lookup" name="lookup:list:utf8:ustring" class="select-box">
+        <option tal:attributes="selected python:('all' in options['lookup'] or not options['lookup']) and 'selected' or ''"
+                value="all">All fields</option>
+        <option tal:repeat="field options/search_fields"
+                tal:attributes="value python:field;
+                                selected python:(field in options['lookup']) and 'selected' or ''"
+                tal:content="python:'%s (%s)' % (options['search_fields'][field]['label'], field)"/>
+      </select>
+      <input type="submit" value="Search" class="primary-button" />
+      <div class="clear">&nbsp;</div>
+    </form>
+  </div>
+
+  <tal:block condition="python: options.has_key('search_results')">
+    <tal:block condition="options/search_results">
+    <br />
+    <table class="account-datatable dataTable">
+        <thead>
+            <tr>
+                <td>
+                    Full name (UID)
+                </td>
+                <td>
+                    Email address
+                </td>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr tal:repeat="user options/search_results"
+                tal:attributes="class python:'odd' if repeat['user'].odd() else 'even'">
+                <td>
+                    <a tal:content="user/full_name"
+                       tal:attributes="href python:'edit_user?id=%s'%user['id']"></a>
+                    <span tal:content="string:(${user/id})"></span>
+                </td>
+    
+                <td>
+                    <a tal:attributes="href string:mailto:${user/email}; title string:Send email to ${user/full_name}"
+                       tal:content="user/email" />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </tal:block>
+
+    <tal:block condition="not: options/search_results">
+        <p>No users found matching your search criteria.</p>
+    </tal:block>
+
+  </tal:block>
+</div>

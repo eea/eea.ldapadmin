@@ -1,0 +1,3 @@
+<h1 tal:content="options/title"/>
+
+<tal:block content="structure options/results_html"/>

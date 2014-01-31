@@ -1,0 +1,84 @@
+<form name="search"
+      tal:define="filter_url string:${common/base_url}/filter"
+      tal:attributes="action filter_url">
+  <label for="search-roles-input">
+      Roles pattern
+  </label>
+  <span class="search-help-text">
+      <span class="help-trigger">
+      (e.g. staff
+      </span>,
+      <span class="help-trigger">
+          <tal:block replace="python:common.network_name.lower()" />-*-dk
+          )
+      </span>
+  </span>
+  <br />
+  <input id="search-roles-input" type="search" name="pattern:utf8:ustring"
+         class="text-input large" autofocus="autofocus"
+         tal:attributes="value options/pattern|nothing"/>
+  <input type="submit" value="Search roles"
+         class="primary-button" />
+
+  <p>
+    Use our
+    <a href="javascript:void(0); " class="account-link"
+       onclick="toggleView('#shortcut-queries'); ">
+      shortcut forms</a> to enter queries.
+  </p>
+
+  <div id="shortcut-queries" class="hidden">
+    Country code:
+              <input type='text' name='shortcut_country' class="shortcut_country text-input" />
+    Search:
+    <select name="action">
+        <option value='country'>
+            All <tal:block replace="common/network_name" /> roles
+        </option>
+        <option value='country_nfp'>
+            Nantional Focal Points
+        </option>
+        <option value='country_nrc'>
+            Nantional Reference Centres
+        </option>
+    </select>
+    <input type="submit" value="Go" id="shortcut_queries"
+         class="primary-button" />
+  </div>
+
+  <tal:block condition="options/predefined_filters|nothing">
+  <p>
+    Search by one of the existing
+    <a href="javascript:void(0); " class="account-link"
+       onclick="toggleView('#predefined-queries'); ">
+      predefined queries</a>.
+  </p>
+
+  <table class="account-datatable hidden" id="predefined-queries">
+    <thead>
+      <tr>
+        <td>
+          Query name
+        </td>
+        
+        <td>
+          Query pattern
+        </td>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr tal:repeat="fil options/predefined_filters">
+        <td>
+          <a tal:attributes="href fil/absolute_url"
+            tal:content="fil/title_or_id"></a>
+        </td>
+
+        <td>
+          <span tal:content="fil/pattern" />
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  </tal:block>
+</form>

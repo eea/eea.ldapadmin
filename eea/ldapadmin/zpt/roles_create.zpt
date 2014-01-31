@@ -1,0 +1,64 @@
+<h1>
+  Create role under
+  <tt tal:content="python:options['parent_id'] or '[root]'"/>
+</h1>
+
+<tal:block content="structure python:common.buttons_bar('create_role', options.get('parent_id') or '')"/>
+
+<tal:block content="structure common/message_boxes"/>
+
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('#name').tipsy({
+            gravity: 'w'
+        });
+    });
+</script>
+
+<form tal:attributes="action string:${common/base_url}/create_role"
+      method="post">
+  <table class="account-table">
+    <tbody>
+      <tr>
+        <td>
+          <label for="name">
+            Role ID:
+          </label>
+        </td>
+        
+        <td>
+          <tt tal:condition="options/parent_id"
+              tal:content="string:${options/parent_id}-" />
+          <input type="text" id="name" name="slug:utf8:ustring"
+                 class="text-input medium"
+                 title="Role ID must contain only lowercase latin letters. (e.g. roleid)"
+           tal:attributes="value options/form_data/slug|nothing"/>
+        </td>
+      </tr>
+      
+      <tr>
+        <td>
+          <label for="description">
+            Role name <br />
+            <small>(description)</small>:
+          </label>
+        </td>
+        
+        <td>
+          <input type="text" name="description:utf8:ustring" id="description"
+                 class="text-input medium"
+           tal:attributes="value options/form_data/description|nothing"/>
+        </td>
+      </tr>
+      
+      <tr>
+        <td align="center" colspan="2">
+          <input tal:condition="options/parent_id"
+                  type="hidden" name="parent_role_id"
+                  tal:attributes="value options/parent_id"/>
+          <input type="submit" value="Create role" class="primary-button"/>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</form>

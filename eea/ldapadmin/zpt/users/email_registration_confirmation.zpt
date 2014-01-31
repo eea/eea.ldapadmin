@@ -1,0 +1,21 @@
+Hello <span tal:replace="options/first_name"></span>,
+
+
+Welcome to <span tal:replace="options/site_title"></span>!
+
+Your account with user ID `<span tal:replace="options/user_id"></span>` has been created.
+
+You will receive a new email with your account password.
+
+The <span tal:replace="common/network_name"></span> Portal (<span tal:replace="string:${common/site_url}" />) is the main website where you manage your account or find links to other Eionet services.
+You can manage your Eionet profile using this URL: <span tal:replace="string:${common/site_url}/profile" />
+Your profile is available to other Eionet members here: <span tal:replace="string:${common/site_url}/users/${options/user_id}/" />
+You can use your <span tal:replace="common/network_name"></span> credentials to access any <span tal:replace="common/network_name"></span> services - <span tal:replace="string:${common/site_url}/services" />
+These services may have their own access restrictions.
+
+If you lose your password, you can reset it using <span tal:replace="string:${common/site_url}/password-reset" /> and your email box.
+If, for some reason, you no longer have access to your email box (e.g. leaving organisation) and you lost your password, please contact <span tal:replace="common/network_name"></span> Helpdesk: helpdesk@eionet.europa.eu
+
+
+Have a great day,
+<span tal:replace="common/network_name"></span>

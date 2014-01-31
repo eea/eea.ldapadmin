@@ -1,0 +1,38 @@
+<h1>Delete role <tt tal:content="options/role_id" /></h1>
+
+<tal:block content="structure python:common.buttons_bar('delete_role', options['role_id'])"/>
+
+<form tal:attributes="action string:${common/base_url}/delete_role"
+      method="post">
+    <p>The following roles will be removed:</p>
+    
+    <!--<input type="submit" value="Yes, remove them" class="primary-button" />
+    <div class="clear">
+      &nbsp;
+    </div>-->
+    
+    <table class="account-datatable">
+      <thead>
+        <tr>
+          <td>
+            Role ID
+          </td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr tal:repeat="sub_role_id options/roles_to_remove">
+          <td>
+            <span tal:content="sub_role_id" />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div class="clear">
+      &nbsp;
+    </div>
+    
+    <input type="hidden" name="role_id"
+           tal:attributes="value options/role_id" />
+    <input type="submit" value="Yes, remove them" class="primary-button" />
+</form>

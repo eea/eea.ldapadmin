@@ -1,0 +1,28 @@
+<tal:block content="structure here/manage_page_header" />
+
+<style>
+    form.add-orgs-editor label {
+        display: inline-block;
+        width: 10em;
+    }
+</style>
+
+<h2 tal:content="string:Add organisations editor"></h2>
+
+<form action="manage_add_orgs_editor" method="post"
+      name="add-orgs-editor" class="add-orgs-editor"
+      tal:define="config template/config_defaults">
+    <label for="edit-id">id</label>
+    <input name="id" id="edit-id" />
+    <br />
+
+    <label for="edit-title">Title</label>
+    <input name="title" id="edit-title" />
+    <br />
+
+    <metal:block use-macro="template/ldap_config_edit_macro" />
+
+    <input type="submit" />
+</form>
+
+<tal:block content="structure here/manage_page_footer" />

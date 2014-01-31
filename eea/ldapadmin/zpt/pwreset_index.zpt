@@ -1,0 +1,34 @@
+<h1 tal:content="string:Reset ${common/network_name} account password"></h1>
+
+<tal:block content="structure common/message_boxes"/>
+
+<p>If you have lost the password to your <span tal:replace="common/network_name" />
+account, you can recover it
+here. Simply enter your e-mail address below and click "recover password". You
+will receive an e-mail message with a private link.</p>
+
+<form name="identify" method="post"
+      tal:attributes="action string:${common/base_url}/ask_for_password_reset">
+
+  <table class="account-table">
+
+    <tr>
+      <td>
+        <label>Email address</label>
+      </td>
+      <td>
+        <input name="email:utf8:ustring" type="text" size="50"
+               class="text-input">
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2" align="center">
+        <input type="submit" value="Recover password"
+               class="primary-button">
+      </td>
+    </tr>
+
+  </table>
+
+</form>

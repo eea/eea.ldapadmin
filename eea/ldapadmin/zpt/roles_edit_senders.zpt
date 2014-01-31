@@ -1,0 +1,192 @@
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('.dataTable').dataTable({
+            'aaSorting': [[1, "asc"]],
+            'sPaginationType': 'full_numbers',
+            "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            "oLanguage": {
+                "sSearch": "Apply filter _INPUT_ to table"
+            },
+            "bAutoWidth":false,
+            "aoColumnDefs": [
+                {
+                    "bSortable": false,
+                    "aTargets": [0]
+                }
+            ]
+        });
+    });
+</script>
+
+<h1>Manage permitted senders to <tt tal:content="string:${options/role_id}@roles.eea.eionet.europa.eu"/></h1>
+
+<tal:block content="structure python:common.buttons_bar('edit_senders', options['role_id'])"/>
+
+<tal:block content="structure common/message_boxes"/>
+
+<tal:block define="role_id options/role_id;
+                   persons options/data/permittedPerson;
+                   senders options/data/permittedSender;
+                   emails options/data/emails">
+    <h2>Permitted Senders</h2>
+    <form method="post" name="update-senders"
+        tal:attributes="action string:${common/base_url}/edit_senders_senders?role_id=${options/role_id}">
+    <ul id="senders_tokens">
+      <li><input type='checkbox' name='senders:list' id='anyone' value='anyone'
+           tal:attributes="checked python:'anyone' in senders and 'checked' or ''" /><label for="anyone">Anyone</label>
+            - <span class="info">any email address (public senders)</span>
+      </li>
+      <li><input type='checkbox' name='senders:list' id='owners' value='owners'
+           tal:attributes="checked python:'owners' in senders and 'checked' or ''" /><label for="owners">Owners</label>
+            - <span class="info">this role's owners</span></li>
+      <li><input type='checkbox' name='senders:list' id='members' value='members'
+           tal:attributes="checked python:'members' in senders and 'checked' or ''" /><label for="members">Members</label>
+            - <span class="info">any member of this role (or subrole)</span>
+      </li>
+      <li>
+        <label for="emails">Explicit email addresses or email address patterns</label> -
+        <span class="info">enter comma/space/new line separated email address. Addresses can contain "*" wildcards
+        (e.g. *@eea.europa.eu or *@*.europa.eu)</span>
+        <textarea id="emails" name="emails" class="" tal:content="emails"></textarea>
+      </li>
+    </ul>
+    <input type="submit" value="Save changes" class="primary-button" />
+    </form>
+    <h2>Permitted Users</h2>
+    <tal:block condition="persons">
+        <p>These users have explicit right to send emails to group using
+        the email address set in their Eionet account.</p>
+    <form method="post" name="remove-persons"
+        tal:attributes="action string:${common/base_url}/edit_senders_persons?role_id=${options/role_id}">
+    <input type="hidden" name="action" value="remove-persons" />
+    <table class="account-datatable dataTable remove-senders-table">
+        <thead>
+            <tr>
+                <td>
+                    <input type="checkbox" class="selectall user_id_list" name="selectall"
+                           onclick="selectAll('user_id_list:list', 'remove-senders-table');"/>
+                </td>
+                <td>
+                    Name
+                </td>
+                <td>
+                    E-mail
+                </td>
+                <td>
+                    User ID
+                </td>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tal:block tal:repeat="user_id python:sorted(persons)">
+              <tr tal:define="user_info python:options['user_info'][user_id]">
+              <td class="checkbox-td">
+                  <input type="checkbox" name="user_id_list:list"
+                      tal:attributes="value user_id" />
+              </td>
+              <tal:block condition="python: user_info.get('deleted')">
+                <td colspan="2">
+                    <strong>User no longer exists.</strong>
+                </td>
+                <td>
+                    <span tal:content="user_info/id" />
+                </td>
+              </tal:block>
+              <tal:block condition="python: not user_info.get('deleted')">
+                <td>
+                    <span tal:content="user_info/full_name"/>
+                </td>
+                <td>
+                    <span tal:content="user_info/email"/>
+                </td>
+                <td>
+                    <span tal:content="user_id"/>
+                </td>
+              </tal:block>
+              </tr>
+            </tal:block>
+        </tbody>
+    </table>
+    <br />
+    <input type="submit" value="Remove selected persons" class="primary-button" />
+    </form>
+    </tal:block>
+    <tal:block condition="not: persons">
+        <p>
+            No users have explicit rights to send emails to group.
+        </p>
+    </tal:block>
+
+    <h2>Search for users you want to be allowed to email the group</h2>
+    <div class="search-form">
+    <form name="search-form" method="post"
+        tal:attributes="action string:${common/base_url}/edit_senders_persons?role_id=${options/role_id}">
+      <input type="hidden" name="action" value="search" />
+
+      <label for="search-query">
+        Name of user:
+      </label>
+      <br />
+      <input type="search" name="name:ustring:utf8" id="search-query"
+             class="text-input large"
+             tal:attributes="value options/search_name|nothing"/>
+
+      <input type="submit" value="Search" class="primary-button" />
+      <div class="clear">&nbsp;</div>
+    </form>
+    </div>
+
+    <tal:block condition="options/search_name|nothing">
+        <tal:block condition="options/results">
+        <form name="add-form" method="post"
+              tal:attributes="action string:${common/base_url}/edit_senders_persons?role_id=${options/role_id}">
+        <input type="hidden" name="action" value="add-persons" />
+        <br />
+        <table class="account-datatable dataTable add-senders-table">
+            <thead>
+                <tr>
+                    <td>
+                        <input type="checkbox" class="selectall user_id_list" name="selectall"
+                           onclick="selectAll('user_id_list:list', 'add-senders-table');"/>
+                    </td>
+                    
+                    <td>
+                        Name
+                    </td>
+                    <td>
+                        User ID
+                    </td>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tal:block tal:repeat="user_id python:sorted(options['results'])">
+                    <tr tal:define="user_info python:options['results'][user_id]">
+                        <td class="checkbox-td">
+                            <input type="checkbox" name="user_id_list:list"
+                                tal:attributes="value user_id" />
+                        </td>
+                        <td>
+                            <span tal:content="user_info/full_name"/>
+                        </td>
+                        <td>
+                            <span tal:content="user_id"/>
+                        </td>
+                    </tr>
+                </tal:block>
+            </tbody>
+        </table>
+        <br />
+        <input type="submit" value="Allow selected to email the group" class="primary-button" />
+        </form>
+        </tal:block>
+        <p class="search-message" tal:condition="not:options/results">
+            <img src="/++resource++eea.ldapadmin-www/info.png" class="middle-image"
+               title="Note" alt=""/>
+            No matching users for
+            <strong tal:content="options/search_name" />.
+        </p>
+    </tal:block>
+
+</tal:block>

@@ -1,0 +1,37 @@
+<tal:block content="structure common/admin_menu" />
+
+<div id="content">
+    <h1>Bulk verify usernames</h1>
+
+    <tal:block content="structure common/message_boxes"/>
+
+
+    <form action="" method="post" name="check-username">
+    <p>Enter a list of look-up usernames separated by spaces, commas or new lines:</p>
+    <p>
+    <textarea id="id_usernames" name="usernames" tal:content="python:' '.join(options['usernames'])" class="large"></textarea>
+    </p>
+    <p>
+    <input type="submit" value="Check for availability" name="submit" class="primary-button" />
+    </p>
+    </form>
+
+    <tal:block condition="options/usernames">
+        <h2>Results</h2>
+        <div class="item_list" tal:condition="options/valid">
+            <p>These are valid usernames, <strong>available for registration</strong>.</p>
+            <textarea id="id_valid" name="valid" tal:content="python:' '.join(options['valid'])"></textarea>
+        </div>
+
+        <div class="item_list" tal:condition="options/taken">
+            <p>These are valid usernames that have been <strong>already registered</strong>.</p>
+            <textarea id="id_taken" class="error" name="taken" tal:content="python:' '.join(options['taken'])"></textarea>
+        </div>
+    
+        <div class="item_list" tal:condition="options/invalid">
+            <p>These are <strong>invalid usernames</strong> (unallowed characters).</p>
+            <textarea id="id_taken" class="error"  name="taken" tal:content="python:' '.join(options['invalid'])"></textarea>
+        </div>
+    </tal:block>
+
+</div>

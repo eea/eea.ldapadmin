@@ -1,0 +1,119 @@
+<metal:block define-macro="messages">
+  <div class="error-msg"
+       tal:repeat="msg python:messages.get('error', [])"
+       tal:content="msg"/>
+  <div class="system-msg"
+       tal:repeat="msg python:messages.get('info', [])"
+       tal:content="msg"/>
+</metal:block>
+
+<metal:block define-macro="org_form_fields">
+<tal:block define="form_data form_data|python:{}; create_mode python:options.get('create_mode')">
+
+  <tr tal:condition="create_mode">
+    <td><label for="edit-id">Organisation id:</label></td>
+    <td><input id="edit-id" type="text" name="id" size="50" class="text-input"
+      tal:attributes="value form_data/id|nothing" /></td>
+  </tr>
+  <tal:block condition="not:create_mode">
+    <input type="hidden" type="text" name="id" size="50"
+      tal:attributes="value form_data/id|nothing" />
+  </tal:block>
+
+  <tr>
+    <td><label for="edit-name">Name:</label></td>
+    <td><input id="edit-name" type="text" name="name:utf8:ustring" size="50"
+               tal:attributes="value form_data/name|string:" class="text-input" /></td>
+  </tr>
+
+  <tr>
+    <td><label for="edit-email">Email:</label></td>
+    <td><input id="edit-email" type="text" name="email:utf8:ustring"
+               class="text-input"
+               size="50"
+               tal:attributes="value form_data/email|string:"/></td>
+  </tr>
+
+  <tr>
+    <td><label for="edit-url">URL:</label></td>
+    <td><input id="edit-url" type="text" name="url:utf8:ustring"
+               class="text-input"
+               size="50"
+               tal:attributes="value form_data/url|string:"/></td>
+  </tr>
+
+  <tr>
+    <td><label for="edit-phone">Phone:</label></td>
+    <td><input id="edit-phone" type="text" name="phone:utf8:ustring" size="50"
+               tal:attributes="value form_data/phone|string:" class="text-input" /></td>
+  </tr>
+
+  <tr>
+    <td><label for="edit-fax">Fax:</label></td>
+    <td><input id="edit-fax" type="text" name="fax:utf8:ustring" size="50"
+               tal:attributes="value form_data/fax|string:" class="text-input" /></td>
+  </tr>
+
+  <tr>
+    <td><label for="edit-street">Street:</label></td>
+    <td><input id="edit-street" type="text" name="street:utf8:ustring"
+               class="text-input"
+               size="50"
+               tal:attributes="value form_data/street|string:"/></td>
+  </tr>
+
+  <tr>
+    <td><label for="edit-po_box">PO box:</label></td>
+    <td><input id="edit-po_box" type="text" name="po_box:utf8:ustring" size="50"
+               class="text-input"
+               tal:attributes="value form_data/po_box|string:"/></td>
+  </tr>
+
+  <tr>
+    <td><label for="edit-postal_code">Postal code:</label></td>
+    <td><input id="edit-postal_code" type="text" name="postal_code:utf8:ustring"
+               class="text-input"
+               size="50"
+               tal:attributes="value form_data/postal_code|string:"/></td>
+  </tr>
+
+  <tr>
+    <td><label for="edit-locality">Locality:</label></td>
+    <td><input id="edit-locality" type="text" name="locality:utf8:ustring"
+               class="text-input"
+               size="50"
+               tal:attributes="value form_data/locality|string:"/></td>
+  </tr>
+
+  <tr tal:define="countries options/countries">
+    <td><label for="edit-country">Country:</label></td>
+    <td>
+      <select name="country:utf8:ustring" id="edit-country"
+        tal:condition="python:len(countries)>1">
+        <option value=''> -- select country or EU -- </option>
+        <option tal:repeat="country countries"
+                tal:attributes="value python:country[0];
+                                selected python:'selected' and country[0]==form_data.get('country') or ''">
+          <span tal:replace="python: '%s, %s' % (country[1]['name'], country[1]['pub_code'].upper())" />
+        </option>
+      </select>
+      <tal:block condition="python:len(countries)==1"
+        define="country python:countries[0]">
+          <tal:block content="python: '%s, %s' % (country[1]['name'],
+              country[1]['pub_code'].upper())" />
+          <input type="hidden" name="country:utf8:ustring"
+              tal:attributes="value python:country[0]">
+      </tal:block>
+    </td>
+  </tr>
+
+  <tr>
+    <td><label for="edit-address">Full address:</label></td>
+    <td><textarea id="edit-address" name="postal_address:utf8:ustring"
+                  class="large"
+                  rows="6" cols="30"
+                  tal:content="form_data/postal_address|string:"></textarea></td>
+  </tr>
+
+</tal:block>
+</metal:block>

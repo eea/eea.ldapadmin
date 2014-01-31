@@ -1,0 +1,28 @@
+<h1 tal:content="python:options['title'] or 'Search roles'"></h1>
+
+<div class="account-links clear">
+  <div class="left-position">
+    <a tal:attributes="href string:${common/base_url}" class="button"
+       title="Back to roles">
+      <img src="/++resource++eea.ldapadmin-www/back.png"
+          class="middle-image image12"
+          alt="" title="Back to roles" />
+      <span tal:content="string:Back to roles" />
+    </a>
+  </div>
+  <br />
+</div>
+<br />
+
+<div class="search-form">
+  <tal:block define="pattern options/pattern"
+             content="structure python:common.search_roles_box(pattern)"/>
+</div>
+
+<div class="clear">&nbsp;</div>
+
+<p tal:condition="python:common.is_authenticated() and 'csv_link' in options">
+  Download as <a tal:attributes="href options/csv_link">CSV</a>
+</p>
+
+<tal:block content="structure options/results_html|nothing"/>

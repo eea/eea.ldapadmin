@@ -1,0 +1,130 @@
+<!-- requires variable `user_info` and `is_authenticated` -->
+<metal:block define-macro="inline-user-info">
+    <span class="user-name" tal:content="user_info/full_name" />
+
+    <tal:block condition="is_authenticated">
+        (<tt class="user-id" tal:content="user_info/id" />)
+
+        <a tal:condition="user_info/email"
+           tal:attributes="href string:mailto:${user_info/email}"
+           tal:content="user_info/email"
+           class="user-email"></a>
+        <br />
+
+        <tal:block condition="user_info/phone">
+            Tel: <span class="user-phone"
+                       tal:content="user_info/phone" />
+        </tal:block>
+
+        <tal:block condition="user_info/fax">
+            Fax: <span class="user-phone"
+                       tal:content="user_info/fax" />
+        </tal:block>
+
+        <tal:block condition="user_info/organisation">
+            <span class="user-organisation"
+                  tal:content="user_info/organisation" />
+        </tal:block>
+
+    </tal:block>
+</metal:block>
+
+<!-- requires `is_authenticated` and `users` indexed user_info-s by uid
+     optional: `naming` -->
+<metal:block define-macro="table-user-info">
+    <table class="account-datatable dataTable">
+    <thead>
+        <tr>
+            <tal:block condition="rich_view" on-error="string:">
+                <td>Subrole</td>
+            </tal:block>
+            <td>Name</td>
+            <tal:block condition="is_authenticated">
+                <td>User ID</td>
+                <td>Email</td>
+                <td>Tel/Fax</td>
+                <td>Organisation</td>
+            </tal:block>
+        </tr>
+    </thead>
+    <tbody>
+        <!--<tal:block condition="python: not users">
+            <tr>
+                <td colspan="5" align="center">
+                    <strong>
+                        Currently there are no users in role <tt tal:content="python:role_name or '[ROOT]'" />
+                    </strong>
+                </td>
+            </tr>
+        </tal:block>
+-->
+        <tal:block repeat="user_id python:sorted(users)" condition="users">
+        <tal:block define="user_info python:users[user_id]">
+            <tr tal:condition="python: users[user_id].get('deleted') and is_authenticated">
+                <td>
+                </td>
+                <td>
+                    <span tal:content="user_info/id" />
+                </td>
+                <td colspan="3">
+                    <strong>User no longer exists.</strong>
+                </td>
+            </tr>
+
+            <tr tal:condition="python: not users[user_id].get('deleted')">
+                <tal:block condition="rich_view" on-error="string:">
+                    <td>
+                    <ul tal:content="structure python:'<li>%s</li>'%'</li><li>'.join(users[user_id].get('roles', []))" />
+                    </td>
+                </tal:block>
+                <td>
+                    <span tal:content="user_info/full_name" />
+                    <tal:block condition="naming|string:">
+                        <span class="leader_container tipsy-title"
+                              tal:condition="python:user_info.get('leader')"
+                              tal:attributes="title naming/leader/long"
+                              tal:content="naming/leader/short"></span>
+                        <span class="alternate_container tipsy-title"
+                              tal:condition="python:user_info.get('alternate')"
+                              tal:attributes="title naming/alternate/long"
+                              tal:content="naming/alternate/short"></span>
+                    </tal:block>
+                </td>
+
+                <tal:block condition="is_authenticated">
+                <td>
+                    <span tal:content="user_info/id" />
+                </td>
+    
+                <td>
+                    <a tal:condition="user_info/email"
+                    tal:attributes="href string:mailto:${user_info/email}"
+                    tal:content="user_info/email"
+                    class="user-email"></a>
+                </td>
+    
+                <td>
+                    <span class="user-phone"
+                       tal:content="user_info/phone" />
+                    <br />
+                    <span class="user-phone"
+                       tal:content="user_info/fax" />
+                </td>
+
+                <td>
+                    <span tal:content="user_info/organisation" />
+                </td>
+                </tal:block>
+            </tr>
+        </tal:block>
+        </tal:block>
+    </tbody>
+  </table>
+</metal:block>
+
+<!-- Not used! -->
+<metal:block define-macro="org-info">
+    <span class="org-name" tal:content="org_info/name" />
+    <a tal:condition="org_info/url"
+       tal:attributes="href org_info/url" tal:content="org_info/url"></a>
+</metal:block>

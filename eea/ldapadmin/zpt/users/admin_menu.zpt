@@ -1,0 +1,21 @@
+<div id="operations">
+  <h2>Operations</h2>
+  <ul>
+    <li>
+      <a tal:attributes="href string:${common/base_url}/create_user"
+          >Create account</a>
+    </li>
+    <li>
+      <a tal:attributes="href string:${common/base_url}/bulk_check_username"
+          >Bulk verify usernames</a>
+    </li>
+    <li>
+      <a tal:attributes="href string:${common/base_url}/bulk_check_email"
+          >Bulk verify emails</a>
+    </li>
+    <li>
+      <a tal:attributes="href string:${common/base_url}/bulk_create_user"
+          >Create accounts from file</a>
+    </li>
+  </ul>
+</div>

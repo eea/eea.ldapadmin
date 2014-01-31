@@ -1,0 +1,27 @@
+<h1>Change organisation ID</h1>
+
+<tal:block content="structure common/message_boxes"/>
+
+<form tal:attributes="action string:${common/base_url}/rename_organisation"
+      name="rename_organisation"
+      method="post">
+  <p>
+    Changing the organisation's ID will also update all references to this
+    organisation.
+  </p>
+
+  <table>
+
+    <tr>
+      <td><label for="edit-id">Organisation id:</label></td>
+      <td><input id="edit-id" type="text" name="new_id" size="50"
+                 tal:attributes="value options/org_id"/></td>
+    </tr>
+
+    <tr>
+      <input type="hidden" name="id" tal:attributes="value options/org_id"/>
+      <td colspan="2"><input type="submit" value="Change ID" /></td>
+    </tr>
+
+  </table>
+</form>

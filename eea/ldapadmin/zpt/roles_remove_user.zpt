@@ -1,0 +1,17 @@
+<h1>Revoke membership</h1>
+
+<form tal:attributes="action string:${common/base_url}/remove_user_from_role"
+      method="post">
+
+  <p>Remove <tt tal:content="options/user_id"/> from the following roles:</p>
+  <ul>
+    <li tal:repeat="role_id options/role_id_list">
+      <tt tal:content="role_id"/>
+    </li>
+  </ul>
+
+  <input type="hidden" name="user_id" tal:attributes="value options/user_id"/>
+  <input type="hidden" name="role_id" tal:attributes="value options/role_id"/>
+  <input type="submit" value="Yes, remove"/>
+
+</form>

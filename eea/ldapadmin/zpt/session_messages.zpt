@@ -1,0 +1,6 @@
+<div class="error-msg"
+     tal:repeat="msg python:options['messages'].get('error', [])"
+     tal:content="msg"/>
+<div class="system-msg"
+     tal:repeat="msg python:options['messages'].get('info', [])"
+     tal:content="msg"/>

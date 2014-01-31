@@ -1,0 +1,46 @@
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('.dataTable').dataTable({
+            'aaSorting': [[0, "asc"]],
+            'sPaginationType': 'full_numbers',
+            "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            "oLanguage": {
+                "sSearch": "Apply filter _INPUT_ to table"
+            }
+        });
+
+        $('.tipsy-title').tipsy({
+            gravity: 'se'
+        });
+
+    });
+</script>
+
+<tal:block define="is_authenticated common/is_authenticated"
+           repeat="role_id python:sorted(options['results'])">
+  <tal:block define="role_members python:options['results'][role_id]">
+      <h3>Users in <tt tal:content="python:options['results'][role_id]['name'] or '[ROOT]'" /></h3>
+
+        <tal:block define="users role_members/users; naming python:options['results'][role_id]['naming']">
+          <metal:block use-macro="common/macros/table-user-info" />
+        </tal:block>
+      <div class="clear">&nbsp;</div>
+
+      <div class="left-position">
+        <a href="#workarea" class="account-link button" title="Click to go back to top">
+          <img src="/++resource++eea.ldapadmin-www/up.png" alt=""
+               class="middle-image image12" title="Back to top" />
+          Back to top
+        </a>
+      </div>
+      <br />
+      <div class="clear">&nbsp;</div>
+  </tal:block>
+</tal:block>
+
+<p tal:condition="python:options['pattern'] and not options['results']"
+   class="search-message">
+  <img src="/++resource++eea.ldapadmin-www/info.png" class="middle-image"
+       title="Note" alt=""/>
+  No roles found matching <strong tal:content="options/pattern" />.
+</p>

@@ -1,0 +1,7 @@
+<div class="breadcrumbtrail">
+  <div class="breadcrumbhead">You are here:</div>
+  <div class="breadcrumbitem"><a tal:attributes="href common/base_url">Roles</a></div>
+  <tal:block repeat="item options/stack">
+    <div class="breadcrumbitemlast"><a tal:attributes="href python:item[1]" tal:content="python:item[0]"></a></div>
+  </tal:block>
+</div>

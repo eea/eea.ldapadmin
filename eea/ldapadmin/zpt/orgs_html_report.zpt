@@ -1,0 +1,71 @@
+<h1>
+    Organisations report
+</h1>
+
+<table class="account-datatable sub-roles" tal:define="agent options/agent;">
+    <thead>
+        <tr>
+            <td>
+                Organisation ID
+            </td>
+
+            <td>
+                Country
+            </td>
+
+            <td>
+                Organisation Name
+            </td>
+
+            <td>
+                Member ID
+            </td>
+
+            <td>
+                Member Full Name
+            </td>
+
+            <td>
+                Member Email
+            </td>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tal:block repeat="org options/orgs">
+            <tal:block repeat="member org/members" tal:condition="org/members">
+                <tr tal:condition="repeat/member/start">
+                    <td tal:content="org/id" />
+                    <td tal:content="org/country" />
+                    <td tal:content="org/name" />
+                    <td tal:content="member/id" />
+                    <td tal:content="member/full_name" />
+                    <td tal:content="member/email" />
+                </tr>
+                <tr tal:condition="python: not repeat['member'].start()">
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td tal:content="member/id" />
+                    <td tal:content="member/full_name" />
+                    <td tal:content="member/email" />
+                </tr>
+            </tal:block>
+            <tr tal:condition="python: not org['members']">
+                <td tal:content="org/id" />
+                <td tal:content="org/country" />
+                <td tal:content="org/name" />
+                <td colspan="3" align="center">
+                    <p>
+                        <strong>
+                            No members in this organisation
+                        </strong>
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="5" style="background: #ccc;"></td>
+            </tr>
+        </tal:block>
+    </tbody>
+</table>

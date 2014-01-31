@@ -1,0 +1,36 @@
+<tal:block content="structure here/manage_page_header" />
+<tal:block content="structure here/manage_tabs" />
+
+<style>
+    form.edit-pwreset-tool label {
+        display: inline-block;
+        width: 10em;
+    }
+</style>
+
+<br />
+<form tal:define="config here/get_config|python:{}"
+      tal:attributes="action string:${here/absolute_url}/manage_edit_save"
+      class="edit-pwreset-tool" method="post">
+
+    <metal:block use-macro="template/ldap_config_edit_macro" />
+
+    <label for="edit-legacy_ldap_server">Legacy LDAP server</label>
+    <input id="edit-legacy_ldap_server" name="legacy_ldap_server" size="50"
+           tal:attributes="value config/legacy_ldap_server|nothing" />
+    <br />
+
+  <label for="edit-legacy_admin_dn">Legacy Login DN</label>
+  <input id="edit-legacy_admin_dn" name="legacy_admin_dn" size="50"
+         tal:attributes="value config/legacy_admin_dn|nothing" />
+  <br />
+
+  <label for="edit-legacy_admin_pw">Legacy Login password</label>
+  <input id="edit-legacy_admin_pw" name="legacy_admin_pw" type="password" size="50"
+         autocomplete="off" />
+  <br />
+
+    <input type="submit" value="Save" />
+</form>
+
+<tal:block content="structure here/manage_page_footer" />

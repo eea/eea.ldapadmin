@@ -1,0 +1,21 @@
+<tal:block content="structure here/manage_page_header" />
+<tal:block content="structure here/manage_tabs" />
+
+<style>
+    form.edit-users-admin label {
+        display: inline-block;
+        width: 10em;
+    }
+</style>
+
+<br />
+<form tal:define="config here/get_config|python:{}"
+      tal:attributes="action string:${here/absolute_url}/manage_edit_save"
+      class="edit-users-admin" method="post">
+
+    <metal:block use-macro="template/ldap_config_edit_macro" />
+
+    <input type="submit" value="Save" />
+</form>
+
+<tal:block content="structure here/manage_page_footer" />

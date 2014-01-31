@@ -1,0 +1,52 @@
+<h1>NFP Administration</h1>
+
+<tal:block content="structure common/message_boxes"/>
+
+<tal:block condition="not: common/is_authenticated">
+    <p class="not-logged-in">
+        You must be authenticated and you must have an NFP Role assigned.
+        <br />
+        Please <a tal:attributes="href string:/loggedin?came_from=${common/base_url}">log in</a>.
+    </p>
+</tal:block>
+<tal:block condition="common/is_authenticated">
+
+<tal:block condition="options/nfps">
+<p>You are a National Focal Point for the following countries.<br />
+Click to browse and manage members in National Resource Centres.</p>
+
+    <table class="account-datatable sub-roles">
+        <thead>
+            <tr>
+                <td>
+                    NFP ID
+                </td>
+    
+                <td>
+                    NFP name
+                </td>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr tal:repeat="nfp options/nfps"
+                tal:attributes="class python:'odd' if path('repeat/nfp/odd') else 'even'">
+                <td>
+                    <a tal:attributes="href string:${common/base_url}/nrcs?nfp=${nfp/country}"
+                        tal:content="nfp/role_id"></a>
+                </td>
+                <td>
+                    <span tal:content="nfp/description" />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</tal:block>
+
+
+<p tal:condition="not: options/nfps">
+The logged in user (<span tal:content="common/user_id" />)
+  is not a National Focal Point.    
+</p>
+
+</tal:block>

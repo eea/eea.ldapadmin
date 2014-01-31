@@ -1,0 +1,141 @@
+<script type="text/javascript" src="/++resource++eea.ldapadmin-www/create_user.js"></script>
+<style>
+  form.deform li {
+    list-style: none;
+  }
+  form.deform p.error {
+      color: red;
+  }
+</style>
+
+<h1>Create account</h1>
+
+<tal:block content="structure common/message_boxes"/>
+
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('label[title!=""]').tipsy({
+            gravity: 'se'
+        });
+    });
+</script>
+
+<form action="" method="post" name="create-account">
+
+<table class="account-table">
+
+  <tal:block repeat="schema_field options/schema">
+    <tr tal:define="field_name schema_field/name;
+                    field python:{
+                      'name': field_name,
+                      'value': options['form_data'].get(field_name, ''),
+                      'label': schema_field.description,
+                      'error': options['errors'].get(field_name, None),
+                      'widget': schema_field.widget,
+                      'required': schema_field.required,
+                      'help_text': schema_field.help_text
+                    }">
+      <metal:block use-macro="template/macros/form-field" />
+    </tr>
+  </tal:block>
+
+  <tr>
+    <td class="right-td">
+      <input type="checkbox" name="send_confirmation" id="send_confirmation" value="on" />
+    </td>
+    <td>
+      <label id="confirmation_email_label" for="send_confirmation">
+      Send confirmation email after creating account
+      </label>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <div id="confirmation_email">
+        Preview of confirmation email:<br />
+      <pre>
+      </pre>
+      </div>
+    </td>
+  </tr>
+
+ <tr>
+    <td colspan="2" id="users-container">
+    </td>
+ </tr>
+
+  <tr>
+    <td colspan="2" align="center">
+      <input type="submit" value="Create account" name="submit"
+             class="primary-button" />
+    </td>
+  </tr>
+</table>
+
+</form>
+
+<script type="text/javascript"
+        tal:content="string:var url_search_duplicates='${common/base_url}/find_duplicates';">
+</script>
+
+
+<tal:block condition="nothing">
+<script>$(function() {
+    var frm = $('form[name="create-account"]');
+
+    var literal_input = $('input[name="org_literal:utf8:ustring"]', frm);
+    var choose_literal = function() {
+        $('input[name="org_type"][value="literal"]').attr('checked', true);
+    };
+    literal_input.click(choose_literal);
+    literal_input.keypress(choose_literal);
+    literal_input.change(choose_literal);
+
+    var by_id_select = $('select[name="org_id"]', frm);
+    var choose_by_id = function() {
+        $('input[name="org_type"][value="by_id"]').attr('checked', true);
+    };
+    by_id_select.click(choose_by_id);
+    by_id_select.keypress(choose_by_id);
+    by_id_select.change(choose_by_id);
+});</script>
+</tal:block>
+
+<tal:block condition="nothing">
+<metal:block define-macro="form-field">
+  <tal:block define="field_id string:edit-${field/name}">
+    <td class="right-td">
+      <label tal:define="required_cls python:['required' if
+                                            field['required'] else '']"
+             tal:attributes="for field_id; class python:' '.join(['question'] +
+                                                                 required_cls);
+                            title field/help_text"
+             tal:content="string:${field/label}:"/>
+    </td>
+    <td tal:define="widget_template field/widget/template|string:textinput;
+                    input_classes python:['error'] if field['error'] else [];
+                    is_textarea python: widget_template == 'textarea'">
+      <span tal:condition="field/required"/>
+      <input tal:condition="not:is_textarea"
+             type="text" size="50"
+             tal:attributes="id field_id;
+                             class python:' '.join(input_classes +
+                                    ['text-input', 'large']);
+                             name string:${field/name}:utf8:ustring;
+                             value field/value" />
+      <textarea tal:condition="is_textarea"
+                class="account-textarea large"
+                tal:attributes="id field_id;
+                                class python:' '.join(input_classes +
+                                    ['account-textarea', 'large']);
+                                name string:${field/name}:utf8:ustring"
+                tal:content="field/value"></textarea>
+      <p class="error-hint"
+         tal:attributes="id string:error-${field_id}"
+         tal:condition="field/error"
+         tal:content="field/error" />
+    </td>
+  </tal:block>
+
+</metal:block>
+</tal:block>
