@@ -1,32 +1,33 @@
-import operator
+from AccessControl import ClassSecurityInfo
+from AccessControl.Permissions import view, view_management_screens
+from AccessControl.unauthorized import Unauthorized
+from App.class_init import InitializeClass
+from OFS.PropertyManager import PropertyManager
+from OFS.SimpleItem import SimpleItem
+from Products.PageTemplates.PageTemplateFile import PageTemplateFile
+from StringIO import StringIO
+from constants import NETWORK_NAME
+from countries import get_country, get_country_options
 from datetime import datetime
-import re
+from email.mime.text import MIMEText
+from ldap import NO_SUCH_OBJECT
+from logic_common import _session_pop
+from persistent.mapping import PersistentMapping
+from ui_common import extend_crumbs, CommonTemplateLogic
+from ui_common import load_template, SessionMessages, TemplateRenderer
+from zope.component import getUtility
+from zope.component.interfaces import ComponentLookupError
+from zope.sendmail.interfaces import IMailDelivery
 import codecs
+import deform
+import eea.usersdb
 import itertools
+import ldap_config
+import logging
+import operator
+import re
 import xlwt
 
-
-from StringIO import StringIO
-from AccessControl import ClassSecurityInfo
-from App.class_init import InitializeClass
-from Products.PageTemplates.PageTemplateFile import PageTemplateFile
-from OFS.SimpleItem import SimpleItem
-from OFS.PropertyManager import PropertyManager
-from AccessControl.unauthorized import Unauthorized
-from AccessControl.Permissions import view, view_management_screens
-from persistent.mapping import PersistentMapping
-from ldap import NO_SUCH_OBJECT
-
-import eea.usersdb
-import deform
-import ldap_config
-from ui_common import load_template, SessionMessages, TemplateRenderer
-from ui_common import extend_crumbs, CommonTemplateLogic
-from logic_common import _session_pop
-from countries import get_country, get_country_options
-from constants import NETWORK_NAME
-
-import logging
 log = logging.getLogger('orgs_editor')
 
 eionet_edit_orgs = 'Eionet edit organisations'
@@ -301,7 +302,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         RESPONSE.setHeader('Content-Length', len(out))
         RESPONSE.setHeader('Pragma', 'public')
         RESPONSE.setHeader('Cache-Control', 'max-age=0')
-        RESPONSE.addHeader("content-disposition", 
+        RESPONSE.addHeader("content-disposition",
                                    "attachment; filename=%s-organisations.xls" % nfp_country)
 
         return out
@@ -312,7 +313,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             raise Unauthorized
 
         org_id = REQUEST.form['id']
-        nfp_country = self.nfp_for_country()
+        self.nfp_for_country()  # TODO: is this needed?
 
         agent = self._get_ldap_agent()
         org_info = agent.org_info(org_id)
@@ -385,7 +386,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         RESPONSE.setHeader('Content-Length', len(out))
         RESPONSE.setHeader('Pragma', 'public')
         RESPONSE.setHeader('Cache-Control', 'max-age=0')
-        RESPONSE.addHeader("content-disposition", 
+        RESPONSE.addHeader("content-disposition",
                                    "attachment; filename=%s.xls" % org_id)
 
         return out
@@ -661,6 +662,113 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                                ('Members', '#')])
         return self._render_template('zpt/orgs_members.zpt', **options)
 
+    security.declarePublic('pending_members_html')
+    def pending_members_html(self, REQUEST):
+        """ view """
+
+        org_id = REQUEST.form['id']
+        agent = self._get_ldap_agent()
+
+        org_members = []
+        members = agent.pending_members_in_org(org_id)
+
+        for user_id in members:
+            try:
+                org_members.append(agent.user_info(user_id))
+            except (NO_SUCH_OBJECT, eea.usersdb.UserNotFound):
+                pass
+
+        org_members.sort(key=operator.itemgetter('first_name'))
+        options = {
+            'organisation': agent.org_info(org_id),
+            'org_members': org_members,
+        }
+        self._set_breadcrumbs([(org_id,
+                                self.absolute_url()+'/organisation?id=%s' % org_id),
+                               ('Members', '#')])
+        return self._render_template('zpt/orgs_members_pending.zpt', **options)
+
+    def notify_on_membership_op(self, user_info, org_info, operation):
+        addr_from = "no-reply@eea.europa.eu"
+        addr_to = user_info['email']
+
+        if operation == 'approval':
+            email_template = load_template('zpt/org_membership_approved.zpt')
+            subject = "%s: Approved organisation membership" % NETWORK_NAME
+        elif operation == 'rejection':
+            email_template = load_template('zpt/org_membership_rejected.zpt')
+            subject = "%s: Rejected organisation membership" % NETWORK_NAME
+
+        options = {
+            'org_info': org_info,
+            'user_info': user_info,
+            'context': self,
+            'network_name': NETWORK_NAME
+        }
+        message = MIMEText(email_template(**options).encode('utf-8'),
+                           _charset='utf-8')
+        message['From'] = addr_from
+        message['To'] = user_info['email']
+        message['Subject'] = subject
+
+        try:
+            mailer = getUtility(IMailDelivery, name="Mail")
+            mailer.send(addr_from, [addr_to], message.as_string())
+        except ComponentLookupError:
+            mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
+            mailer.send(addr_from, [addr_to], message)
+
+    def pending_membership_ops(self, REQUEST):
+        """ view """
+        org_id = REQUEST.form['id']
+        if not self.can_edit_organisation():
+            _set_session_message(REQUEST, 'error',
+                    "You are not allowed to remove members to this organisation")
+            REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                  '/members_html?id=' + org_id)
+            return None
+
+        user_id_list = REQUEST.form.get('user_id')
+        if not user_id_list:
+            return
+
+        assert type(user_id_list) is list
+        for user_id in user_id_list:
+            assert type(user_id) is str
+
+        agent = self._get_ldap_agent(bind=True)
+        org_info = agent.org_info(org_id)
+
+        if 'reject' in REQUEST.form:
+            for user_id in user_id_list:
+                info = agent.user_info(user_id)
+                info['organisation'] = ''
+                self.notify_on_membership_op(info, org_info, 'rejection')
+                agent.set_user_info(user_id, info)
+            agent.remove_pending_from_org(org_id, user_id_list)
+            _set_session_message(REQUEST, 'info',
+                                 'Rejected %d members for organisation "%s".' %
+                                 (len(user_id_list), org_id))
+            log.info("%s REJECTED MEMBERS %s FOR ORGANISATION %s",
+                     logged_in_user(REQUEST), user_id_list, org_id)
+
+        if 'approve' in REQUEST.form:
+            for user_id in user_id_list:
+                info = agent.user_info(user_id)
+                self.notify_on_membership_op(info, org_info, 'approval')
+            agent.remove_pending_from_org(org_id, user_id_list)
+            agent.add_to_org(org_id, user_id_list)
+            _set_session_message(REQUEST, 'info',
+                                 'Approved %d members for organisation "%s".' %
+                                 (len(user_id_list), org_id))
+            log.info("%s APPROVED MEMBERS %s FOR ORGANISATION %s",
+                     logged_in_user(REQUEST), user_id_list, org_id)
+
+        REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                  '/members_html?id=' + org_id)
+
+
+
     security.declareProtected(eionet_edit_orgs, 'demo_members')
     def demo_members(self, REQUEST):
         """ view """
@@ -922,7 +1030,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         """ """
         try:
             from eea.usersdb.factories import agent_from_uf
-        except ImportError, e:
+        except ImportError:
             return []
         agent = agent_from_uf(self.restrictedTraverse("/acl_users"))
         ldap_roles = sorted(agent.member_roles_info('user',
