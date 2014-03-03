@@ -1,5 +1,7 @@
 1.4.3 (unreleased)
 ------------------------
+* Feature: have a statistics page to report number of users created per year
+  [tiberich #18676]
 
 1.4.2 (2014-01-15)
 ------------------------

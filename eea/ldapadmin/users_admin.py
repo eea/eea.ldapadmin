@@ -11,18 +11,20 @@ from eea.ldapadmin import eionet_profile
 from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.help_messages import help_messages
 from eea.ldapadmin.logic_common import _session_pop
+from eea.usersdb import factories
 from email.mime.text import MIMEText
 from import_export import UnicodeReader, csv_headers_to_object
 from persistent.mapping import PersistentMapping
+from ui_common import CommonTemplateLogic   #load_template,
 from ui_common import SessionMessages, TemplateRenderer
 from ui_common import extend_crumbs, TemplateRendererNoWrap
-from ui_common import load_template, CommonTemplateLogic
 from unidecode import unidecode
 from zope.component import getUtility
 from zope.component.interfaces import ComponentLookupError
 from zope.sendmail.interfaces import IMailDelivery
 import deform, colander
 import jellyfish
+import ldap
 import ldap_config
 import logging
 import os
@@ -209,6 +211,54 @@ class UsersAdmin(SimpleItem, PropertyManager):
             options['search_results'] = results
         return self._render_template('zpt/users_index.zpt', **options)
 
+    security.declareProtected(eionet_edit_users, 'get_statistics')
+    def get_statistics(self, REQUEST):
+        """ view a simple table of how many users have been registered, for each year
+
+        For reasons which are unclear, we need to use two agents:
+        * one will be binded with the LDAP special user account. The account needs to
+          have no limits on number of results return by LDAP server
+        * the second agent is based on code in eea.userseditor/userdetails.py.
+        It gets access to the createTimestamp attribute
+
+        The problem is that the first user is not able to retrieve the createTimestamp
+        for all users. For those which are retrieved it contains a longer string
+        (has microseconds as well)
+        """
+
+        agent = self._get_ldap_agent(bind=True)
+        unbound_agent = factories.agent_from_uf(self.restrictedTraverse("/acl_users"))
+
+        msgid = agent.conn.search_ext(
+            agent._user_dn_suffix,
+            ldap.SCOPE_ONELEVEL,
+            '(objectClass=organizationalPerson)',
+            attrlist=['*', 'uid', 'createTimestamp', 'modifyTimestamp']
+        )
+
+        all_results = []
+
+        for res_type,result,res_msgid,res_controls in agent.conn.allresults(msgid):
+            for rdn, ldap_obj in result:
+                created = ldap_obj.get('createTimestamp')
+                if not created:
+                    user_info = unbound_agent.user_info(unbound_agent._user_id(rdn))
+                    all_results.append((rdn, user_info))
+                else:
+                    all_results.append((rdn, agent._unpack_user_info(rdn, ldap_obj)))
+
+        stats = {}
+        for dn, rec in all_results:
+            year = rec['createTimestamp'].year
+            if not year in stats:
+                stats[year] = 0
+            stats[year] += 1
+
+        options = {'stats':stats}
+
+        return self._render_template('zpt/statistics.zpt', **options)
+
+
     security.declarePrivate('_find_duplicates')
     def _find_duplicates(self, fname, lname, email):
         """ find similar users """
@@ -339,7 +389,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         lname = REQUEST.form.get('last_name', '')
         email = REQUEST.form.get('email', '')
 
-        duplicate_records = []
+        # duplicate_records = []
 
         if fname and lname and email:
             duplicates_records = self._find_duplicates(fname, lname, email)
@@ -602,7 +652,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
     security.declareProtected(eionet_edit_users, 'bulk_check_email')
     def bulk_check_email(self, REQUEST):
         """ Bulk verify emails for conformance """
-        from ldap import NO_SUCH_OBJECT
+        # from ldap import NO_SUCH_OBJECT
         agent = self._get_ldap_agent()
         emails = []
         form_data = REQUEST.form.get('emails', None)
