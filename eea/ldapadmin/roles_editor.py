@@ -9,7 +9,6 @@ from collections import defaultdict
 from eea import usersdb
 from eea.ldapadmin import ldap_config
 from eea.ldapadmin import roles_leaders
-from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.import_export import generate_excel
 from eea.ldapadmin.ui_common import CommonTemplateLogic
 from eea.ldapadmin.ui_common import SessionMessages, TemplateRenderer
@@ -17,7 +16,6 @@ from eea.ldapadmin.ui_common import get_role_name, roles_list_to_text
 from lxml.builder import E
 from lxml.html import tostring
 from lxml.html.soupparser import fromstring
-from persistent.list import PersistentList
 from persistent.mapping import PersistentMapping
 from string import ascii_lowercase, digits
 import codecs
@@ -27,6 +25,9 @@ import operator
 import query
 import re
 import sys
+
+#from eea.ldapadmin.constants import NETWORK_NAME
+#from persistent.list import PersistentList
 
 try:
     import json
@@ -93,7 +94,8 @@ def filter_roles(agent, pattern):
     """
     out = {}
     for (role_id, attr) in agent.filter_roles(pattern, attrlist=('description',)):
-        members = agent.members_in_role(role_id)
+        #members = agent.members_in_role(role_id)
+        agent.members_in_role(role_id)  # TODO: unused
         # TODO catch individual errors when showing users
         out[role_id] = {
             'users': role_members(agent, role_id)['users'],
@@ -172,7 +174,7 @@ def role_members(agent, role_id, subroles=False, filter_date=None):
 
     roles_to_check = set([role_id])
     if subroles:
-        roles_to_check = set([role_id] + [agent._role_id(x) 
+        roles_to_check = set([role_id] + [agent._role_id(x)
                                         for x in agent._sub_roles(role_id)])
 
     if filter_date:
@@ -187,13 +189,13 @@ def role_members(agent, role_id, subroles=False, filter_date=None):
                 changelog = json.loads(changelog)
             except:
                 changelog = []
-                log.warning("Invalid changelog for user %s", uid)
+                log.warning("Invalid changelog for user %r", rec)
 
             try:
                 user_dn = rec[0]
                 uid     = agent._user_id(user_dn)
             except KeyError:
-                uid = [x.split('=')[1] 
+                uid = [x.split('=')[1]
                         for x in user_dn.split(',') if x.startswith('cn')]
 
             changelog = reversed(changelog) # go by last changes first
@@ -206,14 +208,14 @@ def role_members(agent, role_id, subroles=False, filter_date=None):
 
                 try:
                     if entry_date > filter_date:
-                        if entry['action'] in ['ADDED_TO_ROLE', 
+                        if entry['action'] in ['ADDED_TO_ROLE',
                                                'ADDED_AS_ROLE_OWNER']:
                             role = entry.get('data', {}).get('role')
                             if role in roles_to_check:
                                 extra_users[uid] -= 1
                                 _user_roles[uid].remove(role)
                                 #print "%s -%s" % (uid, role)
-                        if entry['action'] in ["REMOVED_FROM_ROLE", 
+                        if entry['action'] in ["REMOVED_FROM_ROLE",
                                                "REMOVED_AS_ROLE_OWNER"]:
                             role = entry.get('data', {}).get('role')
                             if role in roles_to_check:
@@ -319,9 +321,11 @@ class RolesEditor(Folder):
 
         subroles = agent.role_names_in_role(role_id)
         has_subroles = False
+        subrole_ids = []    # used in permissions for NFP
         for subrole_id in subroles:
             if agent.role_names_in_role(subrole_id):
                 has_subroles = True
+                subrole_ids.append(subrole_id)
 
         user_infos = {} # shared user info-s storage
 
@@ -337,6 +341,17 @@ class RolesEditor(Folder):
         permitted_senders = self._get_permitted_senders_info(mail_info)
         user = REQUEST.AUTHENTICATED_USER
 
+        parent = self.aq_parent
+        nfps = []
+        for gsite in parent.objectValues("Groupware site"):
+            auth_tool = gsite.getAuthenticationTool()
+            for source in auth_tool.getSources():
+                rolemap = source.get_groups_roles_map()
+                info = filter(None, [rolemap.get(rid) for rid in [role_id] + subrole_ids])
+                for entry in info:
+                    if entry not in nfps:
+                        nfps.append(entry)
+
         options = {
             'role_id': role_id,
             'role_name': get_role_name(agent, role_id),
@@ -351,6 +366,7 @@ class RolesEditor(Folder):
             'can_edit_members': self.can_edit_members(role_id, user),
             'can_delete_role': self.can_delete_role(role_id, user),
             'has_subroles': has_subroles,
+            'nfps':nfps,
             'agent': agent
         }
 
@@ -763,7 +779,7 @@ class RolesEditor(Folder):
         if not REQUEST.AUTHENTICATED_USER:
             raise Unauthorized("You are not allowed to manage members in %s" %
                                role_id)
-        output = StringIO()
+        # output = StringIO()
         if subroles:
             filename = "%s_all_members.xls" % str(role_id)
         else:
@@ -778,7 +794,7 @@ class RolesEditor(Folder):
 
         agent = self._get_ldap_agent()
         try:
-            role_info = agent.role_info(role_id)
+            agent.role_info(role_id)
         except usersdb.RoleNotFound:
             REQUEST.RESPONSE.setStatus(404)
             options = {'message': "Role %s does not exist." % role_id}
@@ -1089,8 +1105,8 @@ class RolesEditor(Folder):
     manage_add_query = query.manage_add_query
 
     def _role_parents_stack(self, role_id):
-        return [(role_id, self.absolute_url() + '/?role_id=%s' % role_id)
-                for role_id in _role_parents(role_id)]
+        return [(rid, self.absolute_url() + '/?role_id=%s' % rid)
+                    for rid in _role_parents(role_id)]
 
     def _set_breadcrumbs(self, stack):
         self.REQUEST._roles_editor_crumbs = stack

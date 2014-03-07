@@ -1,14 +1,14 @@
 <div id="role-name">
- <h1 tal:define="name python:(options['role_info']['description'].strip()
-                              or 'Role %s' % options['role_id'])"
-     tal:content="name" class="left-position" />
- <img tal:condition="python:options.get('role_id') and options['can_edit_members']"
-   src="/++resource++eea.ldapadmin-www/edit.gif" id="edit-role-description-arrow" />
+    <h1 tal:define="name python:(options['role_info']['description'].strip()
+        or 'Role %s' % options['role_id'])"
+        tal:content="name" class="left-position" />
+    <img tal:condition="python:options.get('role_id') and options['can_edit_members']"
+        src="/++resource++eea.ldapadmin-www/edit.gif" id="edit-role-description-arrow" />
 </div>
 <div id="role-name-edit" tal:condition="python:options.get('role_id') and options['can_edit_members']">
- <input type="hidden" name="role_id" tal:attributes="value options/role_id" />
- <input type="text" name="role_name" tal:attributes="value options/role_info/description" class="role_name" />
- <input type="submit" name="submit" value="Save" />
+    <input type="hidden" name="role_id" tal:attributes="value options/role_id" />
+    <input type="text" name="role_name" tal:attributes="value options/role_info/description" class="role_name" />
+    <input type="submit" name="submit" value="Save" />
 </div>
 
 <a tal:attributes="href string:mailto:${options/role_id}@roles.eea.eionet.europa.eu"
@@ -50,95 +50,130 @@
 <div class="clear">&nbsp;</div>
 
 <tal:block define="role_id options/role_id;
-           role_name options/role_name;
-           role_names options/role_names;
-           role_members options/role_members;
-           is_authenticated common/is_authenticated">
-  <tal:block condition="role_names">
-  <h2>
-    <tal:block condition="role_id">
-    Sub-roles in <tt tal:content="python:role_name or role_id"/>
-    </tal:block>
-    <tal:block condition="not:role_id">
-    Top Roles
-    </tal:block>
+    role_name options/role_name;
+    role_names options/role_names;
+    role_members options/role_members;
+    is_authenticated common/is_authenticated">
+    <tal:block condition="role_names">
+        <h2>
+            <tal:block condition="role_id">
+                Sub-roles in <tt tal:content="python:role_name or role_id"/>
+            </tal:block>
+            <tal:block condition="not:role_id">
+                Top Roles
+            </tal:block>
 
-    <tal:block condition="options/has_subroles">
-    <a href="javascript:void(0);" id="collapse-all-button" title="Collapse expanded roles" class="help-tooltip">Collapse all</a>
-    <a href="javascript:void(0);" id="expand-all-button" title="Expand roles below to see their sub roles" class="help-tooltip">Expand one level</a>
+            <tal:block condition="options/has_subroles">
+                <a href="javascript:void(0);" id="collapse-all-button" title="Collapse expanded roles" class="help-tooltip">Collapse all</a>
+                <a href="javascript:void(0);" id="expand-all-button" title="Expand roles below to see their sub roles" class="help-tooltip">Expand one level</a>
+            </tal:block>
+        </h2>
+        <table class=""
+            tal:attributes="class python: 'account-datatable sub-roles' if options['has_subroles'] else 'account-datatable sub-roles dataTable';">
+            <thead>
+                <tr>
+                    <td>
+                        Role ID
+                    </td>
+
+                    <td>
+                        Role name
+                    </td>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr tal:repeat="sub_role_id python:sorted(role_names)"
+                    tal:attributes="class python:'odd' if path('repeat/sub_role_id/odd') else 'even'">
+                    <td>
+                        <a tal:attributes="href string:?role_id=${sub_role_id};
+                            class python: 'has-children' if options['agent'].role_names_in_role(sub_role_id) else '';"
+                            tal:content="sub_role_id"></a>
+                    </td>
+                    <td>
+                        <span tal:content="python: role_names[sub_role_id]" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </tal:block>
-  </h2>
-  <table class=""
-        tal:attributes="class python: 'account-datatable sub-roles' if options['has_subroles'] else 'account-datatable sub-roles dataTable';">
-      <thead>
-          <tr>
-              <td>
-                  Role ID
-              </td>
-
-              <td>
-                  Role name
-              </td>
-          </tr>
-      </thead>
-
-      <tbody>
-          <tr tal:repeat="sub_role_id python:sorted(role_names)"
-              tal:attributes="class python:'odd' if path('repeat/sub_role_id/odd') else 'even'">
-              <td>
-                  <a tal:attributes="href string:?role_id=${sub_role_id};
-                                    class python: 'has-children' if options['agent'].role_names_in_role(sub_role_id) else '';"
-                        tal:content="sub_role_id"></a>
-              </td>
-              <td>
-                  <span tal:content="python: role_names[sub_role_id]" />
-              </td>
-          </tr>
-      </tbody>
-  </table>
-  </tal:block>
 
     <h2>Users in <tt tal:content="python:role_name or '[ROOT]'" /></h2>
 
     <tal:block define="users role_members/users; naming python: options.get('naming')">
-      <metal:block use-macro="common/macros/table-user-info" />
+        <metal:block use-macro="common/macros/table-user-info" />
     </tal:block>
 
-  <tal:block condition="python:is_authenticated and options['role_owners']">
-    <h2>Owners of <tt tal:content="python:role_name or '[ROOT]'" /></h2>
+    <tal:block condition="python:is_authenticated and options['role_owners']">
+        <h2>Owners of <tt tal:content="python:role_name or '[ROOT]'" /></h2>
 
-    <tal:block define="users options/role_owners">
-      <metal:block use-macro="common/macros/table-user-info" />
+        <tal:block define="users options/role_owners">
+            <metal:block use-macro="common/macros/table-user-info" />
+        </tal:block>
     </tal:block>
-  </tal:block>
 
-    <tal:block condition="python:common.supports_mailing and is_authenticated and (options['role_info'].get('permittedSender') or options['role_info'].get('permittedPerson'))">
-    <h2>Allowed e-mail senders for <tt tal:condition="not:is_authenticated" tal:content="string:${role_id}@roles.." />
-        <tt tal:condition="is_authenticated" tal:content="string:${role_id}@roles.eea.eionet.europa.eu" /></h2>
-    <ul>
-        <li tal:condition="python:'anyone' in options['role_info'].get('permittedSender')">Anyone</li>
-        <li tal:condition="python:'owners' in options['role_info'].get('permittedSender')">Role owners</li>
-        <li tal:condition="python:'members' in options['role_info'].get('permittedSender')">Role (or subroles) members</li>
-        <tal:block condition="options/permitted_senders">
-            <li tal:repeat="pattern options/permitted_senders/patterns"
-                tal:content="pattern" />
+    <tal:block condition="python:is_authenticated">
+        <h2>Locations where <tt tal:content="python:role_name or '[ROOT]'" /> has permissions</h2>
+        <table class="dataTable">
+            <thead>
+                <tr>
+                    <th>Site</th>
+                    <th>Role</th>
+                    <th>Path</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tal:rep repeat="nfp options/nfps">
+                    <tr tal:repeat="roleinfo nfp">
+                        <td tal:define="site python: roleinfo[1]['ob'].getSite()">
+                            <a href="" 
+                                tal:attributes="href site/absolute_url" 
+                                tal:content="site/title_or_id" />
+                        </td>
+                        <td><span tal:content="python: roleinfo[0]" /></td>
+                        <td tal:define="obj python:roleinfo[1]['ob']">
+                            <a href="" 
+                                tal:attributes="href obj/absolute_url" 
+                                tal:content="python:'/' + roleinfo[1]['path']" />
+                        </td>
+                    </tr>
+                </tal:rep>
+            </tbody>
+        </table>
 
-            <tal:block condition="is_authenticated">
-                <li tal:repeat="email options/permitted_senders/emails"
-                tal:content="email" />
+        <tal:block define="users options/nfps">
+            <!-- <metal:block use&#45;macro="common/macros/table&#45;user&#45;info" /> -->
+        </tal:block>
+    </tal:block>
+
+    <tal:block 
+        condition="python:common.supports_mailing and is_authenticated and (options['role_info'].get('permittedSender') or options['role_info'].get('permittedPerson'))">
+        <h2>Allowed e-mail senders for <tt tal:condition="not:is_authenticated" tal:content="string:${role_id}@roles.." />
+            <tt tal:condition="is_authenticated" tal:content="string:${role_id}@roles.eea.eionet.europa.eu" /></h2>
+        <ul>
+            <li tal:condition="python:'anyone' in options['role_info'].get('permittedSender')">Anyone</li>
+            <li tal:condition="python:'owners' in options['role_info'].get('permittedSender')">Role owners</li>
+            <li tal:condition="python:'members' in options['role_info'].get('permittedSender')">Role (or subroles) members</li>
+            <tal:block condition="options/permitted_senders">
+                <li tal:repeat="pattern options/permitted_senders/patterns"
+                    tal:content="pattern" />
+
+                <tal:block condition="is_authenticated">
+                    <li tal:repeat="email options/permitted_senders/emails"
+                        tal:content="email" />
+                </tal:block>
+                <tal:block condition="not:is_authenticated">
+                    <li tal:condition="options/permitted_senders/emails"
+                        tal:content="python:'%d more email addresses'%len(options['permitted_senders']['emails'])" />
+                </tal:block>
             </tal:block>
-            <tal:block condition="not:is_authenticated">
-                <li tal:condition="options/permitted_senders/emails"
-                    tal:content="python:'%d more email addresses'%len(options['permitted_senders']['emails'])" />
+        </ul>
+        <tal:block condition="options/permitted_persons">
+            <p>Following users have explicit rights of sending emails to role</p>
+            <tal:block define="users options/permitted_persons">
+                <metal:block use-macro="common/macros/table-user-info" />
             </tal:block>
         </tal:block>
-    </ul>
-    <tal:block condition="options/permitted_persons">
-        <p>Following users have explicit rights of sending emails to role</p>
-      <tal:block define="users options/permitted_persons">
-        <metal:block use-macro="common/macros/table-user-info" />
-      </tal:block>
-    </tal:block>
     </tal:block>
 
 </tal:block>
