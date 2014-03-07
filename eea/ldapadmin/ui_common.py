@@ -186,6 +186,10 @@ class CommonTemplateLogic(object):
         """ bool, whether supports role mailing lists """
         return NETWORK_NAME == 'Eionet'
 
+    @property
+    def is_manager(self):
+        return ('Manager' in self.context.REQUEST.AUTHENTICATED_USER.getRoles())
+
 def network_name(self):
     """ E.g. EIONET, SINAnet etc. """
     return NETWORK_NAME

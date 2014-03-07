@@ -1,5 +1,6 @@
 1.4.4 (unreleased)
 ------------------------
+* added a custom description for managers in the password reset tool [dumitval]
 
 1.4.3 (2014-03-07)
 ------------------------
