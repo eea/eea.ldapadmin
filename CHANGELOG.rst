@@ -1,4 +1,7 @@
-1.4.5 (unreleased)
+1.4.6 (unreleased)
+------------------------
+
+1.4.5 (2014-03-07)
 ------------------------
 * make the redirect to password reset also from eionet_profile [dumitval]
 
