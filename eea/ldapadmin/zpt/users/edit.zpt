@@ -5,7 +5,7 @@
   <h2>Operations</h2>
   <ul tal:condition="not:disabled_user">
     <li>
-      <a tal:attributes="href string:${common/base_url}/change_password?id=${options/user/id}"
+    <a tal:attributes="href string:/password-reset?email=${options/user/email}"
           >Change password</a>
     </li>
     <li>

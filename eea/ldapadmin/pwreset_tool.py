@@ -15,6 +15,7 @@ from zope.sendmail.interfaces import IMailDelivery
 
 from eea import usersdb
 import ldap_config
+import query
 from ui_common import load_template, SessionMessages, TemplateRenderer
 from ui_common import CommonTemplateLogic
 from constants import NETWORK_NAME
@@ -113,7 +114,8 @@ class PasswordResetTool(SimpleItem):
     security.declareProtected(view, 'index_html')
     def index_html(self, REQUEST):
         """ view """
-        options = {}
+        email = REQUEST.get('email', '')
+        options = {'email': email}
         return self._render_template('zpt/pwreset_index.zpt', **options)
 
     def _new_token(self, user_id):

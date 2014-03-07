@@ -26,9 +26,6 @@ import query
 import re
 import sys
 
-#from eea.ldapadmin.constants import NETWORK_NAME
-#from persistent.list import PersistentList
-
 try:
     import json
 except ImportError:
@@ -94,7 +91,6 @@ def filter_roles(agent, pattern):
     """
     out = {}
     for (role_id, attr) in agent.filter_roles(pattern, attrlist=('description',)):
-        #members = agent.members_in_role(role_id)
         agent.members_in_role(role_id)  # TODO: unused
         # TODO catch individual errors when showing users
         out[role_id] = {
@@ -779,7 +775,6 @@ class RolesEditor(Folder):
         if not REQUEST.AUTHENTICATED_USER:
             raise Unauthorized("You are not allowed to manage members in %s" %
                                role_id)
-        # output = StringIO()
         if subroles:
             filename = "%s_all_members.xls" % str(role_id)
         else:
@@ -1140,3 +1135,4 @@ def extend_crumbs(crumbs_html, editor_url, extra_crumbs):
     last_crumb.text = last_crumb_text
 
     return tostring(crumbs)
+

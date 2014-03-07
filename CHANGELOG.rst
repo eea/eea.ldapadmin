@@ -1,5 +1,6 @@
 1.4.3 (unreleased)
 ------------------------
+* redirect to password reset when changing user password [dumitval]
 * Feature: have a statistics page to report number of users created per year
   [tiberich #18676]
 * WIP: Feature: show where a group role is granted in all NFPs

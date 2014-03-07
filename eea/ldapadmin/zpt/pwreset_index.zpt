@@ -18,7 +18,8 @@ will receive an e-mail message with a private link.</p>
       </td>
       <td>
         <input name="email:utf8:ustring" type="text" size="50"
-               class="text-input">
+               class="text-input"
+               tal:attributes="value options/email">
       </td>
     </tr>
 
