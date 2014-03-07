@@ -1,4 +1,7 @@
-1.4.3 (unreleased)
+1.4.4 (unreleased)
+------------------------
+
+1.4.3 (2014-03-07)
 ------------------------
 * redirect to password reset when changing user password [dumitval]
 * Feature: have a statistics page to report number of users created per year
