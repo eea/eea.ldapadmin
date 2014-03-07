@@ -5,8 +5,8 @@
   <h2>Operations</h2>
   <ul>
     <li>
-      <a tal:attributes="href string:${common/base_url}/change_password?id=${options/user/id}"
-          >Change password</a>
+    <a tal:attributes="href string:/password-reset?email=${options/user/email}"
+          >Reset password</a>
     </li>
     <li>
       <a tal:attributes="href string:eionet_profile?id=${options/user/id}"
