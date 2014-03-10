@@ -21,13 +21,13 @@
   <div class="search-form">
     <form name="search-form">
       <label for="search-query">
-        Name of user:
+          Search for:
       </label>
       <input type="search" name="name:ustring:utf8" id="search-query"
              class="text-input medium"
              tal:attributes="value options/search_name|string:"/>
       <label for="lookup">
-        search in
+        in
       </label>
       <select id="lookup" name="lookup:list:utf8:ustring" class="select-box">
         <option tal:attributes="selected python:('all' in options['lookup'] or not options['lookup']) and 'selected' or ''"
