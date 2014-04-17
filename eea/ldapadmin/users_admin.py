@@ -31,6 +31,7 @@ import os
 import random
 import re
 import sqlite3
+import string
 
 try:
     import simplejson as json
@@ -55,6 +56,22 @@ password_letters = '23456789ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
 
 def generate_password():
     return ''.join(random.choice(password_letters) for n in range(8))
+
+def generate_user_id(first_name, last_name, agent, id_list):
+    min_first_length = min(first_name, 3)
+    uid1 = last_name[:8-min_first_length]
+    uid2 = first_name[:8-len(uid1)]
+    base_uid = (uid1+uid2).lower()
+    for i in range(8):
+        for letter in string.lowercase:
+            new_uid = base_uid[:8-i-1] + letter + base_uid[8-i:]
+            if not(list(agent.existing_usernames([new_uid])) or new_uid in id_list):
+                return new_uid
+
+def process_url(url):
+    if url and not (url.startswith('http://') or url.startswith('https://')):
+        return 'http://'+url
+    return url
 
 eionet_edit_users = 'Eionet edit users'
 
@@ -701,6 +718,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
     def bulk_create_user_action(self, data=None, REQUEST=None):
         """ view """
         errors = []
+        file_errors = []
         successfully_imported = []
         try:
             reader = UnicodeReader(data)
@@ -709,12 +727,14 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 assert isinstance(header, list)
                 assert len(header) == 12
             except StopIteration:
-                errors.append('Invalid CSV file')
+                file_errors.append('Invalid CSV file')
                 reader = []
 
             users_data = []
             user_form = deform.Form(user_info_add_schema)
+            agent = self._get_ldap_agent(bind=True)
 
+            id_list = []
             for record_number, row in enumerate(reader):
                 try:
                     properties = {}
@@ -725,10 +745,18 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 except Exception, e:
                     msg = ('Error while importing from CSV, row ${record_number}: ${error}',
                            {'record_number': record_number+1, 'error': str(e)})
-                    errors.append(msg)
+                    file_errors.append(msg)
                 else:
                     # CSV Record read without errors
                     row_data = csv_headers_to_object(properties)
+                    if not row_data['password']:
+                        row_data['password'] = generate_password()
+                    if not row_data['id']:
+                        row_data['id'] = generate_user_id(row_data['first_name'],
+                                                          row_data['last_name'],
+                                                          agent, id_list)
+                    id_list.append(row_data['id'])
+                    row_data['url'] = process_url(row_data['url'])
                     try:
                         user_info = user_form.validate(row_data.items())
                     except deform.ValidationFailure, e:
@@ -739,8 +767,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                         users_data.append(user_info)
 
             # cycled every object and stored them in users_data
-            if not errors:
-                agent = self._get_ldap_agent(bind=True)
+            if not file_errors:
                 emails = [x['email'] for x in users_data]
                 usernames = [x['id'] for x in users_data]
                 if len(emails) != len(set(emails)):
@@ -749,22 +776,28 @@ class UsersAdmin(SimpleItem, PropertyManager):
                         if occourences > 1:
                             errors.append('Duplicate email: %s appears %d times'
                                           % (email, occourences))
+                            users_data = filter(lambda x: x['email'] != email, users_data)
                 if len(usernames) != len(set(usernames)):
                     for username in set(usernames):
                         occourences = usernames.count(username)
                         if occourences > 1:
                             errors.append('Duplicate user ID: %s appears %d times'
                                           % (username, occourences))
-                existing_emails = list(agent.existing_emails(list(set(emails))))
-                existing_users = list(agent.existing_usernames(list(set(usernames))))
+                            users_data = filter(lambda x: x['id'] != username, users_data)
+                existing_emails = set(agent.existing_emails(list(set(emails))))
+                existing_users = set(agent.existing_usernames(list(set(usernames))))
                 if existing_emails:
                     errors.append("The following emails are already in database"
                                   + ": " + ', '.join(existing_emails))
+                    for email in existing_emails:
+                        users_data = filter(lambda x: x['email'] != email, users_data)
                 if existing_users:
                     errors.append("The following user IDs are already registered"
                                   + ": " + ', '.join(existing_users))
-                if not errors:
-                    # Everything clean, do the job
+                    for username in existing_users:
+                        users_data = filter(lambda x: x['id'] != username, users_data)
+                if users_data:
+                    # do the job for the users with no errors
                     for user_info in users_data:
                         user_id = user_info['id']
                         try:
@@ -777,12 +810,13 @@ class UsersAdmin(SimpleItem, PropertyManager):
         except UnicodeDecodeError, e:
             errors.append('CSV file is not utf-8 encoded')
 
+        errors.extend(file_errors)
         if errors:
             for err in errors:
                 _set_session_message(REQUEST, 'error', err)
         if successfully_imported:
             _set_session_message(REQUEST, 'info',
-                '%s user(s) successfully created.' % len(successfully_imported))
+                'User(s) %s successfully created.' % ', '.join(successfully_imported))
             logged_in = logged_in_user(REQUEST)
             for user_id in successfully_imported:
                 log.info("%s CREATED USER %s", logged_in, user_id)
@@ -811,6 +845,5 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 return json.dumps(eionet_profile.get_endpoint_data(service,
                                                                    userid))
         return json.dumps({})
-
 
 InitializeClass(UsersAdmin)

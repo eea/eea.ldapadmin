@@ -1,5 +1,6 @@
 1.4.6 (unreleased)
 ------------------------
+* Update bulk_create_user (new mandatory fields, import valid rows) [dumitval]
 * Label changes ("Name of user" --> "Search for") [dumitval]
 
 1.4.5 (2014-03-07)
