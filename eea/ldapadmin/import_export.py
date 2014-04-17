@@ -2,12 +2,31 @@ import codecs
 import csv
 import xlwt
 import logging
+import urllib
 from StringIO import StringIO
 
 logger = logging.getLogger(__name__)
 
 
-def csv_headers_to_object(properties):
+def attachment_header(filename):
+    assert isinstance(filename, str)
+    try:
+        filename.decode('ascii')
+    except UnicodeDecodeError:
+        value = "filename*=UTF-8''%s" % urllib.quote(filename)
+    else:
+        value = "filename=%s" % urllib.quote(filename)
+    return "attachment; " + value
+
+def set_response_attachment(RESPONSE, filename, content_type, length=None):
+    RESPONSE.setHeader('Content-Type', content_type)
+    if length is not None:
+        RESPONSE.setHeader('Content-Length', length)
+    RESPONSE.setHeader('Pragma', 'public')
+    RESPONSE.setHeader('Cache-Control', 'max-age=0')
+    RESPONSE.setHeader('Content-Disposition', attachment_header(filename))
+
+def excel_headers_to_object(properties):
     """ Converts row data to object, according to header keys """
     # main purpose is to save code lines in logic
     return {
@@ -24,78 +43,6 @@ def csv_headers_to_object(properties):
             'fax': properties.get('fax number'),
             'organisation': properties.get('organisation')
     }
-
-def generate_csv(header, rows):
-    output = StringIO()
-    csv_writer = csv.writer(output)
-
-    csv_writer.writerow(header)
-    for item in rows:
-        csv_writer.writerow([value.encode('utf-8') for value in item])
-
-    return codecs.BOM_UTF8 + output.getvalue()
-
-class UTF8Recoder(object):
-    """
-    Iterator that reads an encoded stream and reencodes the input to UTF-8
-
-    """
-    def __init__(self, f, encoding):
-        self.reader = codecs.getreader(encoding)(f)
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        return self.reader.next().encode("utf-8")
-
-
-class UnicodeReader(object):
-    """
-    A CSV reader which will iterate over lines in the CSV file "f",
-    which is encoded in the given encoding.
-
-    """
-
-    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
-        f = UTF8Recoder(f, encoding)
-        self.reader = csv.reader(f, dialect=dialect, **kwds)
-
-    def next(self):
-        row = self.reader.next()
-        return [unicode(s, "utf-8") for s in row]
-
-    def __iter__(self):
-        return self
-
-
-class CSVReader(object):
-    """ Manipulate CSV files """
-
-    def __init__(self, file, dialect, encoding):
-        """ """
-        if dialect == 'comma':
-            dialect=csv.excel
-        elif dialect == 'tab':
-            dialect=csv.excel_tab
-        else:
-            dialect=csv.excel
-        self.csv = UnicodeReader(file, dialect, encoding)
-
-    def read(self):
-        """ return the content of the file """
-        try:
-            header = self.csv.next()
-            output = []
-            for values in self.csv:
-                buf = {}
-                for field, value in zip(header, values):
-                    buf[field.encode('utf-8')] = value.encode('utf-8')
-                output.append(buf)
-            return (output, '')
-        except Exception, ex:
-            logger.exception('Read error')
-            return (None, ex)
 
 def generate_excel(header, rows):
     style = xlwt.XFStyle()

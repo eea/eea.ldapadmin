@@ -13,7 +13,8 @@ from eea.ldapadmin.help_messages import help_messages
 from eea.ldapadmin.logic_common import _session_pop
 from eea.usersdb import factories
 from email.mime.text import MIMEText
-from import_export import UnicodeReader, csv_headers_to_object
+from import_export import (excel_headers_to_object, generate_excel,
+                           set_response_attachment)
 from persistent.mapping import PersistentMapping
 from ui_common import CommonTemplateLogic   #load_template,
 from ui_common import SessionMessages, TemplateRenderer
@@ -32,6 +33,7 @@ import random
 import re
 import sqlite3
 import string
+import xlrd
 
 try:
     import simplejson as json
@@ -51,6 +53,9 @@ user_info_edit_schema['postal_address'].widget = deform.widget.TextAreaWidget()
 
 CONFIG = getConfiguration()
 FORUM_URL = getattr(CONFIG, 'environment', {}).get('FORUM_URL', '')
+TEMPLATE_COLUMNS = ["User ID*","Password*","First Name*","Last Name*","E-mail*",
+           "Job Title","URL","Postal Address","Telephone Number",
+           "Mobile Telephone Number","Fax Number","Organisation"]
 
 password_letters = '23456789ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
 
@@ -705,14 +710,19 @@ class UsersAdmin(SimpleItem, PropertyManager):
         """ upload view """
         return self._render_template('zpt/users/bulk_create.zpt')
 
-    security.declareProtected(eionet_edit_users, 'download_csv_template')
-    def download_csv_template(self, REQUEST):
-        """ Force download of csv """
-        REQUEST.RESPONSE.setHeader('Content-Disposition',
-                                "attachment;filename=create_users_template.csv")
-        path = os.path.join(os.path.dirname(__file__),
-                            'www/create_users_template.csv')
-        return open(path).read()
+    security.declareProtected(eionet_edit_users, 'download_template')
+    def download_template(self, REQUEST):
+        """ Force download of excel template """
+
+        ret = generate_excel(TEMPLATE_COLUMNS, [[]])
+        content_type = 'application/vnd.ms-excel'
+        filename = 'create_users_template.xls'
+
+        set_response_attachment(REQUEST.RESPONSE, filename, content_type,
+                                len(ret))
+
+        return ret
+
 
     security.declareProtected(eionet_edit_users, 'bulk_create_user_action')
     def bulk_create_user_action(self, data=None, REQUEST=None):
@@ -720,95 +730,87 @@ class UsersAdmin(SimpleItem, PropertyManager):
         errors = []
         file_errors = []
         successfully_imported = []
+
+
         try:
-            reader = UnicodeReader(data)
-            try:
-                header = reader.next()
-                assert isinstance(header, list)
-                assert len(header) == 12
-            except StopIteration:
-                file_errors.append('Invalid CSV file')
-                reader = []
+            wb = xlrd.open_workbook(file_contents=data.read())
+            ws = wb.sheets()[0]
+            header = ws.row_values(0)
+            assert len(header) == len(TEMPLATE_COLUMNS)
+            rows = []
+            for i in range(ws.nrows)[1:]:
+                rows.append(ws.row_values(i))
 
             users_data = []
             user_form = deform.Form(user_info_add_schema)
             agent = self._get_ldap_agent(bind=True)
 
             id_list = []
-            for record_number, row in enumerate(reader):
+            for record_number, row in enumerate(rows):
+                properties = {}
+                for column, value in zip(header, row):
+                    properties[column.lower()] = value
+                row_data = excel_headers_to_object(properties)
+                if not row_data['password']:
+                    row_data['password'] = generate_password()
+                if not row_data['id']:
+                    row_data['id'] = generate_user_id(row_data['first_name'],
+                                                      row_data['last_name'],
+                                                      agent, id_list)
+                id_list.append(row_data['id'])
+                row_data['url'] = process_url(row_data['url'])
                 try:
-                    properties = {}
-                    for column, value in zip(header, row):
-                        properties[column.lower()] = value
-                except UnicodeDecodeError, e:
-                    raise
-                except Exception, e:
-                    msg = ('Error while importing from CSV, row ${record_number}: ${error}',
-                           {'record_number': record_number+1, 'error': str(e)})
-                    file_errors.append(msg)
+                    user_info = user_form.validate(row_data.items())
+                except deform.ValidationFailure, e:
+                    for field_error in e.error.children:
+                        errors.append('%s at row %d: %s' %
+                                      (field_error.node.name, record_number+1, field_error.msg))
                 else:
-                    # CSV Record read without errors
-                    row_data = csv_headers_to_object(properties)
-                    if not row_data['password']:
-                        row_data['password'] = generate_password()
-                    if not row_data['id']:
-                        row_data['id'] = generate_user_id(row_data['first_name'],
-                                                          row_data['last_name'],
-                                                          agent, id_list)
-                    id_list.append(row_data['id'])
-                    row_data['url'] = process_url(row_data['url'])
-                    try:
-                        user_info = user_form.validate(row_data.items())
-                    except deform.ValidationFailure, e:
-                        for field_error in e.error.children:
-                            errors.append('%s at row %d: %s' %
-                                          (field_error.node.name, record_number+1, field_error.msg))
-                    else:
-                        users_data.append(user_info)
+                    users_data.append(user_info)
 
-            # cycled every object and stored them in users_data
-            if not file_errors:
-                emails = [x['email'] for x in users_data]
-                usernames = [x['id'] for x in users_data]
-                if len(emails) != len(set(emails)):
-                    for email in set(emails):
-                        occourences = emails.count(email)
-                        if occourences > 1:
-                            errors.append('Duplicate email: %s appears %d times'
-                                          % (email, occourences))
-                            users_data = filter(lambda x: x['email'] != email, users_data)
-                if len(usernames) != len(set(usernames)):
-                    for username in set(usernames):
-                        occourences = usernames.count(username)
-                        if occourences > 1:
-                            errors.append('Duplicate user ID: %s appears %d times'
-                                          % (username, occourences))
-                            users_data = filter(lambda x: x['id'] != username, users_data)
-                existing_emails = set(agent.existing_emails(list(set(emails))))
-                existing_users = set(agent.existing_usernames(list(set(usernames))))
-                if existing_emails:
-                    errors.append("The following emails are already in database"
-                                  + ": " + ', '.join(existing_emails))
-                    for email in existing_emails:
+        except xlrd.XLRDError:
+            file_errors.append('Invalid Excel file')
+
+        # cycled every object and stored them in users_data
+        if not file_errors:
+            emails = [x['email'] for x in users_data]
+            usernames = [x['id'] for x in users_data]
+            if len(emails) != len(set(emails)):
+                for email in set(emails):
+                    occourences = emails.count(email)
+                    if occourences > 1:
+                        errors.append('Duplicate email: %s appears %d times'
+                                      % (email, occourences))
                         users_data = filter(lambda x: x['email'] != email, users_data)
-                if existing_users:
-                    errors.append("The following user IDs are already registered"
-                                  + ": " + ', '.join(existing_users))
-                    for username in existing_users:
+            if len(usernames) != len(set(usernames)):
+                for username in set(usernames):
+                    occourences = usernames.count(username)
+                    if occourences > 1:
+                        errors.append('Duplicate user ID: %s appears %d times'
+                                      % (username, occourences))
                         users_data = filter(lambda x: x['id'] != username, users_data)
-                if users_data:
-                    # do the job for the users with no errors
-                    for user_info in users_data:
-                        user_id = user_info['id']
-                        try:
-                            self._create_user(agent, user_info)
-                        except Exception:
-                            errors.append("Error creating %s user" % user_id)
-                        else:
-                            successfully_imported.append(user_id)
-
-        except UnicodeDecodeError, e:
-            errors.append('CSV file is not utf-8 encoded')
+            existing_emails = set(agent.existing_emails(list(set(emails))))
+            existing_users = set(agent.existing_usernames(list(set(usernames))))
+            if existing_emails:
+                errors.append("The following emails are already in database"
+                              + ": " + ', '.join(existing_emails))
+                for email in existing_emails:
+                    users_data = filter(lambda x: x['email'] != email, users_data)
+            if existing_users:
+                errors.append("The following user IDs are already registered"
+                              + ": " + ', '.join(existing_users))
+                for username in existing_users:
+                    users_data = filter(lambda x: x['id'] != username, users_data)
+            if users_data:
+                # do the job for the users with no errors
+                for user_info in users_data:
+                    user_id = user_info['id']
+                    try:
+                        self._create_user(agent, user_info)
+                    except Exception:
+                        errors.append("Error creating %s user" % user_id)
+                    else:
+                        successfully_imported.append(user_id)
 
         errors.extend(file_errors)
         if errors:

@@ -1,5 +1,7 @@
 1.4.6 (unreleased)
 ------------------------
+* Use Excel format for bulk_create_user [dumitval]
+* removed csv export functionality [dumitval]
 * Update bulk_create_user (new mandatory fields, import valid rows) [dumitval]
 * Label changes ("Name of user" --> "Search for") [dumitval]
 
