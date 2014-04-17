@@ -1,4 +1,7 @@
-1.4.6 (unreleased)
+1.4.7 (unreleased)
+------------------------
+
+1.4.6 (2014-04-17)
 ------------------------
 * Use Excel format for bulk_create_user [dumitval]
 * removed csv export functionality [dumitval]
