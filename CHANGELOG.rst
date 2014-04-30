@@ -1,5 +1,6 @@
 1.4.7 (unreleased)
 ------------------------
+* Changed wording in the password reset form (Recover --> Reset) [dumitval]
 
 1.4.6 (2014-04-17)
 ------------------------
