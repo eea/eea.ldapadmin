@@ -1,4 +1,7 @@
-1.4.8 (unreleased)
+1.4.9 (unreleased)
+------------------------
+
+1.4.8 (2014-05-20)
 ------------------------
 * bugfix in email sending [dumitval]
 
