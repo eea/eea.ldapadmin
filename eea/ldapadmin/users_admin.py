@@ -387,7 +387,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 self._create_user(agent, user_info)
 
                 send_confirmation = 'send_confirmation' in form_data.keys()
-                self.send_emails(user_info, user_id,
+                self.send_emails(user_info, user_id, form_data['password'],
                                  send_confirmation=send_confirmation)
 
                 when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -843,6 +843,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                         errors.append("Error creating %s user" % user_id)
                     else:
                         self.send_emails(user_info, user_id,
+                                         user_info['password'],
                                          send_confirmation=True)
                         successfully_imported.append(user_id)
 
@@ -885,7 +886,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
                                                                    userid))
         return json.dumps({})
 
-    def send_emails(self, user_info, user_id, send_confirmation=True):
+    def send_emails(self, user_info, user_id, user_password,
+                    send_confirmation=True):
         """ Sends confirmation and password email """
         addr_from = "no-reply@eea.europa.eu"
         addr_to = user_info['email']
@@ -901,7 +903,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
             _send_email(addr_from, addr_to, message)
 
         email_password_body = self.email_password(user_info['first_name'],
-                                                  user_info['password'])
+                                                  user_password)
         message['Subject'] = "%s Account password" % NETWORK_NAME
         message.set_payload(email_password_body.encode('utf-8'),
                             charset='utf-8')
