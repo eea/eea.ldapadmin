@@ -1,4 +1,7 @@
-1.4.7 (unreleased)
+1.4.8 (unreleased)
+------------------------
+
+1.4.7 (2014-05-20)
 ------------------------
 * Send confirmation and password emails on bulk user creation [dumitval]
 * Changed wording in the password reset form (Recover --> Reset) [dumitval]
