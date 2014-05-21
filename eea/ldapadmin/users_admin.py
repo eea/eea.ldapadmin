@@ -334,11 +334,17 @@ class UsersAdmin(SimpleItem, PropertyManager):
         Creates user in ldap using user_info (data already validated)
 
         """
+        # remove id and password from user_info, so these will not
+        # appear as properties on the user
         user_id = str(user_info.pop('id'))
         password = str(user_info.pop('password'))
         agent._update_full_name(user_info)
         agent.create_user(user_id, user_info)
         agent.set_user_password(user_id, None, password)
+        # put id and password back on user_info, for further processing
+        # (mainly sending of email)
+        user_info['id'] = user_id
+        user_info['password'] = password
         return user_id
 
     security.declareProtected(eionet_edit_users, 'confirmation_email')
@@ -387,7 +393,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 self._create_user(agent, user_info)
 
                 send_confirmation = 'send_confirmation' in form_data.keys()
-                self.send_emails(user_info, user_id, form_data['password'],
+                self.send_emails(user_info,
                                  send_confirmation=send_confirmation)
 
                 when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -843,9 +849,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                     except Exception:
                         errors.append("Error creating %s user" % user_id)
                     else:
-                        self.send_emails(user_info, user_id,
-                                         user_info['password'],
-                                         send_confirmation=True)
+                        self.send_emails(user_info, send_confirmation=True)
                         successfully_imported.append(user_id)
 
         errors.extend(file_errors)
@@ -887,8 +891,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                                                                    userid))
         return json.dumps({})
 
-    def send_emails(self, user_info, user_id, user_password,
-                    send_confirmation=True):
+    def send_emails(self, user_info, send_confirmation=True):
         """ Sends confirmation and password email """
         addr_from = "no-reply@eea.europa.eu"
         addr_to = user_info['email']
@@ -897,14 +900,15 @@ class UsersAdmin(SimpleItem, PropertyManager):
         message['To'] = addr_to
 
         if send_confirmation:
-            body = self.confirmation_email(user_info['first_name'], user_id)
+            body = self.confirmation_email(user_info['first_name'],
+                                           user_info['id'])
             message['Subject'] = "%s Account `%s` Created" % (
-                NETWORK_NAME, user_id)
+                NETWORK_NAME, user_info['id'])
             message.set_payload(body.encode('utf-8'), charset='utf-8')
             _send_email(addr_from, addr_to, message)
 
         email_password_body = self.email_password(user_info['first_name'],
-                                                  user_password)
+                                                  user_info['password'])
         message['Subject'] = "%s Account password" % NETWORK_NAME
         message.set_payload(email_password_body.encode('utf-8'),
                             charset='utf-8')
