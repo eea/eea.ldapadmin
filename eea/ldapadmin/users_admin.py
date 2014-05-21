@@ -787,6 +787,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 row_data['url'] = process_url(row_data['url'])
                 try:
                     user_info = user_form.validate(row_data.items())
+                    user_info['password'] = row_data['password']
                 except deform.ValidationFailure, e:
                     for field_error in e.error.children:
                         errors.append('%s at row %d: %s' %
