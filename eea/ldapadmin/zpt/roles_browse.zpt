@@ -112,7 +112,7 @@
         </tal:block>
     </tal:block>
 
-    <tal:block condition="python:is_authenticated">
+    <tal:block condition="python:is_authenticated and options['can_edit']">
         <h2>Locations where <tt tal:content="python:role_name or '[ROOT]'" /> has permissions</h2>
         <table class="dataTable">
             <thead>
@@ -123,8 +123,8 @@
                 </tr>
             </thead>
             <tbody>
-                <tal:rep repeat="nfp options/nfps">
-                    <tr tal:repeat="roleinfo nfp">
+                <tal:rep repeat="location options/locations">
+                    <tr tal:repeat="roleinfo location">
                         <td tal:define="site python: roleinfo[1]['ob'].getSite()">
                             <a href="" 
                                 tal:attributes="href site/absolute_url" 
@@ -141,7 +141,7 @@
             </tbody>
         </table>
 
-        <tal:block define="users options/nfps">
+        <tal:block define="users options/locations">
             <!-- <metal:block use&#45;macro="common/macros/table&#45;user&#45;info" /> -->
         </tal:block>
     </tal:block>

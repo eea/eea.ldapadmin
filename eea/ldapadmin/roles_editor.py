@@ -337,16 +337,16 @@ class RolesEditor(Folder):
         permitted_senders = self._get_permitted_senders_info(mail_info)
         user = REQUEST.AUTHENTICATED_USER
 
-        parent = self.aq_parent
-        nfps = []
+        parent = self.getPhysicalRoot()
+        locations = []
         for gsite in parent.objectValues("Groupware site"):
             auth_tool = gsite.getAuthenticationTool()
             for source in auth_tool.getSources():
                 rolemap = source.get_groups_roles_map()
                 info = filter(None, [rolemap.get(rid) for rid in [role_id] + subrole_ids])
                 for entry in info:
-                    if entry not in nfps:
-                        nfps.append(entry)
+                    if entry not in locations:
+                        locations.append(entry)
 
         options = {
             'role_id': role_id,
@@ -362,7 +362,7 @@ class RolesEditor(Folder):
             'can_edit_members': self.can_edit_members(role_id, user),
             'can_delete_role': self.can_delete_role(role_id, user),
             'has_subroles': has_subroles,
-            'nfps':nfps,
+            'locations':locations,
             'agent': agent
         }
 
