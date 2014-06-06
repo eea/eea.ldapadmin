@@ -1,4 +1,4 @@
-1.4.10 (unreleased)
+1.4.10 (2014-06-04)
 ------------------------
 * Bug fix: look in zodb root for Groupware sites, to show where the role is being used
   [tiberich #19234]
