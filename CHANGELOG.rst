@@ -1,3 +1,8 @@
+1.4.11 (2014-06-06)
+------------------------
+* Bug fix: show the full path for a location where role has permission, in the roles overview
+  [tiberich #19234]
+
 1.4.10 (2014-06-04)
 ------------------------
 * Bug fix: look in zodb root for Groupware sites, to show where the role is being used
