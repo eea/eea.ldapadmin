@@ -132,7 +132,6 @@
                         </td>
                         <td><span tal:content="python: roleinfo[0]" /></td>
                         <td tal:define="obj python:roleinfo[1]['ob']">
-                            <div tal:content="roleinfo" />
                             <a href="" 
                                 tal:attributes="href obj/absolute_url" 
                                 tal:content="python:'/'.join(obj.getPhysicalPath())"/>
