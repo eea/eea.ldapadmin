@@ -1,4 +1,7 @@
-1.4.12 (unreleased)
+1.4.13 (unreleased)
+------------------------
+
+1.4.12 (2014-06-18)
 ------------------------
 * Bugfix in Excel generation (added Windows-style new-line characters) [dumitval]
 
