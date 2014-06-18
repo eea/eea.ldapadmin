@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='eea.ldapadmin',
-      version='1.4.11',
+      version='1.4.12',
       author='Eau de Web',
       author_email='office@eaudeweb.ro',
       packages=find_packages(),
@@ -21,8 +21,9 @@ setup(name='eea.ldapadmin',
                         'sparql-client',
                         ],
       entry_points={'console_scripts':
-          ['dump_ldap = eea.ldapadmin.ldapdump:dump_ldap',
-           'update_countries = eea.ldapadmin.countries:update_countries',
-           ]
-      },
-)
+                    ['dump_ldap = eea.ldapadmin.ldapdump:dump_ldap',
+                     'update_countries = \
+                        eea.ldapadmin.countries:update_countries',
+                     ]
+                    },
+      )

@@ -1,3 +1,7 @@
+1.4.12 (unreleased)
+------------------------
+* Bugfix in Excel generation (added Windows-style new-line characters) [dumitval]
+
 1.4.11 (2014-06-06)
 ------------------------
 * Bug fix: show the full path for a location where role has permission, in the roles overview
