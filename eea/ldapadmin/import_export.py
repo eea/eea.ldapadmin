@@ -1,5 +1,3 @@
-import codecs
-import csv
 import xlwt
 import logging
 import urllib
@@ -18,6 +16,7 @@ def attachment_header(filename):
         value = "filename=%s" % urllib.quote(filename)
     return "attachment; " + value
 
+
 def set_response_attachment(RESPONSE, filename, content_type, length=None):
     RESPONSE.setHeader('Content-Type', content_type)
     if length is not None:
@@ -26,26 +25,30 @@ def set_response_attachment(RESPONSE, filename, content_type, length=None):
     RESPONSE.setHeader('Cache-Control', 'max-age=0')
     RESPONSE.setHeader('Content-Disposition', attachment_header(filename))
 
+
 def excel_headers_to_object(properties):
     """ Converts row data to object, according to header keys """
     # main purpose is to save code lines in logic
     return {
-            'id': properties.get('user id*'),
-            'password': str(properties.get('password*')),
-            'email': properties.get('e-mail*'),
-            'first_name': properties.get('first name*'),
-            'last_name': properties.get('last name*'),
-            'job_title': properties.get('job title'),
-            'url': properties.get('url'),
-            'postal_address': properties.get('postal address'),
-            'phone': properties.get('telephone number'),
-            'mobile': properties.get('mobile telephone number'),
-            'fax': properties.get('fax number'),
-            'organisation': properties.get('organisation')
+        'id': properties.get('user id*'),
+        'password': str(properties.get('password*')),
+        'email': properties.get('e-mail*'),
+        'first_name': properties.get('first name*'),
+        'last_name': properties.get('last name*'),
+        'job_title': properties.get('job title'),
+        'url': properties.get('url'),
+        'postal_address': properties.get('postal address'),
+        'phone': properties.get('telephone number'),
+        'mobile': properties.get('mobile telephone number'),
+        'fax': properties.get('fax number'),
+        'organisation': properties.get('organisation')
     }
+
 
 def generate_excel(header, rows):
     style = xlwt.XFStyle()
+    wrapstyle = xlwt.XFStyle()
+    wrapstyle.alignment.wrap = 1
     normalfont = xlwt.Font()
     headerfont = xlwt.Font()
     headerfont.bold = True
@@ -55,12 +58,17 @@ def generate_excel(header, rows):
     ws = wb.add_sheet('Sheet 1')
     row = 0
     for col in range(0, len(header)):
+        ws.col(col).width = 256 * 50
+    for col in range(0, len(header)):
         ws.row(row).set_cell_text(col, header[col], style)
     style.font = normalfont
     for item in rows:
         row += 1
         for col in range(0, len(item)):
-            ws.row(row).set_cell_text(col, item[col], style)
+            if '\n' in item[col]:
+                ws.row(row).set_cell_text(col, item[col], wrapstyle)
+            else:
+                ws.row(row).set_cell_text(col, item[col], style)
     output = StringIO()
     wb.save(output)
     return output.getvalue()

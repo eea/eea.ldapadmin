@@ -838,7 +838,7 @@ class RolesEditor(Folder):
                    usr['phone'], usr['fax'], usr['postal_address'],
                    usr['organisation']]
             if subroles:
-                row.insert(0, '\r\n'.join(usr['roles']))
+                row.insert(0, '\n'.join(usr['roles']))
             rows.append([value.encode('utf-8') for value in row])
 
         return generate_excel(header, rows)
@@ -917,8 +917,8 @@ class RolesEditor(Folder):
                                role_id)
         agent = self._get_ldap_agent()
         data = agent.mail_group_info(role_id)
-        data['emails'] = '\r\n'.join([e for e in data['permittedSender']
-                                      if '@' in e])
+        data['emails'] = '\n'.join([e for e in data['permittedSender']
+                                    if '@' in e])
         options = {'role_id': role_id, 'data': data, 'user_info': {}}
         for user in data['permittedPerson']:
             try:

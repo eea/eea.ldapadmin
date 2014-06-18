@@ -1,5 +1,6 @@
 1.4.13 (unreleased)
 ------------------------
+* Changed style in Excel generation (again for newline display) [dumitval]
 
 1.4.12 (2014-06-18)
 ------------------------
