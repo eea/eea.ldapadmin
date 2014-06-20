@@ -1,4 +1,7 @@
-1.4.16 (unreleased)
+1.4.17 (unreleased)
+------------------------
+
+1.4.16 (2014-06-20)
 ------------------------
 * added expiration time information in the password reset email [dumitval]
 * refraze confirmation email [dumitval]
