@@ -1,3 +1,7 @@
+1.4.15 (unreleased)
+------------------------
+* adapted the email templates (confirmation and password reset) [dumitval]
+
 1.4.14 (2014-06-20)
 ------------------------
 * Auto-send reset password email to new users [dumitval]

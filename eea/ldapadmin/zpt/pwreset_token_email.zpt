@@ -1,7 +1,7 @@
-This is an automated message to help you recover the <span tal:replace="options/network_name" /> account password
+This is an automated message to help you reset the <span tal:replace="options/network_name" /> account password
 for user <tal:block content="options/user_info/id"/>. It was sent by the page at
 <tal:block content="options/context/absolute_url"/>.
-If you did not request a password reset you may safely ignore this message.
+If you do not need to reset your password, you may safely ignore this message.
 
-Please access the following page in order to reset your password:
+Please access the following link in order to reset your password:
 <tal:block content="options/token_url"/>
