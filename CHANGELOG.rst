@@ -1,4 +1,7 @@
-1.4.15 (unreleased)
+1.4.16 (unreleased)
+------------------------
+
+1.4.15 (2014-06-20)
 ------------------------
 * adapted the email templates (confirmation and password reset) [dumitval]
 
