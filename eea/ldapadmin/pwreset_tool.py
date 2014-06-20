@@ -134,11 +134,13 @@ class PasswordResetTool(SimpleItem):
     def _send_token_email(self, addr_to, token, user_info):
         addr_from = "no-reply@eea.europa.eu"
         email_template = load_template('zpt/pwreset_token_email.zpt')
+        expiration_time = datetime.utcnow() + timedelta(days=1)
         options = {
             'token_url': self.absolute_url() + "/confirm_email?token=" + token,
             'user_info': user_info,
             'context': self,
-            'network_name': NETWORK_NAME
+            'network_name': NETWORK_NAME,
+            'expiration_time': expiration_time.strftime("%Y-%m-%d %H:%M:%S")
         }
         message = MIMEText(email_template(**options).encode('utf-8'),
                            _charset='utf-8')

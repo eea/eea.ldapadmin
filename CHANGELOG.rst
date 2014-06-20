@@ -1,5 +1,6 @@
 1.4.16 (unreleased)
 ------------------------
+* added expiration time information in the password reset email [dumitval]
 * refraze confirmation email [dumitval]
 
 1.4.15 (2014-06-20)
