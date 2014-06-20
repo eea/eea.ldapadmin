@@ -900,7 +900,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
     def send_password_reset_email(self, user_info):
         """ """
-        pwreset_tool = self.restrictedTraverse('/')
+        pwreset_tool = self.restrictedTraverse('/').objectValues[
+            'Eionet Password Reset Tool'][0]
         email = user_info['email']
         pwreset_tool.ask_for_password_reset(email=email)
 
