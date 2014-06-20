@@ -1,5 +1,6 @@
 1.4.16 (unreleased)
 ------------------------
+* refraze confirmation email [dumitval]
 
 1.4.15 (2014-06-20)
 ------------------------
