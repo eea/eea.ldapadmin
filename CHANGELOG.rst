@@ -1,5 +1,6 @@
 1.4.14 (unreleased)
 ------------------------
+* Auto-send reset password email to new users [dumitval]
 
 1.4.13 (2014-06-18)
 ------------------------

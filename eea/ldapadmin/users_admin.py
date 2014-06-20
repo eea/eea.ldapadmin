@@ -357,16 +357,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
             "zpt/users/email_registration_confirmation.zpt",
             **options)
 
-    security.declarePrivate('email_password')
-
-    def email_password(self, first_name, password,
-                       email_template='registration', REQUEST=None):
-        """ Returns body of confirmation email """
-        options = {'first_name': first_name, 'password': password}
-        options['site_title'] = self.unrestrictedTraverse('/').title
-        return self._render_template.render("zpt/users/email_%s_password"
-                                            ".zpt" % email_template, **options)
-
     security.declareProtected(eionet_edit_users, 'create_user')
 
     def create_user(self, REQUEST):
@@ -393,8 +383,9 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 self._create_user(agent, user_info)
 
                 send_confirmation = 'send_confirmation' in form_data.keys()
-                self.send_emails(user_info,
-                                 send_confirmation=send_confirmation)
+                if send_confirmation:
+                    self.send_confirmation_email(user_info)
+                    self.send_password_reset_email(user_info)
 
                 when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 msg = "User %s created (%s)" % (user_id, when)
@@ -849,7 +840,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
                     except Exception:
                         errors.append("Error creating %s user" % user_id)
                     else:
-                        self.send_emails(user_info, send_confirmation=True)
+                        self.send_confirmation_email(user_info)
+                        self.send_password_reset_email(user_info)
                         successfully_imported.append(user_id)
 
         errors.extend(file_errors)
@@ -891,28 +883,27 @@ class UsersAdmin(SimpleItem, PropertyManager):
                                                                    userid))
         return json.dumps({})
 
-    def send_emails(self, user_info, send_confirmation=True):
-        """ Sends confirmation and password email """
+    def send_confirmation_email(self, user_info):
+        """ Sends confirmation email """
         addr_from = "no-reply@eea.europa.eu"
         addr_to = user_info['email']
         message = MIMEText('')
         message['From'] = addr_from
         message['To'] = addr_to
 
-        if send_confirmation:
-            body = self.confirmation_email(user_info['first_name'],
-                                           user_info['id'])
-            message['Subject'] = "%s Account `%s` Created" % (
-                NETWORK_NAME, user_info['id'])
-            message.set_payload(body.encode('utf-8'), charset='utf-8')
-            _send_email(addr_from, addr_to, message)
-
-        email_password_body = self.email_password(user_info['first_name'],
-                                                  user_info['password'])
-        message['Subject'] = "%s Account password" % NETWORK_NAME
-        message.set_payload(email_password_body.encode('utf-8'),
-                            charset='utf-8')
+        body = self.confirmation_email(user_info['first_name'],
+                                       user_info['id'])
+        message['Subject'] = "%s Account `%s` Created" % (
+            NETWORK_NAME, user_info['id'])
+        message.set_payload(body.encode('utf-8'), charset='utf-8')
         _send_email(addr_from, addr_to, message)
+
+    def send_password_reset_email(self, user_info):
+        """ """
+        pwreset_tool = self.restrictedTraverse('/')
+        email = user_info['email']
+        pwreset_tool.ask_for_password_reset(email=email)
+
 
 InitializeClass(UsersAdmin)
 

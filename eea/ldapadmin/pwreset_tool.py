@@ -13,7 +13,6 @@ from zope.component import getUtility
 from zope.component.interfaces import ComponentLookupError
 from zope.sendmail.interfaces import IMailDelivery
 
-from eea import usersdb
 import ldap_config
 import query
 from ui_common import load_template, SessionMessages, TemplateRenderer
@@ -27,6 +26,7 @@ manage_add_pwreset_tool_html = PageTemplateFile('zpt/pwreset_manage_add',
 manage_add_pwreset_tool_html.ldap_config_edit_macro = ldap_config.edit_macro
 manage_add_pwreset_tool_html.config_defaults = lambda: ldap_config.defaults
 
+
 def manage_add_pwreset_tool(parent, id, REQUEST=None):
     """ Create a new PasswordResetTool object """
     form = (REQUEST is not None and REQUEST.form or {})
@@ -38,6 +38,7 @@ def manage_add_pwreset_tool(parent, id, REQUEST=None):
 
     if REQUEST is not None:
         REQUEST.RESPONSE.redirect(parent.absolute_url() + '/manage_workspace')
+
 
 def _role_parents(role_id):
     if role_id is None:
@@ -52,13 +53,17 @@ SESSION_PREFIX = 'eea.ldapadmin.pwreset_tool'
 SESSION_MESSAGES = SESSION_PREFIX + '.messages'
 SESSION_FORM_DATA = SESSION_PREFIX + '.form_data'
 
+
 def _set_session_message(request, msg_type, msg):
     SessionMessages(request, SESSION_MESSAGES).add(msg_type, msg)
 
 TokenData = namedtuple('TokenData', 'user_id timestamp')
 
+
 def random_token():
-    import base64, hashlib, random
+    import base64
+    import hashlib
+    import random
     bits = hashlib.sha1(str(datetime.now()) + str(random.random())).digest()
     return base64.urlsafe_b64encode(bits)[:20]
 
@@ -70,8 +75,8 @@ class PasswordResetTool(SimpleItem):
     session_messages = SESSION_MESSAGES
 
     manage_options = (
-        {'label':'Configure', 'action':'manage_edit'},
-        {'label':'View', 'action':''},
+        {'label': 'Configure', 'action': 'manage_edit'},
+        {'label': 'View', 'action': ''},
     ) + SimpleItem.manage_options
 
     _render_template = TemplateRenderer(CommonTemplateLogic)
@@ -82,6 +87,7 @@ class PasswordResetTool(SimpleItem):
         self._tokens = PersistentMapping()
 
     security.declareProtected(view_management_screens, 'get_config')
+
     def get_config(self):
         return dict(self._config)
 
@@ -90,6 +96,7 @@ class PasswordResetTool(SimpleItem):
     manage_edit.ldap_config_edit_macro = ldap_config.edit_macro
 
     security.declareProtected(view_management_screens, 'manage_edit_save')
+
     def manage_edit_save(self, REQUEST):
         """ save changes to configuration """
         form = REQUEST.form
@@ -99,7 +106,7 @@ class PasswordResetTool(SimpleItem):
         new_config['legacy_admin_dn'] = form.get('legacy_admin_dn', '')
         new_config['legacy_admin_pw'] = form.get('legacy_admin_pw', '')
         if not new_config['legacy_admin_pw']:
-            del new_config['legacy_admin_pw'] # don't overwrite
+            del new_config['legacy_admin_pw']  # don't overwrite
 
         self._config.update(new_config)
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/manage_edit')
@@ -112,6 +119,7 @@ class PasswordResetTool(SimpleItem):
                       key=lambda ob: ob.getId())
 
     security.declareProtected(view, 'index_html')
+
     def index_html(self, REQUEST):
         """ view """
         email = REQUEST.get('email', '')
@@ -146,9 +154,11 @@ class PasswordResetTool(SimpleItem):
             mailer.send(addr_from, [addr_to], message)
 
     security.declareProtected(view, 'ask_for_password_reset')
-    def ask_for_password_reset(self, REQUEST):
+
+    def ask_for_password_reset(self, REQUEST=None, email=None):
         """ view """
-        email = REQUEST.form['email']
+        if not email:
+            email = REQUEST.form['email']
         agent = self._get_ldap_agent()
         users = agent.search_user_by_email(email)
 
@@ -168,9 +178,11 @@ class PasswordResetTool(SimpleItem):
             _set_session_message(REQUEST, 'error', msg)
             location = self.absolute_url() + '/'
 
-        REQUEST.RESPONSE.redirect(location)
+        if REQUEST:
+            REQUEST.RESPONSE.redirect(location)
 
     security.declareProtected(view, 'messages_html')
+
     def messages_html(self, REQUEST):
         """ view """
         options = {
@@ -196,6 +208,7 @@ class PasswordResetTool(SimpleItem):
             del self._tokens[token]
 
     security.declareProtected(view, 'confirm_email')
+
     def confirm_email(self, REQUEST):
         """ view """
 
