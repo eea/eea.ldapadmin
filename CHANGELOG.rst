@@ -1,4 +1,7 @@
-1.4.17 (unreleased)
+1.4.18 (unreleased)
+------------------------
+
+1.4.17 (2014-06-24)
 ------------------------
 * removed merged columns from a dataTable [dumitval]
 
