@@ -902,7 +902,10 @@ class RolesEditor(Folder):
 
         mailgroup_info = agent.mail_group_info(role_id)
         for owner in mailgroup_info['owner']:
-            options['role_owners'][owner] = agent.user_info(owner)
+            try:
+                options['role_owners'][owner] = agent.user_info(owner)
+            except usersdb.UserNotFound:
+                options['role_owners'][owner] = {'id': owner, 'deleted': True}
         self._set_breadcrumbs(self._role_parents_stack(role_id) +
                               [("Manage owners", "#")])
         return self._render_template('zpt/roles_edit_owners.zpt', **options)

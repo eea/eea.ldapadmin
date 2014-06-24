@@ -51,6 +51,17 @@
         <tbody>
             <tal:block tal:repeat="user_id python:sorted(role_owners)">
                 <tr tal:define="user_info python:role_owners[user_id]">
+                  <tal:block condition="python: user_info.get('deleted')">
+                    <td class="checkbox-td">
+                        <input type="checkbox" name="user_id_list:list"
+                            tal:attributes="value user_id" />
+                    </td>
+                    <td><strong>User doesn't exist anymore</strong></td>
+                    <td>
+                        <span tal:content="user_id"/>
+                    </td>
+                  </tal:block>
+                  <tal:block condition="python: not user_info.get('deleted')">
                     <td class="checkbox-td">
                         <input type="checkbox" name="user_id_list:list"
                             tal:attributes="value user_id" />
@@ -61,6 +72,7 @@
                     <td>
                         <span tal:content="user_id"/>
                     </td>
+                  </tal:block>
                 </tr>
             </tal:block>
         </tbody>
