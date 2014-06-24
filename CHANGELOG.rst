@@ -1,4 +1,7 @@
-1.4.18 (unreleased)
+1.4.19 (unreleased)
+------------------------
+
+1.4.18 (2014-06-24)
 ------------------------
 * added handling for deleted users when editing role owners [dumitval]
 
