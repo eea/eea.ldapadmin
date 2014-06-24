@@ -25,6 +25,7 @@ import operator
 import query
 import re
 import sys
+import xlrd
 
 try:
     import json
@@ -441,6 +442,53 @@ class RolesEditor(Folder):
         REQUEST.RESPONSE.setHeader("Content-Disposition",
                                    "attachment; filename=\"%s\"" % filename)
         return codecs.BOM_UTF8 + output_file.getvalue()
+
+    security.declareProtected(view_management_screens, 'import_xls')
+    def import_xls(self, REQUEST):
+        """ Import an excel file """
+        if not REQUEST.form:
+            return self._render_template('zpt/roles_import_xls.zpt', **{})
+
+        xls = REQUEST.form.get('file')
+        if not xls:
+            _set_session_message(REQUEST, 'error', "Not a valid file")
+            return self._render_template('zpt/roles_import_xls.zpt',
+                                         **{'error':'Not a valid file'})
+
+        content = xls.read()
+        try:
+            wb = xlrd.open_workbook(file_contents=content)
+        except xlrd.XLRDError:
+            return self._render_template('zpt/roles_import_xls.zpt',
+                                         **{'error':'Not a valid file'})
+        roles = {}
+        sheet = wb.sheet_by_index(0)
+        for i in range(1, sheet.nrows):
+            row = sheet.row(i)
+            id, title = row[0].value, row[1].value
+            roles[id] = title
+
+        agent = self._get_ldap_agent(bind=True)
+
+        problems = []
+        for role_id, description in roles.items():
+            slug = role_id.split('-')[-1]
+            parent_role_id="-".join(role_id.split('-')[:-1])
+
+            try:
+                role_id = self._make_role(agent, slug=slug,
+                                          parent_role_id=parent_role_id,
+                                          description=description)
+            except RoleCreationError:
+                problems.append(role_id)
+            else:
+                # add owners of parent role
+                if parent_role_id:
+                    owners = agent.mail_group_info(parent_role_id)['owner']
+                    for owner_id in owners:
+                        agent.add_role_owner(role_id, owner_id)
+
+        return self._render_template('zpt/roles_import_xls.zpt', **{'problems':problems})
 
     security.declareProtected(view, 'can_edit_roles')
 

@@ -17,7 +17,14 @@
            class="button" title="Create role">
           <img src="/++resource++eea.ldapadmin-www/round_plus.png" alt=""
                class="middle-image image12" title="Create new role" />
-          Create role</a>
+           Create role</a>
+
+       <a tal:condition="python: not options['role_id'] and options['can_edit_members'] and options['can_edit_roles'] and common.is_authenticated()"
+           tal:attributes="href string:${common/base_url}/import_xls"
+           class="button" title="Import roles .xls file">
+          <img src="/++resource++eea.ldapadmin-www/round_plus.png" alt=""
+               class="middle-image image12" title="Import Excel File with Roles" />
+          Import file</a>
   
       <a tal:attributes="href string:${common/base_url}/all_members?role_id=${options/role_id};
                              class python:'current help-tooltip' if page == 'role_all_members' else 'button help-tooltip';"

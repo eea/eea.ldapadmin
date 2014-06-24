@@ -1,0 +1,20 @@
+<div>
+    <p tal:condition="options/error | nothing" class="error-msg" tal:content="options/error" />
+    <p tal:condition="options/problems | nothing" class="error-msg" >
+        Problem creating these roles:
+        <ul tal:define='problems options/problems'>
+            <li tal:repeat="role_id problems" tal:content="role_id" />
+        </ul>
+    </p>
+
+    <form enctype="multipart/form-data" method="post"
+        tal:attributes="action string:${common/base_url}/import_xls">
+        <p>
+            <label class="required" for="file">Upload an Excel file: </label>
+            <input type="file" name="file" />
+        </p>
+        <p>
+            <input type="submit" name="submit" value="Submit" />
+        </p>
+    </form>
+</div>
