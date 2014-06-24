@@ -61,14 +61,11 @@
         <tal:block repeat="user_id python:sorted(users)" condition="users">
         <tal:block define="user_info python:users[user_id]">
             <tr tal:condition="python: users[user_id].get('deleted') and is_authenticated">
-                <td>
-                </td>
-                <td>
-                    <span tal:content="user_info/id" />
-                </td>
-                <td colspan="3">
-                    <strong>User no longer exists.</strong>
-                </td>
+                <td></td>
+                <td><span tal:content="user_info/id" /></td>
+                <td><strong>User no longer exists.</strong></td>
+                <td></td>
+                <td></td>
             </tr>
 
             <tr tal:condition="python: not users[user_id].get('deleted')">

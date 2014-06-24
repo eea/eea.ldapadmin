@@ -1,5 +1,6 @@
 1.4.17 (unreleased)
 ------------------------
+* removed merged columns from a dataTable [dumitval]
 
 1.4.16 (2014-06-20)
 ------------------------
