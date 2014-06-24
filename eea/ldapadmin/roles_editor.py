@@ -461,13 +461,62 @@ class RolesEditor(Folder):
         except xlrd.XLRDError:
             return self._render_template('zpt/roles_import_xls.zpt',
                                          **{'error':'Not a valid file'})
+        problems = {
+            'creation':[],
+            'renaming':[],
+            'merging':[],
+        }
+
+        # Create new roles
+        # structure in xls is role_id -> description
         roles = {}
         sheet = wb.sheet_by_index(0)
         for i in range(1, sheet.nrows):
             row = sheet.row(i)
             id, title = row[0].value, row[1].value
+            if not (id and title):  #skip empty rows
+                continue
             roles[id] = title
 
+        #problems['creation'] = self._create_roles(roles)
+
+        # Change role descriptions
+        # structure in xls is role_id -> new description
+        roles = {}
+        sheet = wb.sheet_by_index(1)
+        for i in range(1, sheet.nrows):
+            row = sheet.row(i)
+            id, title = row[0].value, row[1].value
+            if not (id and title):  #skip empty rows
+                continue
+            roles[id] = title
+        #problems['renaming'] = self._rename_roles(roles)
+
+        # Merge roles
+        #structure is role_to_delete -> role_to_merge_to
+        #everything in the left part will be moved to the right part
+        roles = {}
+        sheet = wb.sheet_by_index(2)
+        for i in range(1, sheet.nrows):
+            row = sheet.row(i)
+            role_to_merge, role_destination = row[0].value, row[1].value
+            if not (role_to_merge and role_destination):  #skip empty rows
+                continue
+            roles[role_to_merge] = role_destination
+        problems['merging'] = self._merge_roles(roles)
+
+        #structure is role_to_fill -> role_template
+        # everything under the role_template will serve as a template to create
+        # new children in role_to_fill
+
+        return self._render_template('zpt/roles_import_xls.zpt', **{'problems':problems})
+
+    def _merge_roles(self, roles):
+        agent = self._get_ldap_agent(bind=True)
+        for role_source, role_destination in roles.items():
+            agent.merge_roles(role_source, role_destination)
+
+    def _create_roles(self, roles):
         agent = self._get_ldap_agent(bind=True)
 
         problems = []
@@ -488,7 +537,21 @@ class RolesEditor(Folder):
                     for owner_id in owners:
                         agent.add_role_owner(role_id, owner_id)
 
-        return self._render_template('zpt/roles_import_xls.zpt', **{'problems':problems})
+        return problems
+
+    def _rename_roles(self, roles):
+        """ This is actually just changing their description
+        """
+        agent = self._get_ldap_agent(bind=True)
+
+        problems = []
+        for role_id, description in roles.items():
+            try:
+                agent.set_role_description(role_id, description.strip())
+            except:
+                problems.append(role_id)
+
+        return problems
 
     security.declareProtected(view, 'can_edit_roles')
 

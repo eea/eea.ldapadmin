@@ -1,11 +1,11 @@
 <div>
     <p tal:condition="options/error | nothing" class="error-msg" tal:content="options/error" />
-    <p tal:condition="options/problems | nothing" class="error-msg" >
+    <div tal:condition="options/problems | nothing" class="error-msg" >
         Problem creating these roles:
         <ul tal:define='problems options/problems'>
             <li tal:repeat="role_id problems" tal:content="role_id" />
         </ul>
-    </p>
+    </div>
 
     <form enctype="multipart/form-data" method="post"
         tal:attributes="action string:${common/base_url}/import_xls">
