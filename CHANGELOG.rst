@@ -1,5 +1,7 @@
-1.4.19 (unreleased)
+1.4.19 (2014-06-26)
 ------------------------
+* Added the ability to import an XLS file to perform batch changes to roles
+  [tiberich #20140]
 
 1.4.18 (2014-06-24)
 ------------------------
