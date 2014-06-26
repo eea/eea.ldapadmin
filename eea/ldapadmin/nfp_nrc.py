@@ -1,30 +1,27 @@
+#from App.class_init import InitializeClass
+from AccessControl import ClassSecurityInfo
+from AccessControl.Permissions import view, view_management_screens
+from OFS.PropertyManager import PropertyManager
+from OFS.SimpleItem import SimpleItem
+from Products.PageTemplates.PageTemplateFile import PageTemplateFile
+from datetime import datetime
+from eea import usersdb
+from eea.ldapadmin.countries import get_country
+from logic_common import _get_user_id, _is_authenticated, _session_pop
+from persistent.mapping import PersistentMapping
+from ui_common import CommonTemplateLogic
+from ui_common import SessionMessages, TemplateRenderer #load_template,
+from ui_common import extend_crumbs, get_role_name, roles_list_to_text
+import deform
+import json
+import ldap_config
+import logging
 import operator
 import re
-from datetime import datetime
-import json
-
-from AccessControl import ClassSecurityInfo
-from App.class_init import InitializeClass
-from Products.PageTemplates.PageTemplateFile import PageTemplateFile
-from OFS.SimpleItem import SimpleItem
-from OFS.PropertyManager import PropertyManager
-from AccessControl.Permissions import view, view_management_screens
-from persistent.mapping import PersistentMapping
-
-from eea import usersdb
-import deform
-import ldap_config
-from ui_common import load_template, SessionMessages, TemplateRenderer
-from ui_common import extend_crumbs, get_role_name, roles_list_to_text
-from ui_common import CommonTemplateLogic
-from logic_common import _get_user_id, _is_authenticated, _session_pop
 import roles_leaders
-from eea.ldapadmin.countries import get_country
 
 
-import logging
 log = logging.getLogger('nfp_nrc')
-
 
 eionet_access_nfp_nrc = 'Eionet access NFP admin for NRC'
 
@@ -57,8 +54,8 @@ del user_info_edit_schema['last_name']
 def _set_session_message(request, msg_type, msg):
     SessionMessages(request, SESSION_MESSAGES).add(msg_type, msg)
 
-def _is_authenticated(request):
-    return ('Authenticated' in request.AUTHENTICATED_USER.getRoles())
+# def _is_authenticated(request):
+#     return ('Authenticated' in request.AUTHENTICATED_USER.getRoles())
 
 def logged_in_user(request):
     user_id = ''
@@ -280,12 +277,37 @@ class NfpNrc(SimpleItem, PropertyManager):
     security.declareProtected(eionet_access_nfp_nrc, 'add_user')
     def add_user(self, REQUEST):
         """ Add user `user_id` to role `role_id` """
+
         role_id = REQUEST.form['role_id']
         country_code = role_id.rsplit('-', 1)[-1]
         user_id = REQUEST.form['user_id']
         agent = self._get_ldap_agent(bind=True)
         if not self._allowed(agent, REQUEST, country_code):
             return None
+
+        # test if the user to be added is member of a national organisation
+        country_code = role_id.split('-')[-1]
+        user_orgs = agent._search_user_in_orgs(user_id)
+        has_national_org = False
+
+        for org_id in user_orgs:
+            org_info = agent.org_info(org_id)
+            org_country = org_info.get("country")
+            if org_country == country_code:
+                has_national_org = True
+                break
+
+        if not has_national_org:
+            msg = """
+The user you would like to add as NRC does not have a sufficient reference to an
+organisation for your country. Please add first as a member to one of your
+national organisations and add after that as NRC."""
+            _set_session_message(REQUEST, 'info', msg)
+            url = REQUEST.get('HTTP_REFERER') or \
+                self.absolute_url() + "/add_member_html?role_id=" + role_id
+            return REQUEST.RESPONSE.redirect(url)
+
+        import pdb; pdb.set_trace()
         role_id_list = agent.add_to_role(role_id, 'user', user_id)
         roles_msg = roles_list_to_text(agent, role_id_list)
         msg = "User %r added to roles %s." % (user_id, roles_msg)
