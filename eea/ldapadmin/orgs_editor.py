@@ -33,9 +33,11 @@ log = logging.getLogger('orgs_editor')
 eionet_edit_orgs = 'Eionet edit organisations'
 eionet_edit_users = 'Eionet edit users'
 
-manage_add_orgs_editor_html = PageTemplateFile('zpt/orgs_manage_add', globals())
+manage_add_orgs_editor_html = PageTemplateFile('zpt/orgs_manage_add',
+                                               globals())
 manage_add_orgs_editor_html.ldap_config_edit_macro = ldap_config.edit_macro
 manage_add_orgs_editor_html.config_defaults = lambda: ldap_config.defaults
+
 
 def manage_add_orgs_editor(parent, id, REQUEST=None):
     """ Adds a new Eionet Organisations Editor object """
@@ -56,18 +58,21 @@ def get_template_macro(name):
 SESSION_PREFIX = 'eea.ldapadmin.orgs_editor'
 SESSION_MESSAGES = SESSION_PREFIX + '.messages'
 SESSION_FORM_DATA = SESSION_PREFIX + '.form_data'
-SESSION_FORM_ERRORS =  SESSION_PREFIX + '.form_errors'
+SESSION_FORM_ERRORS = SESSION_PREFIX + '.form_errors'
 
 user_info_edit_schema = eea.usersdb.user_info_schema.clone()
 user_info_edit_schema['postal_address'].widget = deform.widget.TextAreaWidget()
 del user_info_edit_schema['first_name']
 del user_info_edit_schema['last_name']
 
+
 def _set_session_message(request, msg_type, msg):
     SessionMessages(request, SESSION_MESSAGES).add(msg_type, msg)
 
+
 def _is_authenticated(request):
     return ('Authenticated' in request.AUTHENTICATED_USER.getRoles())
+
 
 def logged_in_user(request):
     user_id = ''
@@ -77,18 +82,19 @@ def logged_in_user(request):
 
     return user_id
 
+
 class OrganisationsEditor(SimpleItem, PropertyManager):
     meta_type = 'Eionet Organisations Editor'
     security = ClassSecurityInfo()
     icon = '++resource++eea.ldapadmin-www/eionet_organisations_editor.gif'
     session_messages = SESSION_MESSAGES
     manage_options = (
-        {'label':'Configure', 'action':'manage_edit'},
-        {'label':'View', 'action':''},
+        {'label': 'Configure', 'action': 'manage_edit'},
+        {'label': 'View', 'action': ''},
     ) + PropertyManager.manage_options + SimpleItem.manage_options
 
     _properties = (
-        {'id':'title', 'type': 'string', 'mode':'w', 'label': 'Title'},
+        {'id': 'title', 'type': 'string', 'mode': 'w', 'label': 'Title'},
     )
 
     _render_template = TemplateRenderer(CommonTemplateLogic)
@@ -106,6 +112,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         self._config = PersistentMapping(config)
 
     security.declareProtected(view_management_screens, 'get_config')
+
     def get_config(self):
         return dict(self._config)
 
@@ -114,11 +121,13 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
     manage_edit.ldap_config_edit_macro = ldap_config.edit_macro
 
     security.declarePublic('checkPermissionView()')
+
     def checkPermissionView(self):
         user = self.REQUEST.AUTHENTICATED_USER
         return bool(user.has_permission(view, self))
 
     security.declareProtected(view, 'can_edit_organisation')
+
     def can_edit_organisation(self):
         user = self.REQUEST.AUTHENTICATED_USER
         if user.has_permission(eionet_edit_orgs, self):
@@ -131,16 +140,19 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             return nfp_country == org_info['country']
 
     security.declarePublic('checkPermissionEditOrganisations()')
+
     def checkPermissionEditOrganisations(self):
         user = self.REQUEST.AUTHENTICATED_USER
         return bool(user.has_permission(eionet_edit_orgs, self))
 
     security.declarePublic('can_edit_organisations')
+
     def can_edit_organisations(self):
         return bool(self.checkPermissionEditOrganisations()
                     or self.nfp_for_country())
 
     security.declareProtected(view_management_screens, 'manage_edit_save')
+
     def manage_edit_save(self, REQUEST):
         """ save changes to configuration """
         self._config.update(ldap_config.read_form(REQUEST.form, edit=True))
@@ -154,6 +166,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
     def index_html(self, REQUEST):
         """ Index of organisations """
         nfp_country = self.nfp_for_country()
+        if self.title != 'National Organisations':
+            nfp_country = None
         if not (self.checkPermissionView() or nfp_country):
             raise Unauthorized
         agent = self._get_ldap_agent()
@@ -208,29 +222,29 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         org_sheet = wb.add_sheet("Organisations")
         users_sheet = wb.add_sheet("Members")
 
-        style_header          = xlwt.XFStyle()
-        style_org_header      = xlwt.XFStyle()
-        style_normal          = xlwt.XFStyle()
+        style_header = xlwt.XFStyle()
+        style_org_header = xlwt.XFStyle()
+        style_normal = xlwt.XFStyle()
 
-        normalfont            = xlwt.Font()
-        headerfont            = xlwt.Font()
-        headerfont.bold       = True
-        biggerheaderfont      = xlwt.Font()
+        normalfont = xlwt.Font()
+        headerfont = xlwt.Font()
+        headerfont.bold = True
+        biggerheaderfont = xlwt.Font()
         biggerheaderfont.bold = True
         biggerheaderfont.height = int(biggerheaderfont.height * 1.3)
 
-        style_header.font     = headerfont
-        style_normal.font     = normalfont
+        style_header.font = headerfont
+        style_normal.font = normalfont
         style_org_header.font = biggerheaderfont
 
         cols = [
-                'id',
-                'name',
-                'locality',
-                'postal_address',
-                'fax',
-                'email',
-                ]
+            'id',
+            'name',
+            'locality',
+            'postal_address',
+            'fax',
+            'email',
+            ]
         for i, col in enumerate(cols):
             org_sheet.write(0, i, col.capitalize(), style_header)
 
@@ -272,10 +286,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             org_members.sort(key=operator.itemgetter('first_name'))
 
             cols = [
-                    'user id',
-                    'fullname',
-                    'email',
-                    ]
+                'user id',
+                'fullname',
+                'email',
+                ]
 
             for i, col in enumerate(cols):
                 users_sheet.write(row_counter, i, col, style_header)
@@ -303,7 +317,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         RESPONSE.setHeader('Pragma', 'public')
         RESPONSE.setHeader('Cache-Control', 'max-age=0')
         RESPONSE.addHeader("content-disposition",
-                                   "attachment; filename=%s-organisations.xls" % nfp_country)
+                           "attachment; filename=%s-organisations.xls" %
+                           nfp_country)
 
         return out
 
@@ -313,7 +328,6 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             raise Unauthorized
 
         org_id = REQUEST.form['id']
-        self.nfp_for_country()  # TODO: is this needed?
 
         agent = self._get_ldap_agent()
         org_info = agent.org_info(org_id)
@@ -330,13 +344,13 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         style_normal.font = normalfont
 
         cols = [
-                'id',
-                'name',
-                'locality',
-                'postal_address',
-                'fax',
-                'email',
-                ]
+            'id',
+            'name',
+            'locality',
+            'postal_address',
+            'fax',
+            'email',
+            ]
         for i, col in enumerate(cols):
             org_sheet.write(0, i, col, style_header)
             org_sheet.write(2, i, org_info[col], style_normal)
@@ -359,10 +373,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         org_members.sort(key=operator.itemgetter('first_name'))
 
         cols = [
-                'user id',
-                'fullname',
-                'email',
-                ]
+            'user id',
+            'fullname',
+            'email',
+            ]
         for i, col in enumerate(cols):
             users_sheet.write(0, i, col, style_header)
 
@@ -387,18 +401,20 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         RESPONSE.setHeader('Pragma', 'public')
         RESPONSE.setHeader('Cache-Control', 'max-age=0')
         RESPONSE.addHeader("content-disposition",
-                                   "attachment; filename=%s.xls" % org_id)
+                           "attachment; filename=%s.xls" % org_id)
 
         return out
 
     security.declareProtected(view, 'organisation')
+
     def organisation(self, REQUEST):
         """ Index of an organisation """
         nfp_country = self.nfp_for_country()
         org_id = REQUEST.form['id']
         agent = self._get_ldap_agent()
         org_info = agent.org_info(org_id)
-        if not (self.checkPermissionView() or nfp_country==org_info['country']):
+        if not (self.checkPermissionView()
+                or nfp_country == org_info['country']):
             raise Unauthorized
         options = {
             'organisation': org_info,
@@ -411,10 +427,11 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         """ Page for adding an organisation """
         if not self.can_edit_organisations():
             _set_session_message(REQUEST, 'error',
-                    "You are not allowed to create an organisation")
+                                 ("You are not allowed to "
+                                  "create an organisation"))
             REQUEST.RESPONSE.redirect(self.absolute_url())
             return None
-        nfp_country =  self.nfp_for_country()
+        nfp_country = self.nfp_for_country()
         if self.checkPermissionEditOrganisations():
             countries = get_country_options()
         else:
@@ -439,7 +456,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         """ Create organisation """
         if not self.can_edit_organisations():
             _set_session_message(REQUEST, 'error',
-                    "You are not allowed to create an organisation")
+                                 ("You are not allowed to "
+                                  "create an organisation"))
             REQUEST.RESPONSE.redirect(self.absolute_url())
             return None
         org_id = REQUEST.form['id']
@@ -474,11 +492,12 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         org_id = REQUEST.form['id']
         if not self.can_edit_organisation():
             _set_session_message(REQUEST, 'error',
-                    "You are not allowed to edit this organisation")
+                                 ("You are not allowed to "
+                                  "edit this organisation"))
             REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                  '/organisation?id=' + org_id)
+                                      '/organisation?id=' + org_id)
             return None
-        nfp_country =  self.nfp_for_country()
+        nfp_country = self.nfp_for_country()
         if self.checkPermissionEditOrganisations():
             countries = get_country_options()
         else:
@@ -498,7 +517,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
         org_id = options['org_info']['id']
         self._set_breadcrumbs([(options['org_info']['id'],
-                                    self.absolute_url()+'/organisation?id=%s' % org_id),
+                                self.absolute_url()+'/organisation?id=%s' %
+                                org_id),
                                ('Edit Organisation', '#')])
         return self._render_template('zpt/orgs_edit.zpt', **options)
 
@@ -507,9 +527,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         org_id = REQUEST.form['id']
         if not self.can_edit_organisation():
             _set_session_message(REQUEST, 'error',
-                    "You are not allowed to edit this organisation")
+                                 ("You are not allowed to "
+                                  "edit this organisation"))
             REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                  '/organisation?id=' + org_id)
+                                      '/organisation?id=' + org_id)
             return None
         org_info = {}
         for name in eea.usersdb.editable_org_fields:
@@ -532,7 +553,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         _set_session_message(REQUEST, 'info', "Organisation saved (%s)" % when)
 
-        log.info("%s EDITED ORGANISATION %s",logged_in_user(REQUEST), org_id)
+        log.info("%s EDITED ORGANISATION %s", logged_in_user(REQUEST), org_id)
 
         REQUEST.RESPONSE.redirect(self.absolute_url() +
                                   '/organisation?id=' + org_id)
@@ -542,16 +563,18 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         org_id = REQUEST.form['id']
         if not self.checkPermissionEditOrganisations():
             _set_session_message(REQUEST, 'error',
-                    "You are not allowed to change the ID of this organisation")
+                                 ("You are not allowed to "
+                                  "change the ID of this organisation"))
             REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                  '/organisation?id=' + org_id)
+                                      '/organisation?id=' + org_id)
             return None
         options = {
             'org_id': org_id,
         }
         self._set_breadcrumbs([(org_id,
-                            self.absolute_url()+'/organisation?id=%s' % org_id),
-                           ('Rename Organisation', '#')])
+                                self.absolute_url()+'/organisation?id=%s' %
+                                org_id),
+                               ('Rename Organisation', '#')])
         return self._render_template('zpt/orgs_rename.zpt', **options)
 
     def rename_organisation(self, REQUEST):
@@ -559,9 +582,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         org_id = REQUEST.form['id']
         if not self.checkPermissionEditOrganisations():
             _set_session_message(REQUEST, 'error',
-                    "You are not allowed to change the ID of this organisation")
+                                 ("You are not allowed to "
+                                  "change the ID of this organisation"))
             REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                  '/organisation?id=' + org_id)
+                                      '/organisation?id=' + org_id)
             return None
         new_org_id = REQUEST.form['new_id']
 
@@ -595,7 +619,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         _set_session_message(REQUEST, 'info', msg)
 
         log.info("%s RENAMED ORGANISATION %s TO %s",
-                      logged_in_user(REQUEST), org_id, new_org_id)
+                 logged_in_user(REQUEST), org_id, new_org_id)
 
         REQUEST.RESPONSE.redirect(self.absolute_url() +
                                   '/organisation?id=' + new_org_id)
@@ -605,15 +629,17 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         org_id = REQUEST.form['id']
         if not self.can_edit_organisation():
             _set_session_message(REQUEST, 'error',
-                    "You are not allowed to delete this organisation")
+                                 ("You are not allowed to "
+                                  "delete this organisation"))
             REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                  '/organisation?id=' + org_id)
+                                      '/organisation?id=' + org_id)
             return None
         options = {
             'org_info': self._get_ldap_agent().org_info(org_id),
         }
         self._set_breadcrumbs([(options['org_info']['id'],
-                                    self.absolute_url()+'/organisation?id=%s' % org_id),
+                                self.absolute_url()+'/organisation?id=%s' %
+                                org_id),
                                ('Delete Organisation', '#')])
         return self._render_template('zpt/orgs_delete.zpt', **options)
 
@@ -622,9 +648,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         org_id = REQUEST.form['id']
         if not self.can_edit_organisation():
             _set_session_message(REQUEST, 'error',
-                    "You are not allowed to delete this organisation")
+                                 ("You are not allowed to "
+                                  "delete this organisation"))
             REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                  '/organisation?id=' + org_id)
+                                      '/organisation?id=' + org_id)
             return None
         agent = self._get_ldap_agent(bind=True)
         agent.delete_org(org_id)
@@ -637,6 +664,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/')
 
     security.declarePublic('members_html')
+
     def members_html(self, REQUEST):
         """ view """
 
@@ -658,11 +686,13 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             'org_members': org_members,
         }
         self._set_breadcrumbs([(org_id,
-                                self.absolute_url()+'/organisation?id=%s' % org_id),
+                                self.absolute_url()+'/organisation?id=%s' %
+                                org_id),
                                ('Members', '#')])
         return self._render_template('zpt/orgs_members.zpt', **options)
 
     security.declarePublic('pending_members_html')
+
     def pending_members_html(self, REQUEST):
         """ view """
 
@@ -684,7 +714,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             'org_members': org_members,
         }
         self._set_breadcrumbs([(org_id,
-                                self.absolute_url()+'/organisation?id=%s' % org_id),
+                                self.absolute_url()+'/organisation?id=%s' %
+                                org_id),
                                ('Members', '#')])
         return self._render_template('zpt/orgs_members_pending.zpt', **options)
 
@@ -723,9 +754,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         org_id = REQUEST.form['id']
         if not self.can_edit_organisation():
             _set_session_message(REQUEST, 'error',
-                    "You are not allowed to remove members to this organisation")
+                                 ("You are not allowed to "
+                                  "remove members from this organisation"))
             REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                  '/members_html?id=' + org_id)
+                                      '/members_html?id=' + org_id)
             return None
 
         user_id_list = REQUEST.form.get('user_id')
@@ -767,9 +799,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         REQUEST.RESPONSE.redirect(self.absolute_url() +
                                   '/members_html?id=' + org_id)
 
-
-
     security.declareProtected(eionet_edit_orgs, 'demo_members')
+
     def demo_members(self, REQUEST):
         """ view """
         from ldap import NO_SUCH_OBJECT
@@ -808,7 +839,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             import csv
 
             output = StringIO()
-            header = ('Organisation ID', 'Organisation name', 'Member ID', 'Member full name', 'Member email')
+            header = ('Organisation ID', 'Organisation name', 'Member ID',
+                      'Member full name', 'Member email')
 
             REQUEST.RESPONSE.setHeader('Content-Type', 'text/csv')
             REQUEST.RESPONSE.setHeader('Content-Disposition',
@@ -824,11 +856,13 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                     rows.append(row)
                 else:
                     user_data = org['members'][0]
-                    first_row = [org['id'], org['name'], user_data['id'], user_data['full_name'], user_data['email']]
+                    first_row = [org['id'], org['name'], user_data['id'],
+                                 user_data['full_name'], user_data['email']]
                     rows.append(first_row)
                     org['members'].pop(0)
                     for user_data in org['members']:
-                        row = ['', '', user_data['id'], user_data['full_name'], user_data['email']]
+                        row = ['', '', user_data['id'], user_data['full_name'],
+                               user_data['email']]
                         rows.append(row)
 
             for item in rows:
@@ -843,9 +877,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         org_id = REQUEST.form['id']
         if not self.can_edit_organisation():
             _set_session_message(REQUEST, 'error',
-                    "You are not allowed to remove members to this organisation")
+                                 ("You are not allowed to "
+                                  "remove members from this organisation"))
             REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                  '/members_html?id=' + org_id)
+                                      '/members_html?id=' + org_id)
             return None
         user_id_list = REQUEST.form['user_id']
 
@@ -858,10 +893,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
         _set_session_message(REQUEST, 'info',
                              'Removed %d members from organisation "%s".' %
-                              (len(user_id_list), org_id))
+                             (len(user_id_list), org_id))
 
         log.info("%s REMOVED MEMBERS %s FROM ORGANISATION %s",
-                      logged_in_user(REQUEST), user_id_list, org_id)
+                 logged_in_user(REQUEST), user_id_list, org_id)
 
         REQUEST.RESPONSE.redirect(self.absolute_url() +
                                   '/members_html?id=' + org_id)
@@ -871,9 +906,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         org_id = REQUEST.form['id']
         if not self.can_edit_organisation():
             _set_session_message(REQUEST, 'error',
-                    "You are not allowed to add members to this organisation")
+                                 ("You are not allowed to "
+                                  "add members to this organisation"))
             REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                  '/members_html?id=' + org_id)
+                                      '/members_html?id=' + org_id)
             return None
         search_query = REQUEST.form.get('search_query', u"")
         assert type(search_query) is unicode
@@ -885,7 +921,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             found_users = []
 
         found_active = [user for user in found_users
-                                if user.get('status') != 'disabled']
+                        if user.get('status') != 'disabled']
         options = {
             'org_id': org_id,
             'search_query': search_query,
@@ -893,9 +929,12 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             'found_inactive': len(found_active) != len(found_users)
         }
         self._set_breadcrumbs([(org_id,
-                            self.absolute_url()+'/organisation?id=%s' % org_id),
-                       ('Members', self.absolute_url()+'/members_html?id=%s' % org_id),
-                       ('Add Members', '#')])
+                                self.absolute_url() + '/organisation?id=%s' %
+                                org_id),
+                               ('Members',
+                                self.absolute_url() + '/members_html?id=%s' %
+                                org_id),
+                               ('Add Members', '#')])
         return self._render_template('zpt/orgs_add_members.zpt', **options)
 
     def add_members(self, REQUEST):
@@ -903,9 +942,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         org_id = REQUEST.form['id']
         if not self.can_edit_organisation():
             _set_session_message(REQUEST, 'error',
-                    "You are not allowed to add members to this organisation")
+                                 ("You are not allowed to "
+                                  "add members to this organisation"))
             REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                  '/members_html?id=' + org_id)
+                                      '/members_html?id=' + org_id)
             return None
         user_id_list = REQUEST.form['user_id']
 
@@ -918,10 +958,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
         _set_session_message(REQUEST, 'info',
                              'Added %d members to organisation "%s".' %
-                              (len(user_id_list), org_id))
+                             (len(user_id_list), org_id))
 
         log.info("%s ADDED MEMBERS %s TO ORGANISATION %s",
-                      logged_in_user(REQUEST), user_id_list, org_id)
+                 logged_in_user(REQUEST), user_id_list, org_id)
 
         REQUEST.RESPONSE.redirect(self.absolute_url() +
                                   '/members_html?id=' + org_id)
@@ -955,14 +995,15 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         member_id = REQUEST.form['user_id']
         if not self.can_edit_members(user, org_id, member_id):
             _set_session_message(REQUEST, 'error',
-                    "You are not allowed to edit user %s" % member_id)
+                                 "You are not allowed to edit user %s" %
+                                 member_id)
             REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                  '/members_html?id=' + org_id)
+                                      '/members_html?id=' + org_id)
             return None
         errors = _session_pop(REQUEST, SESSION_FORM_ERRORS, {})
         agent = self._get_ldap_agent(bind=True)
         member = agent.user_info(member_id)
-        #message
+        # message
         form_data = _session_pop(REQUEST, SESSION_FORM_DATA, None)
         if form_data is None:
             form_data = member
@@ -983,9 +1024,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         user = REQUEST.AUTHENTICATED_USER
         if not self.can_edit_members(user, org_id, member_id):
             _set_session_message(REQUEST, 'error',
-                    "You are not allowed to edit user %s" % member_id)
+                                 "You are not allowed to edit user %s" %
+                                 member_id)
             REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                  '/members_html?id=' + org_id)
+                                      '/members_html?id=' + org_id)
             return None
         user_form = deform.Form(user_info_edit_schema)
         member = agent.user_info(member_id)
@@ -1023,7 +1065,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             for group in ldap_groups:
                 if 'eionet-nfp-cc-' in group[0]:
                     return group[0].replace('eionet-nfp-cc-', '')
-                if 'eionet-nfp-mc-'  in group[0]:
+                if 'eionet-nfp-mc-' in group[0]:
                     return group[0].replace('eionet-nfp-mc-', '')
 
     def get_ldap_user_groups(self, user_id):
@@ -1050,7 +1092,7 @@ _phone_help = ('Telephone numbers must be in international notation (they '
                'separated using spaces).')
 VALIDATION_ERRORS = {
     'id': ('Invalid organisation ID. It must contain only '
-                   'lowercase letters and underscores ("_").'),
+           'lowercase letters and underscores ("_").'),
     'name': "The organisation's name is mandatory",
     'phone': "Invalid telephone number. " + _phone_help,
     'fax': "Invalid fax number. " + _phone_help,
@@ -1060,6 +1102,7 @@ VALIDATION_ERRORS = {
                     'spaces).'),
     'country': "The country name is mandatory",
 }
+
 
 def validate_org_info(org_id, org_info):
     errors = {}

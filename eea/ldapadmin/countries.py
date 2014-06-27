@@ -11,28 +11,28 @@ from eea.ldapadmin.constants import LDAP_DISK_STORAGE
 _country_storage = {
     'time': 0,
     'data': {},
-    'timeout': 3600*24, # seconds
+    'timeout': 3600 * 24,  # seconds
 }
-COUNTRIES = _country_storage['data'] # shortcut
-PSEUDO_COUNTRIES = [('eu', {
-                            'code': 'eu',
-                            'name': 'European Union organisation',
-                            'pub_code': 'eu',
-                            'eu': True,
-                            'eea': True,
-                            'eionet': True,
-                            'eun22': True,
-                              }),
-                    ('int', {
-                            'code': 'int',
-                            'name': 'International or multinat. organisation',
-                            'pub_code': '',
-                            'eu': False,
-                            'eea': False,
-                            'eionet': False,
-                            'eun22': False,
-                    })
-                   ]
+COUNTRIES = _country_storage['data']  # shortcut
+PSEUDO_COUNTRIES = [('eu',
+                    {'code': 'eu',
+                     'name': 'European Union organisation',
+                     'pub_code': 'eu',
+                     'eu': True,
+                     'eea': True,
+                     'eionet': True,
+                     'eun22': True,
+                     }),
+                    ('int',
+                     {'code': 'int',
+                      'name': 'International or multinat. organisation',
+                      'pub_code': '',
+                      'eu': False,
+                      'eea': False,
+                      'eionet': False,
+                      'eun22': False,
+                      })
+                    ]
 
 DUMMY = {'code': '',
          'name': '',
@@ -44,9 +44,9 @@ DUMMY = {'code': '',
          }
 
 
-
 def update_countries():
-    """ Return country data from EEA Semantic Service and store them in json """
+    """ Return country data from EEA Semantic Service
+    and store them in json """
     s = sparql.Service(SPARQL_ENDPOINT)
     results = [i for i in s.query(SPARQL_QUERY).fetchone()]
     countries = []
@@ -96,9 +96,13 @@ def get_country(code):
 def get_country_options(country=None):
     """ Return the list of options for country field. Pseudo-countries first,
     then countries sorted by name """
+    if country == 'eea':
+        country = ['eu', 'int']
+    elif country:
+        country = [country]
     countries = COUNTRIES.items()
     if country:
         return [country_data for country_data in countries+PSEUDO_COUNTRIES
-                if country_data[0] == country]
+                if country_data[0] in country]
     countries.sort(key=lambda x: x[1]['name'])
     return PSEUDO_COUNTRIES + countries

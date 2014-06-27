@@ -1,3 +1,12 @@
+1.4.21 (unreleased)
+------------------------
+
+1.4.20 (2014-06-27)
+------------------------
+* Show all organisations also for NFPs when accessed outside the
+  nfp-eionet IG [dumitval]
+* Fix eea organisations filtering (nfp-eionet ig) [dumitval]
+
 1.4.19 (2014-06-26)
 ------------------------
 * Added the ability to import an XLS file to perform batch changes to roles
