@@ -10,3 +10,7 @@ td.alternate-cell input, td.leader-cell input{
 .nrc_role td.leader-cell{
     width: 80px;
 }
+
+td.red { 
+    background-color:Pink;
+}

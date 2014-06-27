@@ -94,6 +94,7 @@ class TemplateRenderer(Implicit):
         return zope2_tmpl(body_html=body_html)
 
     def __call__(self, name, **options):
+        options['context'] = self.aq_parent
         return self.wrap(self.render(name, **options))
 
 class TemplateRendererNoWrap(Implicit):

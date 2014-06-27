@@ -1,3 +1,6 @@
+<link href="/++resource++eea.ldapadmin-www/selectize/css/selectize.default.css" rel="stylesheet"/>
+<script src="/++resource++eea.ldapadmin-www/selectize/js/standalone/selectize.min.js"></script>
+
 <tal:def tal:define="disabled_user python:options['user'].get('status') == 'disabled'">
 <h1>Editing user data for <span tal:content="python:'%s (%s)'%(options['user']['full_name'], options['user']['id'])"></span></h1>
 
@@ -58,11 +61,12 @@
                           'error': options['errors'].get(field_name, None),
                           'widget': schema_field.widget,
                           'required': schema_field.required,
+                          'deform_field':schema_field,
                         }">
           <metal:block use-macro="template/macros/form-field" />
         </tr>
       </tal:block>
-    
+
       <tr>
         <td colspan="2" align="center">
           <input type="submit" value="Apply changes" name="submit"
@@ -71,7 +75,6 @@
         </td>
       </tr>
     </table>
-
     </form>
 </div>
 
@@ -87,9 +90,10 @@
     </td>
     <td tal:define="widget_template field/widget/template|string:textinput;
                     input_classes python:['error'] if field['error'] else [];
-                    is_textarea python: widget_template == 'textarea'">
+                    is_textarea python: widget_template == 'textarea';
+                    is_select python: widget_template=='select';">
       <span tal:condition="field/required"/>
-      <input tal:condition="not:is_textarea"
+      <input tal:condition="python: not (is_textarea or is_select)"
              type="text" size="50"
              tal:attributes="id field_id;
                              class python:' '.join(input_classes +
@@ -105,11 +109,27 @@
                                     ['account-textarea', 'large']);
                                 name string:${field/name}:utf8:ustring"
                 tal:content="field/value"></textarea>
+    <select tal:condition="is_select"
+        tal:attributes="id field_id; 
+                        disabled disabled_user;
+                        name string:${field/name}:utf8:ustring"
+                        >
+        <tal:def tal:define="choices python:field['widget'].values">
+            <option 
+                tal:repeat="ch choices" 
+                tal:attributes="value python:ch[0]; selected python:ch[0] == field['value']" 
+                tal:content="python: ch[1]">1</option>
+        </tal:def>
+    </select>
+
       <p class="error-hint"
          tal:attributes="id string:error-${field_id}"
          tal:condition="field/error"
          tal:content="field/error" />
     </td>
+    <script>
+        $(document).ready(function() { $("#edit-organisation").selectize({create:true}); });
+    </script>
   </tal:block>
 
 </metal:block>

@@ -1,3 +1,4 @@
+from deform.widget import SelectWidget
 from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
 from App.class_init import InitializeClass
@@ -438,19 +439,37 @@ class UsersAdmin(SimpleItem, PropertyManager):
         with id passed through GET
 
         """
-        id = REQUEST.form['id']
+        user_id = REQUEST.form['id']
         agent = self._get_ldap_agent()
         errors = _session_pop(REQUEST, SESSION_FORM_ERRORS, {})
-        user = agent.user_info(id)
+        user = agent.user_info(user_id)
         # message
         form_data = _session_pop(REQUEST, SESSION_FORM_DATA, None)
         if form_data is None:
             form_data = user
+
+        orgs = agent.all_organisations()
+        orgs = [{'id':k, 'text':v['name']} for k,v in orgs.items()]
+        user_orgs = list(agent.user_organisations(user_id))
+        if not user_orgs:
+            org = form_data['organisation']
+            if org:
+                orgs.append({'id':org, 'text':org})
+        orgs.sort(lambda x,y:cmp(x['text'], y['text']))
+        schema = user_info_edit_schema.clone()
+        choices = []
+        for org in orgs:
+            choices.append((org['id'], org['text']))
+        widget = SelectWidget(values=choices)
+        schema['organisation'].widget = widget
+
         options = {'user': user,
                    'form_data': form_data,
-                   'schema': user_info_edit_schema,
+                   'schema': schema,
                    'errors': errors,
-                   'forum_url': FORUM_URL}
+                   'forum_url': FORUM_URL,
+                   'organisations':orgs
+                   }
         self._set_breadcrumbs([(id, '#')])
         return self._render_template('zpt/users/edit.zpt', **options)
 
@@ -458,7 +477,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
     def edit_user_action(self, REQUEST):
         """ view """
-        id = REQUEST.form['id']
+        user_id = REQUEST.form['id']
 
         user_form = deform.Form(user_info_edit_schema)
 
@@ -474,7 +493,25 @@ class UsersAdmin(SimpleItem, PropertyManager):
             msg = u"Please correct the errors below and try again."
             _set_session_message(REQUEST, 'error', msg)
         else:
+
             agent = self._get_ldap_agent(bind=True)
+            old_info = agent.user_info(user_id)
+            if user_data['organisation'] != old_info['organisation']:
+                # first, remove the pending membership to any old organisation
+                pending_ids = agent.pending_membership(user_id)
+                for org_id in pending_ids:
+                    agent.remove_pending_from_org(org_id, [user_id])
+
+                # test if the new organisation an org id
+                org_id = user_data['organisation']
+                try:
+                    org_info = agent.org_info(org_id)
+                except:
+                    pass
+                else:
+                    user_data['organisation'] = org_info['name']
+                    agent.add_to_org(org_id, [user_id])
+
             agent.set_user_info(id, user_data)
             when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             _set_session_message(REQUEST, 'info', "Profile saved (%s)" % when)
