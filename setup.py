@@ -14,8 +14,8 @@ setup(name='eea.ldapadmin',
           'BeautifulSoup',
           'lxml',
 
-          'deform==0.9.9',
-          'colander==1.0b1',
+          'deform==0.9.4',
+          'colander==0.9.6',
           'jellyfish==0.2.0',
 
           'xlrd>=0.9.3',
