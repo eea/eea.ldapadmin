@@ -1,5 +1,6 @@
-1.4.21 (unreleased)
+1.4.21 (2014-06-30)
 ------------------------
+* Bug fix: lower version for deform and colander
 
 1.4.20 (2014-06-27)
 ------------------------
