@@ -483,7 +483,7 @@ class RolesEditor(Folder):
                 if not (id and title):  #skip empty rows
                     continue
                 roles[id] = title
-            problems['creation'] = self._create_roles(roles)
+        #   problems['creation'] = self._create_roles(roles)
 
         # Change role descriptions
         # structure in xls is role_id -> new description
@@ -495,7 +495,7 @@ class RolesEditor(Folder):
         else:
             for i in range(1, sheet.nrows):
                 row = sheet.row(i)
-                id, title = row[0].value, row[3].value
+                id, title = row[0].value, row[1].value
                 if not (id and title):  #skip empty rows
                     continue
                 roles[id] = title
@@ -530,7 +530,7 @@ class RolesEditor(Folder):
             for i in range(1, sheet.nrows):
                 row = sheet.row(i)
                 role_destination, role_source = row[0].value, row[1].value
-                if not (role_to_merge and role_destination):  #skip empty rows
+                if not (role_source and role_destination):  #skip empty rows
                     continue
                 roles[role_destination] = role_source
             problems['prefill'] = self._prefill_roles(roles)
