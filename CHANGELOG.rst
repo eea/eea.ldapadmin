@@ -12,6 +12,9 @@
 ------------------------
 * Added the ability to import an XLS file to perform batch changes to roles
   [tiberich #20140]
+* Show all organisations also for NFPs when accessed outside the
+  nfp-eionet IG [dumitval]
+* Fix eea organisations filtering (nfp-eionet ig) [dumitval]
 
 1.4.18 (2014-06-24)
 ------------------------
