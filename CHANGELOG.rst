@@ -1,4 +1,7 @@
-1.4.24 (unreleased)
+1.4.25 (unreleased)
+------------------------
+
+1.4.24 (2014-06-30)
 ------------------------
 * Ignore disabled@eionet.europa.eu as email for reset password [dumitval]
 
