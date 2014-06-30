@@ -470,7 +470,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                    'forum_url': FORUM_URL,
                    'organisations':orgs
                    }
-        self._set_breadcrumbs([(id, '#')])
+        self._set_breadcrumbs([(user_id, '#')])
         return self._render_template('zpt/users/edit.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'edit_user_action')
@@ -497,11 +497,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
             agent = self._get_ldap_agent(bind=True)
             old_info = agent.user_info(user_id)
             if user_data['organisation'] != old_info['organisation']:
-                # first, remove the pending membership to any old organisation
-                pending_ids = agent.pending_membership(user_id)
-                for org_id in pending_ids:
-                    agent.remove_pending_from_org(org_id, [user_id])
-
                 # test if the new organisation an org id
                 org_id = user_data['organisation']
                 try:

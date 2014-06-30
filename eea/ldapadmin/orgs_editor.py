@@ -691,34 +691,6 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                                ('Members', '#')])
         return self._render_template('zpt/orgs_members.zpt', **options)
 
-    security.declarePublic('pending_members_html')
-
-    def pending_members_html(self, REQUEST):
-        """ view """
-
-        org_id = REQUEST.form['id']
-        agent = self._get_ldap_agent()
-
-        org_members = []
-        members = agent.pending_members_in_org(org_id)
-
-        for user_id in members:
-            try:
-                org_members.append(agent.user_info(user_id))
-            except (NO_SUCH_OBJECT, eea.usersdb.UserNotFound):
-                pass
-
-        org_members.sort(key=operator.itemgetter('first_name'))
-        options = {
-            'organisation': agent.org_info(org_id),
-            'org_members': org_members,
-        }
-        self._set_breadcrumbs([(org_id,
-                                self.absolute_url()+'/organisation?id=%s' %
-                                org_id),
-                               ('Members', '#')])
-        return self._render_template('zpt/orgs_members_pending.zpt', **options)
-
     def notify_on_membership_op(self, user_info, org_info, operation):
         addr_from = "no-reply@eea.europa.eu"
         addr_to = user_info['email']
@@ -749,58 +721,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
             mailer.send(addr_from, [addr_to], message)
 
-    def pending_membership_ops(self, REQUEST):
-        """ view """
-        org_id = REQUEST.form['id']
-        if not self.can_edit_organisation():
-            _set_session_message(REQUEST, 'error',
-                                 ("You are not allowed to "
-                                  "remove members from this organisation"))
-            REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                      '/members_html?id=' + org_id)
-            return None
-
-        user_id_list = REQUEST.form.get('user_id')
-        if not user_id_list:
-            return
-
-        assert type(user_id_list) is list
-        for user_id in user_id_list:
-            assert type(user_id) is str
-
-        agent = self._get_ldap_agent(bind=True)
-        org_info = agent.org_info(org_id)
-
-        if 'reject' in REQUEST.form:
-            for user_id in user_id_list:
-                info = agent.user_info(user_id)
-                info['organisation'] = ''
-                self.notify_on_membership_op(info, org_info, 'rejection')
-                agent.set_user_info(user_id, info)
-            agent.remove_pending_from_org(org_id, user_id_list)
-            _set_session_message(REQUEST, 'info',
-                                 'Rejected %d members for organisation "%s".' %
-                                 (len(user_id_list), org_id))
-            log.info("%s REJECTED MEMBERS %s FOR ORGANISATION %s",
-                     logged_in_user(REQUEST), user_id_list, org_id)
-
-        if 'approve' in REQUEST.form:
-            for user_id in user_id_list:
-                info = agent.user_info(user_id)
-                self.notify_on_membership_op(info, org_info, 'approval')
-            agent.remove_pending_from_org(org_id, user_id_list)
-            agent.add_to_org(org_id, user_id_list)
-            _set_session_message(REQUEST, 'info',
-                                 'Approved %d members for organisation "%s".' %
-                                 (len(user_id_list), org_id))
-            log.info("%s APPROVED MEMBERS %s FOR ORGANISATION %s",
-                     logged_in_user(REQUEST), user_id_list, org_id)
-
-        REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                  '/members_html?id=' + org_id)
-
     security.declareProtected(eionet_edit_orgs, 'demo_members')
-
     def demo_members(self, REQUEST):
         """ view """
         from ldap import NO_SUCH_OBJECT
