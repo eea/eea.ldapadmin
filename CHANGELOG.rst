@@ -1,3 +1,10 @@
+1.4.23 (unreleased)
+------------------------
+
+1.4.22 (2014-06-30)
+------------------------
+* Bug fix: set colander version to 0.9.7
+
 1.4.21 (2014-06-30)
 ------------------------
 * Bug fix: lower version for deform and colander

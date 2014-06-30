@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='eea.ldapadmin',
-      version='1.4.21',
+      version='1.4.23',
       author='Eau de Web',
       author_email='office@eaudeweb.ro',
       packages=find_packages(),
@@ -15,7 +15,7 @@ setup(name='eea.ldapadmin',
           'lxml',
 
           'deform==0.9.4',
-          'colander==0.9.6',
+          'colander==0.9.7',
           'jellyfish==0.2.0',
 
           'xlrd>=0.9.3',
