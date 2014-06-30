@@ -26,6 +26,8 @@ manage_add_pwreset_tool_html = PageTemplateFile('zpt/pwreset_manage_add',
 manage_add_pwreset_tool_html.ldap_config_edit_macro = ldap_config.edit_macro
 manage_add_pwreset_tool_html.config_defaults = lambda: ldap_config.defaults
 
+DISABLED_EMAILS = ['disabled@eionet.europa.eu']
+
 
 def manage_add_pwreset_tool(parent, id, REQUEST=None):
     """ Create a new PasswordResetTool object """
@@ -161,6 +163,13 @@ class PasswordResetTool(SimpleItem):
         """ view """
         if not email:
             email = REQUEST.form['email']
+        if email in DISABLED_EMAILS:
+            log.info("Attempt to reset password with the address"
+                     "disabled@eionet.europa.eu")
+            msg = ("the email %s is attached to disabled users "
+                   "and cannot be used for password reset" % email)
+            _set_session_message(REQUEST, 'error', msg)
+            location = self.absolute_url() + '/'
         agent = self._get_ldap_agent()
         users = agent.search_user_by_email(email)
 

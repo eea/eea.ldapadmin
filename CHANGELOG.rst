@@ -1,3 +1,7 @@
+1.4.24 (unreleased)
+------------------------
+* Ignore disabled@eionet.europa.eu as email for reset password [dumitval]
+
 1.4.23 (2014-06-30)
 ------------------------
 * Bug fix: renamed builtin id() to user_id
