@@ -170,7 +170,7 @@ class PasswordResetTool(SimpleItem):
                    "and cannot be used for password reset" % email)
             _set_session_message(REQUEST, 'error', msg)
             location = self.absolute_url() + '/'
-            REQUEST.RESPONSE.redirect(location)
+            return REQUEST.RESPONSE.redirect(location)
         agent = self._get_ldap_agent()
         users = agent.search_user_by_email(email)
 
