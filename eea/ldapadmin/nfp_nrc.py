@@ -358,20 +358,15 @@ class NfpNrc(SimpleItem, PropertyManager):
         if not self._allowed(agent, REQUEST, country_code):
             return None
 
-        # test if the user to be added is member of a national organisation
-        if not has_national_org(agent, user_id, role_id):
-            msg = """
-The user you would like to add as NRC does not have a sufficient reference to an
-organisation for your country. Please add first as a member to one of your
-national organisations and add after that as NRC."""
-            _set_session_message(REQUEST, 'info', msg)
-            url = REQUEST.get('HTTP_REFERER') or \
-                self.absolute_url() + "/add_member_html?role_id=" + role_id
-            return REQUEST.RESPONSE.redirect(url)
-
         role_id_list = agent.add_to_role(role_id, 'user', user_id)
         roles_msg = roles_list_to_text(agent, role_id_list)
-        msg = "User %r added to roles %s." % (user_id, roles_msg)
+        msg = "User %r added to roles %s. \n" % (user_id, roles_msg)
+
+        # test if the user to be added is member of a national organisation
+        if not has_national_org(agent, user_id, role_id):
+            msg += """ The user you added as an NRC does not have a sufficient
+reference to an organisation for your country. Please corect!"""
+
         _set_session_message(REQUEST, 'info', msg)
 
         log.info("%s ADDED USER %r TO ROLE %r",
