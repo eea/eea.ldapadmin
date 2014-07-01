@@ -1,4 +1,3 @@
-#from App.class_init import InitializeClass
 from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
 from OFS.PropertyManager import PropertyManager
@@ -14,6 +13,7 @@ from ui_common import SessionMessages, TemplateRenderer #load_template,
 from ui_common import extend_crumbs, get_role_name, roles_list_to_text
 import deform
 import json
+import ldap
 import ldap_config
 import logging
 import operator
@@ -119,8 +119,7 @@ def get_nfp_roles(agent, request):
 
 def get_nfps_for_country(agent, country_code):
     out = []
-    filterstr = ("(&(objectClass=groupOfUniqueNames)(uniqueMember=%s))" %
-                   agent._user_dn(uid))
+    filterstr = "(objectClass=groupOfUniqueNames)"
     nfp_roles = agent.filter_roles("eionet-nfp-*-%s" % country_code,
         prefix_dn="cn=eionet-nfp,cn=eionet",
         filterstr=filterstr,
@@ -440,12 +439,32 @@ reference to an organisation for your country. Please corect!"""
         if form_data is None:
             form_data = user
             form_data['user_id'] = user['uid']
-        options = {'user': user,
-                   'form_data': form_data,
-                   'schema': user_info_edit_schema,
-                   'errors': errors,
-                   'role_id': role_id,
-                   }
+
+        orgs = agent.all_organisations()
+        orgs = [{'id':k, 'text':v['name']} for k,v in orgs.items()]
+
+        user_orgs = list(agent.user_organisations(user_id))
+        if not user_orgs:
+            org = form_data['organisation']
+            if org:
+                orgs.append({'id':org, 'text':org})
+        orgs.sort(lambda x,y:cmp(x['text'], y['text']))
+
+        choices = []
+        for org in orgs:
+            choices.append((org['id'], org['text']))
+
+        schema = user_info_edit_schema.clone()
+        widget = deform.widget.SelectWidget(values=choices)
+        schema['organisation'].widget = widget
+
+        options = {
+            'user': user,
+            'form_data': form_data,
+            'schema': schema,
+            'errors': errors,
+            'role_id': role_id,
+        }
         self._set_breadcrumbs([(role_id,
                                 '%s/nrcs?nfp=%s' % (self.absolute_url(),
                                                     country_code)),
@@ -455,7 +474,7 @@ reference to an organisation for your country. Please corect!"""
     security.declareProtected(eionet_access_nfp_nrc, 'edit_member_action')
     def edit_member_action(self, REQUEST):
         """ view """
-        agent = self._get_ldap_agent()
+        agent = self._get_ldap_agent(bind=True)
         user_id = REQUEST.form['user_id']
         role_id = REQUEST.form['role_id']
         country_code = role_id.rsplit('-', 1)[-1]
@@ -467,7 +486,7 @@ reference to an organisation for your country. Please corect!"""
         user = agent.user_info(user_id)
 
         try:
-            user_data = user_form.validate(REQUEST.form.items())
+            new_info = user_form.validate(REQUEST.form.items())
         except deform.ValidationFailure, e:
             session = REQUEST.SESSION
             errors = {}
@@ -478,18 +497,61 @@ reference to an organisation for your country. Please corect!"""
             msg = u"Please correct the errors below and try again."
             _set_session_message(REQUEST, 'error', msg)
         else:
-            agent = self._get_ldap_agent(bind=True, secondary=True)
             # put these readonly-s back
-            user_data.update(first_name=user['first_name'],
-                             last_name=user['last_name'])
-            agent.set_user_info(user_id, user_data)
+            new_info.update(first_name=user['first_name'],
+                            last_name=user['last_name'])
+
+            # make a check if user is changing the organisation
+            old_info = agent.user_info(user_id)
+
+            new_org_id = new_info['organisation']
+            old_org_id = old_info['organisation']
+
+            new_org_id_valid = agent.org_exists(new_org_id)
+            old_org_id_valid = agent.org_exists(old_org_id)
+
+            if new_org_id != old_org_id:
+                if old_org_id_valid:
+                    self._remove_from_org(agent, old_org_id, user_id)
+                if new_org_id_valid:
+                    self._add_to_org(agent, new_org_id, user_id)
+
+            agent.set_user_info(user_id, new_info)
             when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            _set_session_message(REQUEST, 'info', "Profile saved (%s)" % when)
+            _set_session_message(REQUEST, 'message', "Profile saved (%s)" % when)
+
             log.info("%s EDITED USER %s as member of %s",
                      logged_in_user(REQUEST), user_id, role_id)
 
         REQUEST.RESPONSE.redirect('%s/edit_member?user_id=%s&role_id=%s' %
                                   (self.absolute_url(), user_id, role_id))
+
+    def _add_to_org(self, agent, org_id, user_id):
+        try:
+            agent.add_to_org(org_id, [user_id])
+        except ldap.INSUFFICIENT_ACCESS:
+            ids = self.aq_parent.objectIds(["Eionet Organisations Editor"])
+            if ids:
+                org_agent = ids[0]._get_ldap_agent(bind=True)
+                org_agent.add_to_org(org_id, [user_id])
+            else:
+                raise
+
+    def _remove_from_org(self, agent, org_id, user_id):
+        try:
+            agent.remove_from_org(org_id, [user_id])
+        except ldap.NO_SUCH_ATTRIBUTE:  # user is not in org
+            pass
+        except ldap.INSUFFICIENT_ACCESS:
+            ids = self.aq_parent.objectIds(["Eionet Organisations Editor"])
+            if ids:
+                org_agent = ids[0]._get_ldap_agent(bind=True)
+                try:
+                    org_agent.remove_from_org(org_id, [user_id])
+                except ldap.NO_SUCH_ATTRIBUTE:    #user is not in org
+                    pass
+            else:
+                raise
 
     security.declareProtected(eionet_access_nfp_nrc, 'set_pcp')
     def set_pcp(self, REQUEST):
