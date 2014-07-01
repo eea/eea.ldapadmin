@@ -1,4 +1,7 @@
-1.4.25 (unreleased)
+1.4.26 (unreleased)
+------------------------
+
+1.4.25 (2014-07-01)
 ------------------------
 * Return correct message when trying to reset password for
   disabled@eionet... [dumitval]
