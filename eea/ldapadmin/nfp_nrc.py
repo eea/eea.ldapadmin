@@ -483,7 +483,6 @@ reference to an organisation for your country. Please corect!"""
         elif user_id not in agent.members_in_role(role_id)['users']:
             return None
         user_form = deform.Form(user_info_edit_schema)
-        user = agent.user_info(user_id)
 
         try:
             new_info = user_form.validate(REQUEST.form.items())
@@ -497,12 +496,11 @@ reference to an organisation for your country. Please corect!"""
             msg = u"Please correct the errors below and try again."
             _set_session_message(REQUEST, 'error', msg)
         else:
-            # put these readonly-s back
-            new_info.update(first_name=user['first_name'],
-                            last_name=user['last_name'])
-
-            # make a check if user is changing the organisation
             old_info = agent.user_info(user_id)
+
+            # put these readonly-s back
+            new_info.update(first_name=old_info['first_name'],
+                            last_name=old_info['last_name'])
 
             new_org_id = new_info['organisation']
             old_org_id = old_info['organisation']
@@ -510,6 +508,7 @@ reference to an organisation for your country. Please corect!"""
             new_org_id_valid = agent.org_exists(new_org_id)
             old_org_id_valid = agent.org_exists(old_org_id)
 
+            # make a check if user is changing the organisation
             if new_org_id != old_org_id:
                 if old_org_id_valid:
                     self._remove_from_org(agent, old_org_id, user_id)

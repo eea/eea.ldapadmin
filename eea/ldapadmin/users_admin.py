@@ -482,7 +482,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         user_form = deform.Form(user_info_edit_schema)
 
         try:
-            user_data = user_form.validate(REQUEST.form.items())
+            new_info = user_form.validate(REQUEST.form.items())
         except deform.ValidationFailure, e:
             session = REQUEST.SESSION
             errors = {}
@@ -493,29 +493,63 @@ class UsersAdmin(SimpleItem, PropertyManager):
             msg = u"Please correct the errors below and try again."
             _set_session_message(REQUEST, 'error', msg)
         else:
-
-            agent = self._get_ldap_agent(bind=True)
+            agent = self._get_ldap_agent(bind=True, secondary=True)
             old_info = agent.user_info(user_id)
-            if user_data['organisation'] != old_info['organisation']:
-                # test if the new organisation an org id
-                org_id = user_data['organisation']
-                try:
-                    org_info = agent.org_info(org_id)
-                except:
-                    pass
-                else:
-                    user_data['organisation'] = org_info['name']
-                    agent.add_to_org(org_id, [user_id])
 
-            agent.set_user_info(id, user_data)
+            new_info.update(first_name=old_info['first_name'],
+                            last_name=old_info['last_name'])
+
+            new_org_id = new_info['organisation']
+            old_org_id = old_info['organisation']
+
+            new_org_id_valid = agent.org_exists(new_org_id)
+            old_org_id_valid = agent.org_exists(old_org_id)
+
+            # make a check if user is changing the organisation
+            if new_org_id != old_org_id:
+                if old_org_id_valid:
+                    self._remove_from_org(agent, old_org_id, user_id)
+                if new_org_id_valid:
+                    self._add_to_org(agent, new_org_id, user_id)
+
+            agent.set_user_info(user_id, new_info)
             when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            _set_session_message(REQUEST, 'info', "Profile saved (%s)" % when)
-            log.info("%s EDITED USER %s", logged_in_user(REQUEST), id)
+            _set_session_message(REQUEST, 'message', "Profile saved (%s)" % when)
 
-        REQUEST.RESPONSE.redirect(self.absolute_url() + '/edit_user?id=' + id)
+            log.info("%s EDITED USER %s as member of %s",
+                     logged_in_user(REQUEST), user_id, new_org_id)
+
+        REQUEST.RESPONSE.redirect(self.absolute_url() + '/edit_user?id=' + user_id)
+
+    def _add_to_org(self, agent, org_id, user_id):
+        try:
+            agent.add_to_org(org_id, [user_id])
+        except ldap.INSUFFICIENT_ACCESS:
+            ids = self.aq_parent.objectIds(["Eionet Organisations Editor"])
+            if ids:
+                org_agent = ids[0]._get_ldap_agent(bind=True)
+                org_agent.add_to_org(org_id, [user_id])
+            else:
+                raise
+
+    def _remove_from_org(self, agent, org_id, user_id):
+        try:
+            agent.remove_from_org(org_id, [user_id])
+        except ldap.NO_SUCH_ATTRIBUTE:  # user is not in org
+            pass
+        except ldap.INSUFFICIENT_ACCESS:
+            ids = self.aq_parent.objectIds(["Eionet Organisations Editor"])
+            if ids:
+                org_agent = ids[0]._get_ldap_agent(bind=True)
+                try:
+                    org_agent.remove_from_org(org_id, [user_id])
+                except ldap.NO_SUCH_ATTRIBUTE:    #user is not in org
+                    pass
+            else:
+                raise
+
 
     security.declareProtected(eionet_edit_users, 'delete_user')
-
     def delete_user(self, REQUEST):
         """
         View that asks for confirmation of user deletion
@@ -529,7 +563,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template('zpt/users/delete.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'delete_user_action')
-
     def delete_user_action(self, REQUEST):
         """ Performing the delete action """
         id = REQUEST.form['id']
@@ -544,7 +577,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/')
 
     security.declareProtected(eionet_edit_users, 'disable_user')
-
     def disable_user(self, REQUEST):
         """
         View that asks for confirmation of user disable
@@ -558,7 +590,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template('zpt/users/disable.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'disable_user_action')
-
     def disable_user_action(self, REQUEST):
         """ Performing the disable user action """
         id = REQUEST.form['id']
