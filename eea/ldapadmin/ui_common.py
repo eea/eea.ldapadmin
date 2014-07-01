@@ -87,7 +87,6 @@ class TemplateRenderer(Implicit):
         namespace['common'] = self.common_factory(context)
         return template.pt_render(namespace)
 
-
     def wrap(self, body_html):
         context = self.aq_parent
         zope2_tmpl = zope2_wrapper.__of__(context)

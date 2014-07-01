@@ -191,6 +191,8 @@ def has_national_org(agent, user_id, role_id):
 
     return has_national_org
 
+#cand country pentru role este eea, organisation country poate fi eu sau int
+
 
 def role_members(agent, role_id):
     members = agent.members_in_role(role_id)

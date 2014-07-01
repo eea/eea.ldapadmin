@@ -877,6 +877,16 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             assert type(user_id) is str
 
         agent = self._get_ldap_agent(bind=True)
+        for user_id in user_id_list:
+            old_info = agent.user_info(user_id)
+            old_org_id = old_info['organisation']
+            old_org_id_valid = agent.org_exists(old_org_id)
+            if old_org_id_valid:
+                self._remove_from_org(agent, old_org_id, user_id)
+
+            old_info['organisation'] = org_id
+            agent.set_user_info(user_id, old_info)
+
         agent.add_to_org(org_id, user_id_list)
 
         _set_session_message(REQUEST, 'info',
