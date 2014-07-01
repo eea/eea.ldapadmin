@@ -1,5 +1,7 @@
 1.4.25 (unreleased)
 ------------------------
+* Return correct message when trying to reset password for
+  disabled@eionet... [dumitval]
 
 1.4.24 (2014-06-30)
 ------------------------

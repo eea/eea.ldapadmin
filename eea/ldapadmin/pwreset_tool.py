@@ -166,10 +166,11 @@ class PasswordResetTool(SimpleItem):
         if email in DISABLED_EMAILS:
             log.info("Attempt to reset password with the address"
                      "disabled@eionet.europa.eu")
-            msg = ("the email %s is attached to disabled users "
+            msg = ("The email %s is attached to disabled users "
                    "and cannot be used for password reset" % email)
             _set_session_message(REQUEST, 'error', msg)
             location = self.absolute_url() + '/'
+            REQUEST.RESPONSE.redirect(location)
         agent = self._get_ldap_agent()
         users = agent.search_user_by_email(email)
 
