@@ -75,6 +75,9 @@
         </td>
       </tr>
     </table>
+    <script>
+        $(document).ready(function() { $("#edit-organisation").selectize({create:true}); });
+    </script>
     </form>
 </div>
 
@@ -127,9 +130,6 @@
          tal:condition="field/error"
          tal:content="field/error" />
     </td>
-    <script>
-        $(document).ready(function() { $("#edit-organisation").selectize({create:true}); });
-    </script>
   </tal:block>
 
 </metal:block>

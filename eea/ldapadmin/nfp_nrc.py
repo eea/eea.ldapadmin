@@ -450,9 +450,13 @@ reference to an organisation for your country. Please corect!"""
             org = form_data['organisation']
             if org:
                 orgs.append({'id':org, 'text':org})
+        else:
+            org = user_orgs[0]
+            org_id = agent._org_id(org)
+            form_data['organisation'] = org_id
         orgs.sort(lambda x,y:cmp(x['text'], y['text']))
 
-        choices = []
+        choices = [('-', '-')]
         for org in orgs:
             choices.append((org['id'], org['text']))
 

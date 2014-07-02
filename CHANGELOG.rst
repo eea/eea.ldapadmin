@@ -1,5 +1,8 @@
-1.4.28 (unreleased)
+1.4.28 (2014-07-02)
 ------------------------
+* Bug fix: when member belongs to an organisation, use the organisation
+  membership instead of the 'o' field from LDAP, to show their
+  membership
 
 1.4.27 (2014-07-02)
 ------------------------

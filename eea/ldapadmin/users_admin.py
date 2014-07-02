@@ -455,9 +455,13 @@ class UsersAdmin(SimpleItem, PropertyManager):
             org = form_data['organisation']
             if org:
                 orgs.append({'id':org, 'text':org})
+        else:
+            org = user_orgs[0]
+            org_id = agent._org_id(org)
+            form_data['organisation'] = org_id
         orgs.sort(lambda x,y:cmp(x['text'], y['text']))
         schema = user_info_edit_schema.clone()
-        choices = []
+        choices = [('-', '-')]
         for org in orgs:
             choices.append((org['id'], org['text']))
         widget = SelectWidget(values=choices)
@@ -468,7 +472,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
                    'schema': schema,
                    'errors': errors,
                    'forum_url': FORUM_URL,
-                   'organisations':orgs
                    }
         self._set_breadcrumbs([(user_id, '#')])
         return self._render_template('zpt/users/edit.zpt', **options)

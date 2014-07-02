@@ -952,10 +952,14 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         if not user_orgs:
             org = form_data['organisation']
             if org:
-                orgs.append({'id': org, 'text': org})
-        orgs.sort(lambda x, y: cmp(x['text'], y['text']))
+                orgs.append({'id':org, 'text':org})
+        else:
+            org = user_orgs[0]
+            org_id = agent._org_id(org)
+            form_data['organisation'] = org_id
+        orgs.sort(lambda x,y:cmp(x['text'], y['text']))
         schema = user_info_edit_schema.clone()
-        choices = []
+        choices = [('-', '-')]
         for org in orgs:
             choices.append((org['id'], org['text']))
         widget = SelectWidget(values=choices)
