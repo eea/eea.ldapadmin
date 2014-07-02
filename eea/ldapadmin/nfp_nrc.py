@@ -152,46 +152,63 @@ def get_nrc_roles(agent, user_id):
 
 
 def get_nrc_members(agent, country_code):
+    """ Get the nrc members assigned to this country code
+    """
     out = []
-    for (role_id, attr) in agent.filter_roles("eionet-nrc-*-%s" % country_code,
-                                           prefix_dn="cn=eionet-nrc,cn=eionet",
-                                           attrlist=('description',)):
-        try:
-            description = attr.get('description', ('',))[0]
-            role = SimplifiedRole(role_id, description)
-        except ValueError:
-            continue
-        else:
-            members = agent.members_in_role(role_id)
-            users = [agent.user_info(user_id) for user_id in members['users']]
-            for user in users:
-                user['no_national_organisation'] = not has_national_org(
-                    agent, user['id'], role_id)
-            orgs = [agent.org_info(org_id) for org_id in members['orgs']]
-            leaders, alternates = agent.role_leaders(role_id)
-            role.set_members_info(users, orgs, leaders, alternates)
-            out.append(role)
+
+    top_nrc_role_dns = [x[0] for x in
+                        agent.conn.search_s(
+                            agent._role_dn('eionet-nrc'),
+                            ldap.SCOPE_ONELEVEL,
+                            filterstr='(objectClass=groupOfUniqueNames)',
+                            attrlist=['id']
+                        )]
+
+    for top_role_dn in top_nrc_role_dns:
+        top_role_id = agent._role_id(top_role_dn)
+        filter_country = "%s-*-%s" % (top_role_id, country_code)
+        #print "searching roles with dn", filter_country
+
+        for (role_dn, attr) in agent.conn.search_s(
+            top_role_dn,
+            ldap.SCOPE_SUBTREE,
+            filterstr="(&(objectClass=groupOfUniqueNames)(cn=%s))" % filter_country,
+            attrlist=['description']):
+
+            role_id = agent._role_id(role_dn)
+            #print "Result", role_id, attr
+
+            try:
+                description = attr.get('description', ('',))[0]
+                role = SimplifiedRole(role_id, description)
+            except ValueError:
+                continue
+            else:
+                members = agent.members_in_role(role_id)
+                users = [agent.user_info(user_id) for user_id in members['users']]
+                for user in users:
+                    user['ldap_org'] = get_national_org(agent, user['id'], role_id)
+                orgs = [agent.org_info(org_id) for org_id in members['orgs']]
+                leaders, alternates = agent.role_leaders(role_id)
+                role.set_members_info(users, orgs, leaders, alternates)
+                out.append(role)
 
     return sorted(out, key=operator.attrgetter('role_id'))
 
 
-def has_national_org(agent, user_id, role_id):
+def get_national_org(agent, user_id, role_id):
     # test if the user is member of a national organisation
     # for that role
     country_code = role_id.split('-')[-1]
+    if country_code == "eea":
+        country_code = 'eu'
     user_orgs = agent._search_user_in_orgs(user_id)
-    has_national_org = False
 
     for org_id in user_orgs:
         org_info = agent.org_info(org_id)
         org_country = org_info.get("country")
         if org_country == country_code:
-            has_national_org = True
-            break
-
-    return has_national_org
-
-#cand country pentru role este eea, organisation country poate fi eu sau int
+            return org_info
 
 
 def role_members(agent, role_id):
@@ -202,6 +219,7 @@ def role_members(agent, role_id):
         'orgs': dict((org_id, agent.org_info(org_id))
                      for org_id in members['orgs']),
     }
+
 
 class NfpNrc(SimpleItem, PropertyManager):
     meta_type = 'Eionet NFP Admin'
@@ -311,10 +329,10 @@ class NfpNrc(SimpleItem, PropertyManager):
 
         options = {'roles': roles,
                    'country': country_code,
-                   'country_name': country_name,
+                   'country_name': country_name or country_code,
                    # naming is similar to all NRC roles
                    'naming': roles_leaders.naming(roles[0].role_id),
-                   'has_problematic_users': True,
+                   #'has_problematic_users': has_problematic_users,
                   }
         self._set_breadcrumbs([("Browsing NRC-s in %s" % country_name, '#')])
         return self._render_template('zpt/nfp_nrc/nrcs.zpt', **options)
@@ -364,7 +382,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         msg = "User %r added to roles %s. \n" % (user_id, roles_msg)
 
         # test if the user to be added is member of a national organisation
-        if not has_national_org(agent, user_id, role_id):
+        if not get_national_org(agent, user_id, role_id):
             msg += """ The user you added as an NRC does not have a sufficient
 reference to an organisation for your country. Please corect!"""
 

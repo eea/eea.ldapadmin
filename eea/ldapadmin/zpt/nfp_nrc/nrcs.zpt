@@ -45,7 +45,7 @@
                   style python:('display: inline;;' and user_info['id'] in role.leaders or 'display: none;;')"
                   tal:content="options/naming/leader/short"></span>
             </td>
-            <td class="" tal:attributes="class python: user_info['no_national_organisation'] and 'red' or ''">
+            <td class="" tal:attributes="class python: user_info['ldap_org'] and 'red' or ''">
               <a tal:attributes="href string:edit_member?user_id=${user_info/id}&role_id=${role/role_id}" tal:content="user_info/full_name" />
             </td>
 
@@ -67,7 +67,15 @@
                 <span class="user-phone" tal:content="user_info/fax" />
               </td>
 
-              <td>
+              <td tal:condition="user_info/ldap_org|nothing">
+                  <img src="/++resource++eea.ldapadmin-www/users.png" 
+                      class="middle-image image12" alt="" 
+                      title="LDAP Organisation">
+                  <a tal:define="org user_info/ldap_org" 
+                      tal:content="org/name"
+                      tal:attributes="href string:http://www.eionet.europa.eu/ldap-organisations/organisation?id=org['id']">Something</a>
+              </td>
+              <td tal:condition="not:user_info/ldap_org|nothing">
                 <span tal:content="user_info/organisation" />
               </td>
             </tal:block>
