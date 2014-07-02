@@ -1,9 +1,9 @@
-<div id="operations" tal:define="org_info options/organisation">
+<div id="operations" class="right_portlet" tal:define="org_info options/organisation">
   <h2>Operations</h2>
   <ul>
     <li tal:condition="common/can_edit_organisation">
       <a tal:attributes="href string:${common/base_url}/edit_organisation_html?id=${org_info/id}"
-         >Edit <tal:block content="org_info/id"/></a>
+         >Edit</a>
     </li>
     <li tal:condition="common/checkPermissionEditOrganisations">
       <a tal:attributes="href string:${common/base_url}/rename_organisation_html?id=${org_info/id}"
@@ -11,7 +11,7 @@
     </li>
     <li tal:condition="common/can_edit_organisation">
       <a tal:attributes="href string:${common/base_url}/delete_organisation_html?id=${org_info/id}"
-         >Delete <tal:block content="org_info/id"/></a>
+         >Delete</a>
     </li>
     <li>
       <a tal:attributes="href string:${common/base_url}/members_html?id=${org_info/id}"

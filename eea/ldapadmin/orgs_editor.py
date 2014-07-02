@@ -139,7 +139,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             agent = self._get_ldap_agent()
             org_id = self.REQUEST.form.get('id')
             org_info = agent.org_info(org_id)
-            return nfp_country == org_info['country']
+            if nfp_country == 'eea':
+                return org_info['country'] in ['eu', 'int']
+            else:
+                return nfp_country == org_info['country']
 
     security.declarePublic('checkPermissionEditOrganisations()')
 
@@ -724,6 +727,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             mailer.send(addr_from, [addr_to], message)
 
     security.declareProtected(eionet_edit_orgs, 'demo_members')
+
     def demo_members(self, REQUEST):
         """ view """
         from ldap import NO_SUCH_OBJECT
@@ -943,13 +947,13 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             form_data['user_id'] = member['uid']
 
         orgs = agent.all_organisations()
-        orgs = [{'id':k, 'text':v['name']} for k,v in orgs.items()]
+        orgs = [{'id': k, 'text': v['name']} for k, v in orgs.items()]
         user_orgs = list(agent.user_organisations(user_id))
         if not user_orgs:
             org = form_data['organisation']
             if org:
-                orgs.append({'id':org, 'text':org})
-        orgs.sort(lambda x,y:cmp(x['text'], y['text']))
+                orgs.append({'id': org, 'text': org})
+        orgs.sort(lambda x, y: cmp(x['text'], y['text']))
         schema = user_info_edit_schema.clone()
         choices = []
         for org in orgs:
@@ -1015,7 +1019,9 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
             agent.set_user_info(user_id, new_info)
             when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            _set_session_message(REQUEST, 'message', "Profile saved (%s)" % when)
+            _set_session_message(REQUEST,
+                                 'message',
+                                 "Profile saved (%s)" % when)
 
             log.info("%s EDITED USER %s as member of %s",
                      logged_in_user(REQUEST), user_id, org_id)
@@ -1045,11 +1051,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                 org_agent = ids[0]._get_ldap_agent(bind=True)
                 try:
                     org_agent.remove_from_org(org_id, [user_id])
-                except ldap.NO_SUCH_ATTRIBUTE:    #user is not in org
+                except ldap.NO_SUCH_ATTRIBUTE:    # user is not in org
                     pass
             else:
                 raise
-
 
     def nfp_for_country(self):
         """ """

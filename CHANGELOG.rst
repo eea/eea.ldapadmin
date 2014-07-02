@@ -1,5 +1,6 @@
 1.4.27 (unreleased)
 ------------------------
+* Allow nfp for eea to edit eu and int organisations [dumitval]
 
 1.4.26 (2014-07-02)
 ------------------------
