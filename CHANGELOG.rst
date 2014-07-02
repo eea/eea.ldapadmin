@@ -1,4 +1,7 @@
-1.4.27 (unreleased)
+1.4.28 (unreleased)
+------------------------
+
+1.4.27 (2014-07-02)
 ------------------------
 * Allow nfp for eea to edit eu and int organisations [dumitval]
 
