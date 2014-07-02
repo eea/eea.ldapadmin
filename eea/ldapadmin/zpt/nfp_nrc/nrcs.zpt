@@ -73,7 +73,8 @@
                       title="LDAP Organisation">
                   <a tal:define="org user_info/ldap_org" 
                       tal:content="org/name"
-                      tal:attributes="href string:http://www.eionet.europa.eu/ldap-organisations/organisation?id=org['id']">Something</a>
+                      tal:attributes="href string:http://www.eionet.europa.eu/ldap-organisations/organisation?id=${org/id}">Something</a>
+                  (<span tal:content="org/id" />)
               </td>
               <td tal:condition="not:user_info/ldap_org|nothing">
                 <span tal:content="user_info/organisation" />

@@ -318,7 +318,7 @@ class NfpNrc(SimpleItem, PropertyManager):
 
         for role in roles:
             for user in role.users:
-                if user.get('no_national_organisation'):
+                if not user['ldap_org']:
                     has_problematic_users = True
                     break
 
