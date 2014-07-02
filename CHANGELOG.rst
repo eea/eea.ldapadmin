@@ -1,3 +1,6 @@
+1.4.29 (unreleased)
+------------------------
+
 1.4.28 (2014-07-02)
 ------------------------
 * Bug fix: when member belongs to an organisation, use the organisation
