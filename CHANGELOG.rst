@@ -1,3 +1,6 @@
+1.4.27 (unreleased)
+------------------------
+
 1.4.26 (2014-07-02)
 ------------------------
 * Use the template provided by the Naaya Groupware, if the Zope server is a
