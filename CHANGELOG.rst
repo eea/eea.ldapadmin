@@ -1,5 +1,7 @@
-1.4.31 (unreleased)
+1.4.31 (2014-07-02)
 ------------------------
+* Bug fix: show parens in organisation selection list for users edit forms
+  [tiberich #19143]
 
 1.4.30 (2014-07-02)
 ------------------------
