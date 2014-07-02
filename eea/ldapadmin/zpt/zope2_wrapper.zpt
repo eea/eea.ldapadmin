@@ -1,6 +1,5 @@
-<metal:block use-macro="here/standard_template.pt/macros/page">
+<metal:block use-macro="options/main_page_macro">
   <metal:block fill-slot="body">
-
     <!-- <script src="/++resource++eea.ldapadmin&#45;www/jquery&#45;1.4.4.min.js"></script> -->
     <script src="/++resource++eea.ldapadmin-www/jquery-ui.min.js"></script>
 

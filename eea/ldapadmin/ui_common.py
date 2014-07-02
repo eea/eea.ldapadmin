@@ -90,7 +90,19 @@ class TemplateRenderer(Implicit):
     def wrap(self, body_html):
         context = self.aq_parent
         zope2_tmpl = zope2_wrapper.__of__(context)
-        return zope2_tmpl(body_html=body_html)
+        # Naaya groupware integration. If present, use the standard template
+        # of the current site
+        macro = self.aq_parent.restrictedTraverse('/').get('gw_macro')
+        if macro:
+            try:
+                layout = self.aq_parent.getLayoutTool().getCurrentSkin()
+                main_template = layout.getTemplateById('standard_template')
+            except:
+                main_template = self.aq_parent.restrictedTraverse('standard_template.pt')
+        else:
+            main_template = self.aq_parent.restrictedTraverse('standard_template.pt')
+        main_page_macro = main_template.macros['page']
+        return zope2_tmpl(main_page_macro=main_page_macro, body_html=body_html)
 
     def __call__(self, name, **options):
         options['context'] = self.aq_parent
@@ -103,6 +115,8 @@ class TemplateRendererNoWrap(Implicit):
     def render(self, name, **options):
         context = self.aq_parent
         template = load_template(name)
+        options['context'] = self.aq_parent
+
         namespace = template.pt_getContext((), options)
         namespace['common'] = self.common_factory(context)
         return template.pt_render(namespace)
@@ -159,7 +173,7 @@ class CommonTemplateLogic(object):
             'can_edit_members': self.context.can_edit_members(role_id, user),
             'can_delete_role': self.context.can_delete_role(role_id, user),
             'members_in_role': members_in_role,
-            'leaders_enabled': roles_leaders.leaders_enabled(role_id)
+            'leaders_enabled': roles_leaders.leaders_enabled(role_id),
         }
         tr = self.context._render_template
         return tr.render('zpt/roles_buttons.zpt', **options)
@@ -189,6 +203,7 @@ class CommonTemplateLogic(object):
     @property
     def is_manager(self):
         return ('Manager' in self.context.REQUEST.AUTHENTICATED_USER.getRoles())
+
 
 def network_name(self):
     """ E.g. EIONET, SINAnet etc. """
