@@ -167,7 +167,6 @@ def get_nrc_members(agent, country_code):
     for top_role_dn in top_nrc_role_dns:
         top_role_id = agent._role_id(top_role_dn)
         filter_country = "%s-*-%s" % (top_role_id, country_code)
-        #print "searching roles with dn", filter_country
 
         for (role_dn, attr) in agent.conn.search_s(
             top_role_dn,
@@ -176,7 +175,6 @@ def get_nrc_members(agent, country_code):
             attrlist=['description']):
 
             role_id = agent._role_id(role_dn)
-            #print "Result", role_id, attr
 
             try:
                 description = attr.get('description', ('',))[0]
@@ -461,13 +459,13 @@ reference to an organisation for your country. Please corect!"""
             form_data['user_id'] = user['uid']
 
         orgs = agent.all_organisations()
-        orgs = [{'id':k, 'text':v['name']} for k,v in orgs.items()]
+        orgs = [{'id':k, 'text':v['name'], 'ldap':True} for k,v in orgs.items()]
 
         user_orgs = list(agent.user_organisations(user_id))
         if not user_orgs:
             org = form_data['organisation']
             if org:
-                orgs.append({'id':org, 'text':org})
+                orgs.append({'id':org, 'text':org, 'ldap':False})
         else:
             org = user_orgs[0]
             org_id = agent._org_id(org)
@@ -476,7 +474,11 @@ reference to an organisation for your country. Please corect!"""
 
         choices = [('-', '-')]
         for org in orgs:
-            choices.append((org['id'], org['text']))
+            if org['ldap']:
+                label = u"%s (%s)" % (org['text'], org['id'])
+            else:
+                label = org['text']
+            choices.append((org['id'], label))
 
         schema = user_info_edit_schema.clone()
         widget = deform.widget.SelectWidget(values=choices)

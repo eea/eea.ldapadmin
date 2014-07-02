@@ -449,12 +449,12 @@ class UsersAdmin(SimpleItem, PropertyManager):
             form_data = user
 
         orgs = agent.all_organisations()
-        orgs = [{'id':k, 'text':v['name']} for k,v in orgs.items()]
+        orgs = [{'id':k, 'text':v['name'], 'ldap':True} for k,v in orgs.items()]
         user_orgs = list(agent.user_organisations(user_id))
         if not user_orgs:
             org = form_data['organisation']
             if org:
-                orgs.append({'id':org, 'text':org})
+                orgs.append({'id':org, 'text':org, 'ldap': False})
         else:
             org = user_orgs[0]
             org_id = agent._org_id(org)
@@ -463,7 +463,11 @@ class UsersAdmin(SimpleItem, PropertyManager):
         schema = user_info_edit_schema.clone()
         choices = [('-', '-')]
         for org in orgs:
-            choices.append((org['id'], org['text']))
+            if org['ldap']:
+                label = u"%s (%s)" % (org['text'], org['id'])
+            else:
+                label = org['text']
+            choices.append((org['id'], label))
         widget = SelectWidget(values=choices)
         schema['organisation'].widget = widget
 
@@ -496,7 +500,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
             msg = u"Please correct the errors below and try again."
             _set_session_message(REQUEST, 'error', msg)
         else:
-            agent = self._get_ldap_agent(bind=True, secondary=True)
+            agent = self._get_ldap_agent(bind=True)
             old_info = agent.user_info(user_id)
 
             new_info.update(first_name=old_info['first_name'],
