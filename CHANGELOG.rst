@@ -1,5 +1,7 @@
 1.4.30 (unreleased)
 ------------------------
+* Bug fix: fix NRC table (id of link, add org id in parens, show proper message at top)
+  [tiberich #19143]
 
 1.4.29 (2014-07-02)
 ------------------------
