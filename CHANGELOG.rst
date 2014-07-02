@@ -1,5 +1,8 @@
-1.4.26 (unreleased)
+1.4.26 (2014-07-02)
 ------------------------
+* Use the template provided by the Naaya Groupware, if the Zope server is a
+  groupware application
+  [tiberich #19143]
 
 1.4.25 (2014-07-01)
 ------------------------
