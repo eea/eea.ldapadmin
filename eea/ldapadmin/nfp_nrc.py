@@ -376,8 +376,8 @@ class NfpNrc(SimpleItem, PropertyManager):
             return None
 
         role_id_list = agent.add_to_role(role_id, 'user', user_id)
-        roles_msg = roles_list_to_text(agent, role_id_list)
-        msg = "User %r added to roles %s. \n" % (user_id, roles_msg)
+        role_msg = get_role_name(agent, role_id)
+        msg = "User %r added to role %s. \n" % (user_id, role_msg)
 
         # test if the user to be added is member of a national organisation
         if not get_national_org(agent, user_id, role_id):
