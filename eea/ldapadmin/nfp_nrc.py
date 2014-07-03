@@ -536,8 +536,7 @@ reference to an organisation for your country. Please corect!"""
 
             # make a check if user is changing the organisation
             if new_org_id != old_org_id:
-                if old_org_id_valid:
-                    self._remove_from_org(agent, old_org_id, user_id)
+                self._remove_from_all_orgs(agent, user_id)
                 if new_org_id_valid:
                     self._add_to_org(agent, new_org_id, user_id)
 
@@ -562,21 +561,24 @@ reference to an organisation for your country. Please corect!"""
             else:
                 raise
 
-    def _remove_from_org(self, agent, org_id, user_id):
-        try:
-            agent.remove_from_org(org_id, [user_id])
-        except ldap.NO_SUCH_ATTRIBUTE:  # user is not in org
-            pass
-        except ldap.INSUFFICIENT_ACCESS:
-            ids = self.aq_parent.objectIds(["Eionet Organisations Editor"])
-            if ids:
-                org_agent = ids[0]._get_ldap_agent(bind=True)
-                try:
-                    org_agent.remove_from_org(org_id, [user_id])
-                except ldap.NO_SUCH_ATTRIBUTE:    #user is not in org
-                    pass
-            else:
-                raise
+    def _remove_from_all_orgs(self, agent, user_id):
+        orgs = agent.user_organisations(user_id)
+        for org_dn in orgs:
+            org_id = agent._org_id(org_dn)
+            try:
+                agent.remove_from_org(org_id, [user_id])
+            except ldap.NO_SUCH_ATTRIBUTE:  # user is not in org
+                pass
+            except ldap.INSUFFICIENT_ACCESS:
+                ids = self.aq_parent.objectIds(["Eionet Organisations Editor"])
+                if ids:
+                    org_agent = ids[0]._get_ldap_agent(bind=True)
+                    try:
+                        org_agent.remove_from_org(org_id, [user_id])
+                    except ldap.NO_SUCH_ATTRIBUTE:    #user is not in org
+                        pass
+                else:
+                    raise
 
     security.declareProtected(eionet_access_nfp_nrc, 'set_pcp')
     def set_pcp(self, REQUEST):

@@ -883,11 +883,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         agent = self._get_ldap_agent(bind=True)
         for user_id in user_id_list:
             old_info = agent.user_info(user_id)
-            old_org_id = old_info['organisation']
-            old_org_id_valid = agent.org_exists(old_org_id)
-            if old_org_id_valid:
-                self._remove_from_org(agent, old_org_id, user_id)
-
+            self._remove_from_all_orgs(agent, user_id)
             old_info['organisation'] = org_id
             agent.set_user_info(user_id, old_info)
 
@@ -1020,8 +1016,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
             # make a check if user is changing the organisation
             if new_org_id != old_org_id:
-                if old_org_id_valid:
-                    self._remove_from_org(agent, old_org_id, user_id)
+                self._remove_from_all_orgs(agent, user_id)
                 if new_org_id_valid:
                     self._add_to_org(agent, new_org_id, user_id)
 
@@ -1032,7 +1027,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                                  "Profile saved (%s)" % when)
 
             log.info("%s EDITED USER %s as member of %s",
-                     logged_in_user(REQUEST), user_id, org_id)
+                     logged_in_user(REQUEST), user_id, new_org_id)
 
         REQUEST.RESPONSE.redirect('%s/edit_member?user_id=%s&org_id=%s' %
                                   (self.absolute_url(), user_id, org_id))
@@ -1048,21 +1043,24 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             else:
                 raise
 
-    def _remove_from_org(self, agent, org_id, user_id):
-        try:
-            agent.remove_from_org(org_id, [user_id])
-        except ldap.NO_SUCH_ATTRIBUTE:  # user is not in org
-            pass
-        except ldap.INSUFFICIENT_ACCESS:
-            ids = self.aq_parent.objectIds(["Eionet Organisations Editor"])
-            if ids:
-                org_agent = ids[0]._get_ldap_agent(bind=True)
-                try:
-                    org_agent.remove_from_org(org_id, [user_id])
-                except ldap.NO_SUCH_ATTRIBUTE:    # user is not in org
-                    pass
-            else:
-                raise
+    def _remove_from_all_orgs(self, agent, user_id):
+        orgs = agent.user_organisations(user_id)
+        for org_dn in orgs:
+            org_id = agent._org_id(org_dn)
+            try:
+                agent.remove_from_org(org_id, [user_id])
+            except ldap.NO_SUCH_ATTRIBUTE:  # user is not in org
+                pass
+            except ldap.INSUFFICIENT_ACCESS:
+                ids = self.aq_parent.objectIds(["Eionet Organisations Editor"])
+                if ids:
+                    org_agent = ids[0]._get_ldap_agent(bind=True)
+                    try:
+                        org_agent.remove_from_org(org_id, [user_id])
+                    except ldap.NO_SUCH_ATTRIBUTE:    #user is not in org
+                        pass
+                else:
+                    raise
 
     def nfp_for_country(self):
         """ """
