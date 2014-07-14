@@ -380,6 +380,19 @@ class RolesEditor(Folder):
         self._set_breadcrumbs(self._role_parents_stack(role_id))
         return self._render_template('zpt/roles_browse.zpt', **options)
 
+    def table_problematic_roles(self):
+        """ A table of all problematic roles
+        """
+        agent = self._get_ldap_agent()
+        roles = []
+        for role_cn, role_info in agent.all_roles():
+            if not any(role_info['owner'] + role_info['permittedPerson'] + role_info['permittedSender']):
+                roles.append((role_cn, role_info))
+        options = {
+            'problematic_roles':roles
+        }
+        return self._render_template("zpt/table_problematic_roles.zpt", **options)
+
     def _filter_results(self, pattern, title=None):
         search_url = self.absolute_url() + '/filter'
         csv_url = self.absolute_url() + '/filter_users_csv'

@@ -1,3 +1,6 @@
+1.4.34 (unreleased)
+------------------------
+
 1.4.33 (2014-07-03)
 ------------------------
 * Bug fix: remove all organisations for a user before changing his organisation

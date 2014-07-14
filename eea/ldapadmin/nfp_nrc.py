@@ -51,11 +51,10 @@ user_info_edit_schema['postal_address'].widget = deform.widget.TextAreaWidget()
 del user_info_edit_schema['first_name']
 del user_info_edit_schema['last_name']
 
+
 def _set_session_message(request, msg_type, msg):
     SessionMessages(request, SESSION_MESSAGES).add(msg_type, msg)
 
-# def _is_authenticated(request):
-#     return ('Authenticated' in request.AUTHENTICATED_USER.getRoles())
 
 def logged_in_user(request):
     user_id = ''
@@ -286,7 +285,10 @@ class NfpNrc(SimpleItem, PropertyManager):
 
     def _get_ldap_agent(self, bind=False, secondary=False):
         agent = ldap_config.ldap_agent_with_config(self._config, bind)
-        agent._author = logged_in_user(self.REQUEST)
+        try:
+            agent._author = logged_in_user(self.REQUEST)
+        except AttributeError:
+            agent._author = "System user"
         return agent
 
     security.declareProtected(view, 'index_html')
