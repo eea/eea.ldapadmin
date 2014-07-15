@@ -1,5 +1,7 @@
-1.4.34 (unreleased)
+1.4.34 (2014-07-15)
 ------------------------
+* Bug fix: fix user account editing when the credentials are not ok with LDAP server
+  [tiberich #19143]
 
 1.4.33 (2014-07-03)
 ------------------------

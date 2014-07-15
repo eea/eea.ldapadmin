@@ -1,0 +1,10 @@
+<table>
+    <tr>
+        <td>Role ID</td>
+        <td>Title</td>
+    </tr>
+    <tr tal:repeat="tup options/problematic_roles">
+        <td tal:content="python:tup[0]" />
+        <td tal:content="python:tup[1]" />
+    </tr>
+</table>

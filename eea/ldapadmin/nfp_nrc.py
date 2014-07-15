@@ -534,7 +534,6 @@ reference to an organisation for your country. Please corect!"""
             old_org_id = old_info['organisation']
 
             new_org_id_valid = agent.org_exists(new_org_id)
-            old_org_id_valid = agent.org_exists(old_org_id)
 
             # make a check if user is changing the organisation
             if new_org_id != old_org_id:
@@ -558,7 +557,8 @@ reference to an organisation for your country. Please corect!"""
         except ldap.INSUFFICIENT_ACCESS:
             ids = self.aq_parent.objectIds(["Eionet Organisations Editor"])
             if ids:
-                org_agent = ids[0]._get_ldap_agent(bind=True)
+                obj = self.aq_parent[ids[0]]
+                org_agent = obj._get_ldap_agent(bind=True)
                 org_agent.add_to_org(org_id, [user_id])
             else:
                 raise
@@ -574,7 +574,8 @@ reference to an organisation for your country. Please corect!"""
             except ldap.INSUFFICIENT_ACCESS:
                 ids = self.aq_parent.objectIds(["Eionet Organisations Editor"])
                 if ids:
-                    org_agent = ids[0]._get_ldap_agent(bind=True)
+                    obj = self.aq_parent[ids[0]]
+                    org_agent = obj._get_ldap_agent(bind=True)
                     try:
                         org_agent.remove_from_org(org_id, [user_id])
                     except ldap.NO_SUCH_ATTRIBUTE:    #user is not in org
