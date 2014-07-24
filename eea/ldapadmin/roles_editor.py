@@ -348,16 +348,29 @@ class RolesEditor(Folder):
         user = REQUEST.AUTHENTICATED_USER
 
         parent = self.getPhysicalRoot()
-        locations = []
+
+        all_roles = [role_id] + subrole_ids
+        locations = {}
+        # locations is a dict like:
+        # {
+        # 'eionet-nrc': [[('Viewer',
+        #           {'is_site': True,
+        #            'ob': <GroupwareSite at /nfp-eionet>,
+        #            'path': ''})],
+        #         [('Contributor',
+        #           {'is_site': True,
+        #            'ob': <GroupwareSite at /eea-west-balkans-cooperation-interest-group>,
+        #            'path': ''})],
+        # }
+
         for gsite in parent.objectValues("Groupware site"):
             auth_tool = gsite.getAuthenticationTool()
             for source in auth_tool.getSources():
-                rolemap = source.get_groups_roles_map()
-                info = filter(None, [rolemap.get(rid) for
-                              rid in [role_id] + subrole_ids])
-                for entry in info:
-                    if entry not in locations:
-                        locations.append(entry)
+                for rid, info in source.get_groups_roles_map().items():
+                    if rid in all_roles:
+                        if rid not in locations:
+                            locations[rid] = []
+                        locations[rid].append(info)
 
         options = {
             'role_id': role_id,

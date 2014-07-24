@@ -34,8 +34,15 @@
                 "sSearch": "Apply filter _INPUT_ to table"
             }
         });
+        $("#location-tabs").accordion({heightStyle:'content'});
     });
 </script>
+
+<style>
+    #location-tabs .ui-accordion-content {font-size:95%; height:auto !important;}
+    #location-tabs h4 {padding-left:2em;}
+    #location-tabs table {margin-bottom: 20px !important;}
+</style>
 
 <tal:block content="structure python:common.buttons_bar('role', options['role_id'], len(options['role_members']['users']))"/>
 
@@ -112,34 +119,43 @@
         </tal:block>
     </tal:block>
 
-    <tal:block condition="python:is_authenticated and options['can_edit']">
+    <tal:block condition="python:is_authenticated and options['can_edit']" 
+        tal:define="locations options/locations">
+        <button style="float:right; margin-top:10px;" onclick="javascript:$('#location-tabs').accordion('destroy')">Expand all</button>
         <h2>Locations where <tt tal:content="python:role_name or '[ROOT]'" /> has permissions</h2>
-        <table class="dataTable">
-            <thead>
-                <tr>
-                    <th>Site</th>
-                    <th>Role</th>
-                    <th>Path</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tal:rep repeat="location options/locations">
-                    <tr tal:repeat="roleinfo location">
-                        <td tal:define="site python: roleinfo[1]['ob'].getSite()">
-                            <a href="" 
-                                tal:attributes="href site/absolute_url" 
-                                tal:content="site/title_or_id" />
-                        </td>
-                        <td><span tal:content="python: roleinfo[0]" /></td>
-                        <td tal:define="obj python:roleinfo[1]['ob']">
-                            <a href="" 
-                                tal:attributes="href obj/absolute_url" 
-                                tal:content="python:'/'.join(obj.getPhysicalPath())"/>
-                        </td>
-                    </tr>
-                </tal:rep>
-            </tbody>
-        </table>
+        <div id="location-tabs" >
+            <tal:rep tal:repeat="role_id python:sorted(locations)">
+                <h4 tal:content="role_id">Role Something</h4>
+                <div>
+                <table class="account-datatable">
+                    <thead>
+                        <tr>
+                            <th>Site</th>
+                            <th>Role</th>
+                            <th>Path</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tal:rep repeat="location locations/?role_id">
+                            <tr tal:repeat="roleinfo location">
+                                <td tal:define="site python: roleinfo[1]['ob'].getSite()">
+                                    <a href="" 
+                                        tal:attributes="href site/absolute_url" 
+                                        tal:content="site/title_or_id" />
+                                </td>
+                                <td><span tal:content="python: roleinfo[0]" /></td>
+                                <td tal:define="obj python:roleinfo[1]['ob']">
+                                    <a href="" 
+                                        tal:attributes="href obj/absolute_url" 
+                                        tal:content="python:'/'.join(obj.getPhysicalPath())"/>
+                                </td>
+                            </tr>
+                        </tal:rep>
+                    </tbody>
+                </table>
+            </div>
+            </tal:rep>
+        </div>
 
         <tal:block define="users options/locations">
             <!-- <metal:block use&#45;macro="common/macros/table&#45;user&#45;info" /> -->

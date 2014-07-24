@@ -1,3 +1,8 @@
+1.4.35 (2014-07-15)
+------------------------
+* Feature: added an accordion to show explicitely where each role/subrole has permissions
+  [tiberich #19234]
+
 1.4.34 (2014-07-15)
 ------------------------
 * Bug fix: fix user account editing when the credentials are not ok with LDAP server
