@@ -1,3 +1,8 @@
+1.4.36 (2014-07-25)
+------------------------
+* Feature: show owners and permittedSenders in subrole listing in role page overview
+  [tiberich #18817]
+
 1.4.35 (2014-07-15)
 ------------------------
 * Feature: added an accordion to show explicitely where each role/subrole has permissions

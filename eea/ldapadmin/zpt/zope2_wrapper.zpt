@@ -1,6 +1,5 @@
 <metal:block use-macro="options/main_page_macro">
     <metal:block fill-slot="head">
-        <!-- <script src="/++resource++eea.ldapadmin&#45;www/jquery&#45;1.7.1.min.js"></script> -->
         <script src="/++resource++eea.ldapadmin-www/jquery-ui.min.js"></script>
         <script src="/++resource++eea.ldapadmin-www/jquery.ui.potato.menu.1.1-min.js"></script>
         <script type="text/javascript" src="/++resource++eea.ldapadmin-www/jquery.tipsy.js"></script>
@@ -9,6 +8,7 @@
 
         <script src="/++resource++eea.ldapadmin-www/account.js"></script>
 
+        <link rel="stylesheet" type="text/css" media="screen" href="/++resource++eea.ldapadmin-www/jquery-ui.min.css" />
         <link rel="stylesheet" type="text/css" href="/++resource++eea.ldapadmin-www/jquery.ui.potato.menu.css" media="screen" />
         <link rel="stylesheet" type="text/css" href="/++resource++eea.ldapadmin-www/datatables/jquery.dataTables.css" media="screen" />
         <link rel="stylesheet" type="text/css" href="/++resource++eea.ldapadmin-www/jquery.tipsy.css" media="screen" />
@@ -19,7 +19,6 @@
             <link rel="stylesheet" type="text/css" media="screen" href="/++resource++eea.ldapadmin-www/ie.css" />
         <![endif]-->
 
-    <link rel="stylesheet" type="text/css" media="screen" href="/++resource++eea.ldapadmin-www/jquery-ui.min.css" />
     </metal:block>
     <metal:block fill-slot="body">
         <tal:block content="structure options/body_html" />

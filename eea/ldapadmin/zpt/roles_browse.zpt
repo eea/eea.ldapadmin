@@ -58,10 +58,10 @@
 
 <tal:block define="role_id options/role_id;
     role_name options/role_name;
-    role_names options/role_names;
+    role_infos options/role_infos;
     role_members options/role_members;
     is_authenticated common/is_authenticated">
-    <tal:block condition="role_names">
+    <tal:block condition="role_infos">
         <h2>
             <tal:block condition="role_id">
                 Sub-roles in <tt tal:content="python:role_name or role_id"/>
@@ -79,18 +79,15 @@
             tal:attributes="class python: 'account-datatable sub-roles' if options['has_subroles'] else 'account-datatable sub-roles dataTable';">
             <thead>
                 <tr>
-                    <td>
-                        Role ID
-                    </td>
-
-                    <td>
-                        Role name
-                    </td>
+                    <td>Role ID</td>
+                    <td>Role name</td>
+                    <td>Owners</td>
+                    <td>Permitted senders</td>
                 </tr>
             </thead>
 
             <tbody>
-                <tr tal:repeat="sub_role_id python:sorted(role_names)"
+                <tr tal:repeat="sub_role_id python:sorted(role_infos)"
                     tal:attributes="class python:'odd' if path('repeat/sub_role_id/odd') else 'even'">
                     <td>
                         <a tal:attributes="href string:?role_id=${sub_role_id};
@@ -98,7 +95,15 @@
                             tal:content="sub_role_id"></a>
                     </td>
                     <td>
-                        <span tal:content="python: role_names[sub_role_id]" />
+                        <span tal:content="python: role_infos[sub_role_id]['description']" />
+                    </td>
+                    <td>
+                        <div tal:repeat="owner python:role_infos[sub_role_id]['owner']" 
+                            tal:content="python:options['to_uid'](owner)" />
+                    </td>
+                    <td>
+                        <div tal:repeat="sender python:role_infos[sub_role_id]['permittedSender']" 
+                            tal:content="sender" />
                     </td>
                 </tr>
             </tbody>

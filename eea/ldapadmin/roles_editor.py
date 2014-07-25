@@ -372,11 +372,14 @@ class RolesEditor(Folder):
                             locations[rid] = []
                         locations[rid].append(info)
 
+        def to_uid(user_dn):
+            return agent._user_id(user_dn)
+
         options = {
             'role_id': role_id,
             'role_name': get_role_name(agent, role_id),
             'role_info': role_info,
-            'role_names': agent.role_names_in_role(role_id),
+            'role_infos': agent.role_infos_in_role(role_id),
             'role_members': role_members(agent, role_id),
             'role_owners': role_owners,
             'naming': roles_leaders.naming(role_id),
@@ -387,7 +390,8 @@ class RolesEditor(Folder):
             'can_delete_role': self.can_delete_role(role_id, user),
             'has_subroles': has_subroles,
             'locations': locations,
-            'agent': agent
+            'agent': agent,
+            'to_uid': to_uid,
         }
 
         self._set_breadcrumbs(self._role_parents_stack(role_id))

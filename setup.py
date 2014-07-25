@@ -1,14 +1,14 @@
 from setuptools import setup, find_packages
 
 setup(name='eea.ldapadmin',
-      version='1.4.35',
+      version='1.4.36',
       author='Eau de Web',
       author_email='office@eaudeweb.ro',
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-          'eea.usersdb>=1.3.12',
+          'eea.usersdb>=1.3.15',
           'naaya.ldapdump',
 
           'BeautifulSoup',
