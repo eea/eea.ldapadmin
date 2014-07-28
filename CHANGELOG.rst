@@ -1,5 +1,7 @@
-1.4.37 (unreleased)
+1.4.37 (2014-07-28)
 ------------------------
+* Bug fix: only show permitted senders and owners to the authenticated visitors
+  [tiberich #18817]
 
 1.4.36 (2014-07-25)
 ------------------------

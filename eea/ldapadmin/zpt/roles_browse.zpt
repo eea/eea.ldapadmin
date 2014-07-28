@@ -81,8 +81,10 @@
                 <tr>
                     <td>Role ID</td>
                     <td>Role name</td>
-                    <td>Owners</td>
-                    <td>Permitted senders</td>
+                    <tal:cond tal:condition="python: common.is_authenticated()">
+                        <td>Owners</td>
+                        <td>Permitted senders</td>
+                    </tal:cond>
                 </tr>
             </thead>
 
@@ -97,14 +99,16 @@
                     <td>
                         <span tal:content="python: role_infos[sub_role_id]['description']" />
                     </td>
-                    <td>
-                        <div tal:repeat="owner python:role_infos[sub_role_id]['owner']" 
-                            tal:content="python:options['to_uid'](owner)" />
-                    </td>
-                    <td>
-                        <div tal:repeat="sender python:role_infos[sub_role_id]['permittedSender']" 
-                            tal:content="sender" />
-                    </td>
+                    <tal:cond tal:condition="python: common.is_authenticated()">
+                        <td>
+                            <div tal:repeat="owner python:role_infos[sub_role_id]['owner']" 
+                                tal:content="python:options['to_uid'](owner)" />
+                        </td>
+                        <td>
+                            <div tal:repeat="sender python:role_infos[sub_role_id]['permittedSender']" 
+                                tal:content="sender" />
+                        </td>
+                    </tal:cond>
                 </tr>
             </tbody>
         </table>
