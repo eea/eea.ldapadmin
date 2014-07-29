@@ -81,7 +81,7 @@
                 <tr>
                     <td>Role ID</td>
                     <td>Role name</td>
-                    <tal:cond tal:condition="python: common.is_authenticated()">
+                    <tal:cond tal:condition="options/can_edit_members">
                         <td>Owners</td>
                         <td>Permitted senders</td>
                     </tal:cond>
@@ -99,7 +99,7 @@
                     <td>
                         <span tal:content="python: role_infos[sub_role_id]['description']" />
                     </td>
-                    <tal:cond tal:condition="python: common.is_authenticated()">
+                    <tal:cond tal:condition="options/can_edit_members">
                         <td>
                             <tal:rep tal:repeat="owner python:role_infos[sub_role_id]['owner']" >
                                 <div tal:define="info python: options['get_user_info'](owner)">
@@ -134,7 +134,10 @@
 
     <tal:block condition="python:is_authenticated and options['can_edit']" 
         tal:define="locations options/locations">
-        <button style="float:right; margin-top:10px;" onclick="javascript:$('#location-tabs').accordion('destroy')">Expand all</button>
+        <button 
+            tal:condition="locations"
+            style="float:right; margin-top:10px;" 
+            onclick="javascript:$('#location-tabs').accordion('destroy')">Expand all</button>
         <h2>Locations where <tt tal:content="python:role_name or '[ROOT]'" /> has permissions</h2>
         <div id="location-tabs" >
             <tal:rep tal:repeat="role_id python:sorted(locations)">

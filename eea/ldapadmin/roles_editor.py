@@ -377,22 +377,22 @@ class RolesEditor(Folder):
             return agent.user_info(uid)
 
         options = {
-            'agent': agent,
-            'can_delete_role': self.can_delete_role(role_id, user),
-            'can_edit': self.can_edit_roles(REQUEST.AUTHENTICATED_USER),
-            'can_edit_members': self.can_edit_members(role_id, user),
-            'get_user_info': get_user_info,
-            'has_subroles': has_subroles,
-            'locations': locations,
-            'naming': roles_leaders.naming(role_id),
-            'permitted_persons': persons,
-            'permitted_senders': permitted_senders,
             'role_id': role_id,
+            'role_name': get_role_name(agent, role_id),
             'role_info': role_info,
             'role_infos': agent.role_infos_in_role(role_id),
             'role_members': role_members(agent, role_id),
-            'role_name': get_role_name(agent, role_id),
             'role_owners': role_owners,
+            'naming': roles_leaders.naming(role_id),
+            'permitted_persons': persons,
+            'permitted_senders': permitted_senders,
+            'can_edit': self.can_edit_roles(REQUEST.AUTHENTICATED_USER),
+            'can_edit_members': self.can_edit_members(role_id, user),
+            'can_delete_role': self.can_delete_role(role_id, user),
+            'has_subroles': has_subroles,
+            'locations': locations,
+            'agent': agent,
+            'get_user_info': get_user_info,
         }
 
         self._set_breadcrumbs(self._role_parents_stack(role_id))
