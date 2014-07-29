@@ -104,7 +104,7 @@
                             <tal:rep tal:repeat="owner python:role_infos[sub_role_id]['owner']" >
                                 <div tal:define="info python: options['get_user_info'](owner)">
                                     <a tal:attributes="href string:mailto:${info/email}" 
-                                        tal:content="info/full_name" />
+                                        tal:content="info/full_name" />(<span tal:replace="info/id" />)
                                 </div>
                             </tal:rep>
                         </td>
