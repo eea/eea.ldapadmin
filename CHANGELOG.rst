@@ -1,3 +1,6 @@
+1.4.40 (unreleased)
+------------------------
+
 1.4.39 (2014-07-29)
 ------------------------
 * Bug fix: use better security to decide when to show owners and permitted senders information
