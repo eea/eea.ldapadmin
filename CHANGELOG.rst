@@ -1,5 +1,7 @@
-1.4.38 (unreleased)
+1.4.38 (2014-07-29)
 ------------------------
+* Bug fix: put a link to the person's email in the listing of roles, for their owners
+  [tiberich #18817]
 
 1.4.37 (2014-07-28)
 ------------------------

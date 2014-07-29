@@ -101,8 +101,12 @@
                     </td>
                     <tal:cond tal:condition="python: common.is_authenticated()">
                         <td>
-                            <div tal:repeat="owner python:role_infos[sub_role_id]['owner']" 
-                                tal:content="python:options['to_uid'](owner)" />
+                            <tal:rep tal:repeat="owner python:role_infos[sub_role_id]['owner']" >
+                                <div tal:define="info python: options['get_user_info'](owner)">
+                                    <a href="string:mailto:${info/email}" 
+                                        tal:content="info/full_name" />
+                                </div>
+                            </tal:rep>
                         </td>
                         <td>
                             <div tal:repeat="sender python:role_infos[sub_role_id]['permittedSender']" 
