@@ -102,7 +102,7 @@
                     <tal:cond tal:condition="options/can_edit_members">
                         <td>
                             <tal:rep tal:repeat="owner python:role_infos[sub_role_id]['owner']" >
-                                <div tal:define="info python: options['get_user_info'](owner)">
+                                <div tal:define="info python: options['get_user_info'](owner)" tal:on-error="string: ${owner} (${error/type})">
                                     <a tal:attributes="href string:mailto:${info/email}" 
                                         tal:content="info/full_name" />(<span tal:replace="info/id" />)
                                 </div>
@@ -136,9 +136,23 @@
         tal:define="locations options/locations">
         <button 
             tal:condition="locations"
-            style="float:right; margin-top:10px;" 
+            style="float:right; margin-top:20px;" 
             onclick="javascript:$('#location-tabs').accordion('destroy')">Expand all</button>
         <h2>Locations where <tt tal:content="python:role_name or '[ROOT]'" /> has permissions</h2>
+        <div tal:condition="python: (not options['has_groupware']) and options['role_id']">
+            <ul>
+                <li>
+                    <a href=""
+                        tal:attributes="href string:http://forum.eionet.europa.eu/ldap-roles?role_id=${options/role_id}">
+                        Forum permissions overview</a></li>
+                <li>
+                    <a href="" 
+                        tal:attributes="href string:http://projects.eionet.europa.eu/ldap-roles?role_id=${options/role_id}">
+                        Projects permissions overview
+                    </a>
+                </li>
+            </ul>
+        </div>
         <div id="location-tabs" >
             <tal:rep tal:repeat="role_id python:sorted(locations)">
                 <h4 tal:content="role_id">Role Something</h4>

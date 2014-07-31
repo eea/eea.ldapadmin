@@ -348,6 +348,7 @@ class RolesEditor(Folder):
         user = REQUEST.AUTHENTICATED_USER
 
         parent = self.getPhysicalRoot()
+        has_groupware = False   # used to show alternative links in the Locations section
 
         all_roles = [role_id] + subrole_ids
         locations = {}
@@ -364,6 +365,7 @@ class RolesEditor(Folder):
         # }
 
         for gsite in parent.objectValues("Groupware site"):
+            has_groupware = True
             auth_tool = gsite.getAuthenticationTool()
             for source in auth_tool.getSources():
                 for rid, info in source.get_groups_roles_map().items():
@@ -393,6 +395,7 @@ class RolesEditor(Folder):
             'locations': locations,
             'agent': agent,
             'get_user_info': get_user_info,
+            'has_groupware':has_groupware,
         }
 
         self._set_breadcrumbs(self._role_parents_stack(role_id))

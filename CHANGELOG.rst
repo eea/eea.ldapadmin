@@ -1,5 +1,9 @@
-1.4.40 (unreleased)
+1.4.40 (2014-07-31)
 ------------------------
+* Bug fix: fix formatting of buttons in role editor page
+  [tiberich #20522]
+* Feature: show links to Projects and Forum role overviews in the location section
+  [tiberich #20522]
 
 1.4.39 (2014-07-29)
 ------------------------

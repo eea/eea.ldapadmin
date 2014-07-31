@@ -766,6 +766,10 @@ div.account-links {
 .account-links .low-row{
 	padding-top:15px;
 }
+.potato-menu:after {
+    clear: none;
+    display: inherit;
+}
 
 input.shortcut_country{
 	width: 3em;
