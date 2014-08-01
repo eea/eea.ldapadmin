@@ -1,3 +1,9 @@
+1.4.41 (unreleased)
+------------------------
+* Bug fix: Fix styling of permissions accordion in roles_browse.zpt. Open link to 
+  Forum/Projects in new window
+  [tiberich #20522]
+
 1.4.40 (2014-07-31)
 ------------------------
 * Bug fix: fix formatting of buttons in role editor page

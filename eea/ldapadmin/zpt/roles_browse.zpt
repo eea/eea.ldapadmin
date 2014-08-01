@@ -39,9 +39,10 @@
 </script>
 
 <style>
-    #location-tabs .ui-accordion-content {font-size:95%; height:auto !important;}
-    #location-tabs h4 {padding-left:2em;}
+    #location-tabs .ui-accordion-content {font-size:85%; height:auto !important;}
+    #location-tabs h4 {padding-left:2em; font-weight:normal; font-size:85%}
     #location-tabs table {margin-bottom: 20px !important;}
+    #location-tabs .ui-accordion-content a:link { color: #2a6495; }
 </style>
 
 <tal:block content="structure python:common.buttons_bar('role', options['role_id'], len(options['role_members']['users']))"/>
@@ -142,11 +143,11 @@
         <div tal:condition="python: (not options['has_groupware']) and options['role_id']">
             <ul>
                 <li>
-                    <a href=""
+                    <a href="" target="_blank"
                         tal:attributes="href string:http://forum.eionet.europa.eu/ldap-roles?role_id=${options/role_id}">
                         Forum permissions overview</a></li>
                 <li>
-                    <a href="" 
+                    <a href="" target="_blank"
                         tal:attributes="href string:http://projects.eionet.europa.eu/ldap-roles?role_id=${options/role_id}">
                         Projects permissions overview
                     </a>
