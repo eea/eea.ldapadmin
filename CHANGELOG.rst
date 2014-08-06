@@ -1,3 +1,6 @@
+1.4.42 (unreleased)
+------------------------
+
 1.4.41 (2014-08-06)
 ------------------------
 * Bug fix: Fix styling of permissions accordion in roles_browse.zpt. Open link to 
