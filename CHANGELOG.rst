@@ -1,8 +1,11 @@
-1.4.41 (unreleased)
+1.4.41 (2014-08-06)
 ------------------------
 * Bug fix: Fix styling of permissions accordion in roles_browse.zpt. Open link to 
   Forum/Projects in new window
   [tiberich #20522]
+* Feature: allow filtering users by disabled status in users listing of Roles Editor -
+  All members page
+  [tiberich #20390]
 
 1.4.40 (2014-07-31)
 ------------------------
