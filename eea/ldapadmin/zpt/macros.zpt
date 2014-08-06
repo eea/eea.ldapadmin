@@ -32,6 +32,17 @@
 <!-- requires `is_authenticated` and `users` indexed user_info-s by uid
      optional: `naming` -->
 <metal:block define-macro="table-user-info">
+    <select style="float:right" id="filter_by_disabled" name="disabled" tal:define="disabled_type python:options['request'].form.get('disabled', 'no_disabled');">
+        <option value="no_disabled" tal:attributes="selected python:disabled_type=='no_disabled'">
+            Only active users
+        </option>
+        <option value="include_disabled" tal:attributes="selected python:disabled_type=='include_disabled'">
+            All users, including those that have been disabled
+        </option>
+        <option value="only_disabled" tal:attributes="selected python:disabled_type=='only_disabled'">
+            Show only users that have been disabled
+        </option>
+    </select>
     <table class="account-datatable dataTable">
     <thead>
         <tr>
@@ -44,6 +55,7 @@
                 <td>Email</td>
                 <td>Tel/Fax</td>
                 <td>Organisation</td>
+                <td>Status</td>
             </tal:block>
         </tr>
     </thead>
@@ -111,12 +123,35 @@
                 <td>
                     <span tal:content="user_info/organisation" />
                 </td>
+
+                <td>
+                    <span tal:content="user_info/status" />
+                </td>
                 </tal:block>
             </tr>
         </tal:block>
         </tal:block>
     </tbody>
   </table>
+  <script>
+      jQuery(document).ready(function(){
+      $("#filter_by_disabled").detach().insertBefore('.dataTable').on('change', function(){
+        window.data_table.fnDraw();
+      });
+      });
+      $.fn.dataTableExt.afnFiltering.push(function(oSettings, aData, iDataIndex){
+        var disabled_type = $("#filter_by_disabled").val();
+        var is_disabled = $(aData[6]).text() !== '';
+        if (disabled_type === 'include_disabled') { 
+            return true;
+        } else if ((disabled_type === 'no_disabled') && (!is_disabled)){ 
+            return true;
+        } else if ((disabled_type === 'only_disabled') && is_disabled) {
+            return true;
+        }
+        return false;
+      });
+  </script>
 </metal:block>
 
 <!-- Not used! -->

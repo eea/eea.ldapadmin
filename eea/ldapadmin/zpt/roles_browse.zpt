@@ -26,7 +26,7 @@
             gravity: 'se'
         });
 
-        $('.dataTable').dataTable({
+        window.data_table = $('.dataTable').dataTable({
             'aaSorting': [[0, "asc"]],
             'sPaginationType': 'full_numbers',
             "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],

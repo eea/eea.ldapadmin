@@ -25,7 +25,7 @@
             gravity: 'se'
         });
 
-        $('#role-mailing-list table.account-datatable').dataTable({
+        window.data_table  = $('#role-mailing-list table.account-datatable').dataTable({
             'aaSorting': [[1, "asc"]],
             'sPaginationType': 'full_numbers',
             'sDom': 'lCfrtip',

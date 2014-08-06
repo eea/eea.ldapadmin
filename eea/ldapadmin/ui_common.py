@@ -106,6 +106,7 @@ class TemplateRenderer(Implicit):
 
     def __call__(self, name, **options):
         options['context'] = self.aq_parent
+        options['request'] = self.REQUEST
         return self.wrap(self.render(name, **options))
 
 class TemplateRendererNoWrap(Implicit):
@@ -116,6 +117,7 @@ class TemplateRendererNoWrap(Implicit):
         context = self.aq_parent
         template = load_template(name)
         options['context'] = self.aq_parent
+        options['request'] = self.aq_parent.REQUEST
 
         namespace = template.pt_getContext((), options)
         namespace['common'] = self.common_factory(context)
