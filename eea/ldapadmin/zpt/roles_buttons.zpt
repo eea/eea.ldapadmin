@@ -138,7 +138,6 @@
           tal:attributes="href string:${em_url}?role_id=${options/role_id};
                           class string:button help-tooltip;
                           original-title python:'%d members in role %s' % (options['members_in_role'], options['role_id'])"
-                          
           >
          <img src="/++resource++eea.ldapadmin-www/export.png"
               class="middle-image image12" alt="" title="Export members (xls)" />
