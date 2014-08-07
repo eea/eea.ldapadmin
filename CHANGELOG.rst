@@ -1,5 +1,7 @@
-1.4.42 (unreleased)
+1.4.42 (2014-08-07)
 ------------------------
+* Bug fix: also show the organisation select dropdown in the user creation form
+  [tiberich]
 
 1.4.41 (2014-08-06)
 ------------------------

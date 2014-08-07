@@ -371,17 +371,21 @@ class UsersAdmin(SimpleItem, PropertyManager):
             try:
                 user_form = deform.Form(user_info_add_schema)
                 user_info = user_form.validate(form_data.items())
-
             except deform.ValidationFailure, e:
                 for field_error in e.error.children:
                     errors[field_error.node.name] = field_error.msg
                 msg = u"Please correct the errors below and try again."
                 _set_session_message(REQUEST, 'error', msg)
-
             else:
                 user_id = user_info['id']
                 agent = self._get_ldap_agent(bind=True)
                 self._create_user(agent, user_info)
+
+                new_org_id = user_info['organisation']
+                new_org_id_valid = agent.org_exists(new_org_id)
+
+                if new_org_id_valid:
+                    self._add_to_org(agent, new_org_id, user_id)
 
                 send_confirmation = 'send_confirmation' in form_data.keys()
                 if send_confirmation:
@@ -403,10 +407,29 @@ class UsersAdmin(SimpleItem, PropertyManager):
             help_text = help_messages['create-user'].get(children.name, None)
             setattr(children, 'help_text', help_text)
 
+        agent = self._get_ldap_agent()
+        agent_orgs = agent.all_organisations()
+        orgs = [{'id':k, 'text':v['name'], 'ldap':True} for k,v in agent_orgs.items()]
+        org = form_data.get('organisation')
+        if org and not (org in agent_orgs):
+            orgs.append({'id':org, 'text':org, 'ldap': False})
+        orgs.sort(lambda x,y:cmp(x['text'], y['text']))
+        choices = [('-', '-')]
+        for org in orgs:
+            if org['ldap']:
+                label = u"%s (%s)" % (org['text'], org['id'])
+            else:
+                label = org['text']
+            choices.append((org['id'], label))
+
+        schema = user_info_add_schema.clone()
+        widget = SelectWidget(values=choices)
+        schema['organisation'].widget = widget
+
         options = {
             'form_data': form_data,
             'errors': errors,
-            'schema': user_info_add_schema,
+            'schema': schema,
         }
         return self._render_template('zpt/users/create.zpt', **options)
 
