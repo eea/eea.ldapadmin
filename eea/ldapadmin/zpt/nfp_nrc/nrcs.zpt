@@ -1,6 +1,12 @@
 <script type="text/javascript" src="/++resource++eea.ldapadmin-www/role_leaders.js"></script>
 <link href="/++resource++eea.ldapadmin-www/role_leaders.css" type="text/css" rel="stylesheet" />
 
+<style>
+    .disabled_user {
+        text-decoration: line-through;
+    }
+</style>
+
 <tal:block content="structure common/message_boxes" />
 
 <h1> National Reference Centres for <span tal:replace="options/country_name" /></h1>
@@ -34,54 +40,61 @@
         </thead>
 
         <tbody>
-          <tr tal:repeat="user_info role/users"
-              tal:attributes="class python:'odd' if path('repeat/user_info/odd') else 'even'">
-            <td class="checkbox-td leader-cell">
-                <input type="radio" class="leader"
-                    tal:attributes="name string:leader-for-${role/role_id}; value user_info/id; id string:leader-${user_info/id};
-                    checked python:('checked' and user_info['id'] in role.leaders or '')" />
-                <span class="leader_container tipsy-title"
-                  tal:attributes="title options/naming/leader/long;
-                  style python:('display: inline;;' and user_info['id'] in role.leaders or 'display: none;;')"
-                  tal:content="options/naming/leader/short"></span>
-            </td>
-            <td class="" tal:attributes="class python: not user_info['ldap_org'] and 'red' or ''">
-              <a tal:attributes="href string:edit_member?user_id=${user_info/id}&role_id=${role/role_id}" tal:content="user_info/full_name" />
-            </td>
+            <tal:rep tal:repeat="user_info role/users">
+                <tr tal:define="is_disabled python: user_info['status'] == 'disabled';
+                    is_odd python: 'odd' if path('repeat/user_info/odd') else 'even';
+                    is_disabled_class python: is_disabled  and 'disabled_user' or '';
+                    klass string:$is_odd $is_disabled_class;
+                    "
+                    tal:attributes="class klass">
+                    <td class="checkbox-td leader-cell">
+                        <input type="radio" class="leader"
+                            tal:attributes="name string:leader-for-${role/role_id}; value user_info/id; id string:leader-${user_info/id};
+                            checked python:('checked' and user_info['id'] in role.leaders or '')" />
+                        <span class="leader_container tipsy-title"
+                            tal:attributes="title options/naming/leader/long;
+                            style python:('display: inline;;' and user_info['id'] in role.leaders or 'display: none;;')"
+                            tal:content="options/naming/leader/short"></span>
+                    </td>
+                    <td class="" tal:attributes="class python: not user_info['ldap_org'] and 'red' or ''">
+                        <a tal:attributes="href string:edit_member?user_id=${user_info/id}&role_id=${role/role_id}" tal:content="user_info/full_name" />
+                    </td>
 
-            <tal:block condition="is_authenticated">
-              <td>
-                <span tal:content="user_info/id" />
-              </td>
+                    <tal:block condition="is_authenticated">
+                        <td>
+                            <span tal:content="user_info/id" />
+                            <span tal:condition="is_disabled">(disabled)</span>
+                        </td>
 
-              <td>
-                <a tal:condition="user_info/email"
-                tal:attributes="href string:mailto:${user_info/email}"
-                tal:content="user_info/email"
-                class="user-email"></a>
-              </td>
+                        <td>
+                            <a tal:condition="user_info/email"
+                                tal:attributes="href string:mailto:${user_info/email}"
+                                tal:content="user_info/email"
+                                class="user-email"></a>
+                        </td>
 
-              <td>
-                <span class="user-phone" tal:content="user_info/phone" />
-                <br />
-                <span class="user-phone" tal:content="user_info/fax" />
-              </td>
+                        <td>
+                            <span class="user-phone" tal:content="user_info/phone" />
+                            <br />
+                            <span class="user-phone" tal:content="user_info/fax" />
+                        </td>
 
-              <td tal:condition="user_info/ldap_org|nothing">
-                  <img src="/++resource++eea.ldapadmin-www/users.png" 
-                      class="middle-image image12" alt="" 
-                      title="LDAP Organisation">
-                  <a tal:define="org user_info/ldap_org" 
-                      tal:content="org/name"
-                      tal:attributes="href string:http://www.eionet.europa.eu/ldap-organisations/organisation?id=${org/id}">Something</a>
-                  (<span tal:content="user_info/ldap_org/id" />)
-              </td>
-              <td tal:condition="not:user_info/ldap_org|nothing">
-                <span tal:content="user_info/organisation" />
-              </td>
-            </tal:block>
-          </tr>
-        </tbody>
+                        <td tal:condition="user_info/ldap_org|nothing">
+                            <img src="/++resource++eea.ldapadmin-www/users.png" 
+                                class="middle-image image12" alt="" 
+                                title="LDAP Organisation">
+                                <a tal:define="org user_info/ldap_org" 
+                                    tal:content="org/name"
+                                    tal:attributes="href string:http://www.eionet.europa.eu/ldap-organisations/organisation?id=${org/id}">Something</a>
+                                (<span tal:content="user_info/ldap_org/id" />)
+                            </td>
+                            <td tal:condition="not:user_info/ldap_org|nothing">
+                                <span tal:content="user_info/organisation" />
+                            </td>
+                        </tal:block>
+                    </tr>
+                </tal:rep>
+            </tbody>
       </table>
 
       <div class="clear">&nbsp;</div>
