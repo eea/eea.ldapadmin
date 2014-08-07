@@ -1,3 +1,6 @@
+1.4.43 (unreleased)
+------------------------
+
 1.4.42 (2014-08-07)
 ------------------------
 * Bug fix: also show the organisation select dropdown in the user creation form
