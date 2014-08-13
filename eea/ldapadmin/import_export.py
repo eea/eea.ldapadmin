@@ -30,8 +30,8 @@ def excel_headers_to_object(properties):
     """ Converts row data to object, according to header keys """
     # main purpose is to save code lines in logic
     return {
-        'id': properties.get('user id*'),
-        'password': str(properties.get('password*')),
+        'id': properties.get('user id'),
+        'password': str(properties.get('password')),
         'email': properties.get('e-mail*'),
         'first_name': properties.get('first name*'),
         'last_name': properties.get('last name*'),

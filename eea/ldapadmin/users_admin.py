@@ -55,7 +55,7 @@ user_info_edit_schema['postal_address'].widget = deform.widget.TextAreaWidget()
 
 CONFIG = getConfiguration()
 FORUM_URL = getattr(CONFIG, 'environment', {}).get('FORUM_URL', '')
-TEMPLATE_COLUMNS = ["User ID*", "Password*", "First Name*", "Last Name*",
+TEMPLATE_COLUMNS = ["User ID", "Password", "First Name*", "Last Name*",
                     "E-mail*", "Job Title", "URL", "Postal Address",
                     "Telephone Number", "Mobile Telephone Number",
                     "Fax Number", "Organisation"]
