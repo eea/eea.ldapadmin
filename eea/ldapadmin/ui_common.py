@@ -3,10 +3,11 @@ from zope.pagetemplate.pagetemplatefile import PageTemplateFile as Z3Template
 from persistent.list import PersistentList
 from persistent.mapping import PersistentMapping
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile\
-                                                 as Z2Template
+    as Z2Template
 from constants import NETWORK_NAME
 from eea.ldapadmin import roles_leaders
 from logic_common import _get_user_id, _is_authenticated
+
 
 def get_role_name(agent, role_id):
     """
@@ -14,11 +15,13 @@ def get_role_name(agent, role_id):
     """
     return agent.role_info(role_id)['description'] or repr(role_id)
 
+
 def roles_list_to_text(agent, roles):
     """
     Returns formatted text with roles' names or IDs for messages in forms
     """
     return ', '.join(get_role_name(agent, role_id) for role_id in roles)
+
 
 def extend_crumbs(crumbs_html, editor_url, extra_crumbs):
     from lxml.html.soupparser import fromstring
@@ -46,10 +49,12 @@ def extend_crumbs(crumbs_html, editor_url, extra_crumbs):
 
     return tostring(crumbs)
 
+
 def load_template(name, _memo={}):
     if name not in _memo:
         _memo[name] = Z3Template(name, globals())
     return _memo[name]
+
 
 class SessionMessages(object):
     def __init__(self, request, name):
@@ -76,6 +81,8 @@ class SessionMessages(object):
         return tmpl(messages=messages)
 
 zope2_wrapper = Z2Template('zpt/zope2_wrapper.zpt', globals())
+
+
 class TemplateRenderer(Implicit):
     def __init__(self, common_factory=lambda ctx: {}):
         self.common_factory = common_factory
@@ -98,9 +105,11 @@ class TemplateRenderer(Implicit):
                 layout = self.aq_parent.getLayoutTool().getCurrentSkin()
                 main_template = layout.getTemplateById('standard_template')
             except:
-                main_template = self.aq_parent.restrictedTraverse('standard_template.pt')
+                main_template = self.aq_parent.restrictedTraverse(
+                    'standard_template.pt')
         else:
-            main_template = self.aq_parent.restrictedTraverse('standard_template.pt')
+            main_template = self.aq_parent.restrictedTraverse(
+                'standard_template.pt')
         main_page_macro = main_template.macros['page']
         return zope2_tmpl(main_page_macro=main_page_macro, body_html=body_html)
 
@@ -108,6 +117,7 @@ class TemplateRenderer(Implicit):
         options['context'] = self.aq_parent
         options['request'] = self.REQUEST
         return self.wrap(self.render(name, **options))
+
 
 class TemplateRendererNoWrap(Implicit):
     def __init__(self, common_factory=lambda ctx: {}):
@@ -125,6 +135,7 @@ class TemplateRendererNoWrap(Implicit):
 
     def __call__(self, name, **options):
         return self.render(name, **options)
+
 
 class CommonTemplateLogic(object):
     def __init__(self, context):
@@ -155,6 +166,9 @@ class CommonTemplateLogic(object):
     def can_edit_organisation(self):
         return self.context.can_edit_organisation()
 
+    def full_edit_permission(self):
+        return self.context.checkPermissionEditUsers()
+
     def is_authenticated(self):
         return _is_authenticated(self._get_request())
 
@@ -162,7 +176,8 @@ class CommonTemplateLogic(object):
         return _get_user_id(self._get_request())
 
     def readonly_alert(self):
-        return self.context._render_template.render("zpt/nfp_nrc/readonly_alert.zpt")
+        return self.context._render_template.render(
+            "zpt/nfp_nrc/readonly_alert.zpt")
 
     def buttons_bar(self, current_page, role_id, members_in_role=0):
         user = self._get_request().AUTHENTICATED_USER
@@ -204,7 +219,8 @@ class CommonTemplateLogic(object):
 
     @property
     def is_manager(self):
-        return ('Manager' in self.context.REQUEST.AUTHENTICATED_USER.getRoles())
+        return ('Manager' in
+                self.context.REQUEST.AUTHENTICATED_USER.getRoles())
 
 
 def network_name(self):

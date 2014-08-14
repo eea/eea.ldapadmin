@@ -1,19 +1,19 @@
-<div id="operations">
+<div id="operations" tal:define="full_edit_permission common/full_edit_permission">
   <h2>Operations</h2>
   <ul>
     <li>
       <a tal:attributes="href string:${common/base_url}/create_user"
           >Create account</a>
     </li>
-    <li>
+    <li tal:condition="full_edit_permission">
       <a tal:attributes="href string:${common/base_url}/bulk_check_username"
           >Bulk verify usernames</a>
     </li>
-    <li>
+    <li tal:condition="full_edit_permission">
       <a tal:attributes="href string:${common/base_url}/bulk_check_email"
           >Bulk verify emails</a>
     </li>
-    <li>
+    <li tal:condition="full_edit_permission">
       <a tal:attributes="href string:${common/base_url}/bulk_create_user"
           >Create accounts from file</a>
     </li>

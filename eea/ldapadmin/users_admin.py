@@ -1,6 +1,7 @@
 from deform.widget import SelectWidget
 from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
+from AccessControl.unauthorized import Unauthorized
 from App.class_init import InitializeClass
 from App.config import getConfiguration
 from OFS.PropertyManager import PropertyManager
@@ -13,6 +14,7 @@ from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.help_messages import help_messages
 from eea.ldapadmin.logic_common import _session_pop
 from eea.usersdb import factories
+from eea.usersdb.db_agent import NameAlreadyExists, EmailAlreadyExists
 from email.mime.text import MIMEText
 from import_export import (excel_headers_to_object, generate_excel,
                            set_response_attachment)
@@ -24,6 +26,7 @@ from unidecode import unidecode
 from zope.component import getUtility
 from zope.component.interfaces import ComponentLookupError
 from zope.sendmail.interfaces import IMailDelivery
+from countries import get_country_options
 import deform
 import colander
 import jellyfish
@@ -231,10 +234,17 @@ class UsersAdmin(SimpleItem, PropertyManager):
     def can_edit_users(self, user):
         return bool(user.has_permission(eionet_edit_users, self))
 
-    security.declareProtected(eionet_edit_users, 'index_html')
+    security.declarePublic('checkPermissionEditUsers')
+
+    def checkPermissionEditUsers(self):
+        """ """
+        user = self.REQUEST.AUTHENTICATED_USER
+        return bool(user.has_permission(eionet_edit_users, self))
 
     def index_html(self, REQUEST):
         """ view """
+        if not self.checkPermissionEditUsers() and not self.nfp_has_access():
+            raise Unauthorized
         options = {
             'can_edit': self.can_edit_users(REQUEST.AUTHENTICATED_USER),
             'search_fields': usersdb.db_agent.ACCEPTED_SEARCH_FIELDS,
@@ -348,20 +358,22 @@ class UsersAdmin(SimpleItem, PropertyManager):
         user_info['password'] = password
         return user_id
 
-    security.declareProtected(eionet_edit_users, 'confirmation_email')
-
     def confirmation_email(self, first_name, user_id, REQUEST=None):
         """ Returns body of confirmation email """
+        if not self.checkPermissionEditUsers() and not self.nfp_has_access():
+            raise Unauthorized
         options = {'first_name': first_name, 'user_id': user_id}
         options['site_title'] = self.unrestrictedTraverse('/').title
         return self._render_template.render(
             "zpt/users/email_registration_confirmation.zpt",
             **options)
 
-    security.declareProtected(eionet_edit_users, 'create_user')
-
     def create_user(self, REQUEST):
         """ view """
+        if not (self.checkPermissionEditUsers() or
+                self.nfp_has_access()):
+            raise Unauthorized
+        nfp_country = self.nfp_for_country()
         form_data = dict(REQUEST.form)
         errors = {}
         if not form_data.get('password', ''):
@@ -379,28 +391,33 @@ class UsersAdmin(SimpleItem, PropertyManager):
             else:
                 user_id = user_info['id']
                 agent = self._get_ldap_agent(bind=True)
-                self._create_user(agent, user_info)
+                try:
+                    self._create_user(agent, user_info)
+                except NameAlreadyExists, e:
+                    errors['id'] = 'This ID is alreay registered'
+                except EmailAlreadyExists, e:
+                    errors['email'] = 'This email is alreay registered'
+                else:
+                    new_org_id = user_info['organisation']
+                    new_org_id_valid = agent.org_exists(new_org_id)
 
-                new_org_id = user_info['organisation']
-                new_org_id_valid = agent.org_exists(new_org_id)
+                    if new_org_id_valid:
+                        self._add_to_org(agent, new_org_id, user_id)
 
-                if new_org_id_valid:
-                    self._add_to_org(agent, new_org_id, user_id)
+                    send_confirmation = 'send_confirmation' in form_data.keys()
+                    if send_confirmation:
+                        self.send_confirmation_email(user_info)
+                        self.send_password_reset_email(user_info)
 
-                send_confirmation = 'send_confirmation' in form_data.keys()
-                if send_confirmation:
-                    self.send_confirmation_email(user_info)
-                    self.send_password_reset_email(user_info)
+                    when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    msg = "User %s created (%s)" % (user_id, when)
+                    _set_session_message(REQUEST, 'info', msg)
 
-                when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                msg = "User %s created (%s)" % (user_id, when)
-                _set_session_message(REQUEST, 'info', msg)
+                    log.info("%s CREATED USER %s",
+                             logged_in_user(REQUEST),
+                             user_id)
 
-                log.info("%s CREATED USER %s",
-                         logged_in_user(REQUEST),
-                         user_id)
-
-                return REQUEST.RESPONSE.redirect(self.absolute_url())
+                    return REQUEST.RESPONSE.redirect(self.absolute_url())
 
         self._set_breadcrumbs([('Create User', '#')])
         for children in user_info_add_schema.children:
@@ -408,12 +425,16 @@ class UsersAdmin(SimpleItem, PropertyManager):
             setattr(children, 'help_text', help_text)
 
         agent = self._get_ldap_agent()
-        agent_orgs = agent.all_organisations()
-        orgs = [{'id':k, 'text':v['name'], 'ldap':True} for k,v in agent_orgs.items()]
+        if self.checkPermissionEditUsers():
+            agent_orgs = agent.all_organisations()
+        else:
+            agent_orgs = self.orgs_in_country(nfp_country)
+        orgs = [{'id': k, 'text': v['name'], 'ldap':True}
+                for k, v in agent_orgs.items()]
         org = form_data.get('organisation')
         if org and not (org in agent_orgs):
-            orgs.append({'id':org, 'text':org, 'ldap': False})
-        orgs.sort(lambda x,y:cmp(x['text'], y['text']))
+            orgs.append({'id': org, 'text': org, 'ldap': False})
+        orgs.sort(lambda x, y: cmp(x['text'], y['text']))
         choices = [('-', '-')]
         for org in orgs:
             if org['ldap']:
@@ -425,18 +446,21 @@ class UsersAdmin(SimpleItem, PropertyManager):
         schema = user_info_add_schema.clone()
         widget = SelectWidget(values=choices)
         schema['organisation'].widget = widget
+        if not self.checkPermissionEditUsers() and self.nfp_has_access():
+            schema['organisation'].missing = colander.required
 
         options = {
             'form_data': form_data,
             'errors': errors,
             'schema': schema,
+            'nfp_access': self.nfp_has_access()
         }
         return self._render_template('zpt/users/create.zpt', **options)
 
-    security.declareProtected(eionet_edit_users, 'find_duplicates')
-
     def find_duplicates(self, REQUEST):
         """ view """
+        if not self.checkPermissionEditUsers() and not self.nfp_has_access():
+            raise Unauthorized
         fname = REQUEST.form.get('first_name', '')
         lname = REQUEST.form.get('last_name', '')
         email = REQUEST.form.get('email', '')
@@ -454,8 +478,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template_no_wrap('zpt/users/find_duplicates.zpt',
                                              **options)
 
-    security.declareProtected(eionet_edit_users, 'edit_user')
-
     def edit_user(self, REQUEST):
         """
         View for editing profile information for a given user
@@ -466,23 +488,27 @@ class UsersAdmin(SimpleItem, PropertyManager):
         agent = self._get_ldap_agent()
         errors = _session_pop(REQUEST, SESSION_FORM_ERRORS, {})
         user = agent.user_info(user_id)
+        if not (self.checkPermissionEditUsers() or
+                self.nfp_has_edit_access(user=user)):
+            raise Unauthorized
         # message
         form_data = _session_pop(REQUEST, SESSION_FORM_DATA, None)
         if form_data is None:
             form_data = user
 
         orgs = agent.all_organisations()
-        orgs = [{'id':k, 'text':v['name'], 'ldap':True} for k,v in orgs.items()]
+        orgs = [{'id': k, 'text': v['name'], 'ldap': True}
+                for k, v in orgs.items()]
         user_orgs = list(agent.user_organisations(user_id))
         if not user_orgs:
             org = form_data['organisation']
             if org:
-                orgs.append({'id':org, 'text':org, 'ldap': False})
+                orgs.append({'id': org, 'text': org, 'ldap': False})
         else:
             org = user_orgs[0]
             org_id = agent._org_id(org)
             form_data['organisation'] = org_id
-        orgs.sort(lambda x,y:cmp(x['text'], y['text']))
+        orgs.sort(lambda x, y: cmp(x['text'], y['text']))
         schema = user_info_edit_schema.clone()
         choices = [('-', '-')]
         for org in orgs:
@@ -533,7 +559,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
             old_org_id = old_info['organisation']
 
             new_org_id_valid = agent.org_exists(new_org_id)
-            #old_org_id_valid = agent.org_exists(old_org_id)
+            # old_org_id_valid = agent.org_exists(old_org_id)
 
             # make a check if user is changing the organisation
             if new_org_id != old_org_id:
@@ -543,12 +569,14 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
             agent.set_user_info(user_id, new_info)
             when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            _set_session_message(REQUEST, 'message', "Profile saved (%s)" % when)
+            _set_session_message(REQUEST, 'message', "Profile saved (%s)"
+                                 % when)
 
             log.info("%s EDITED USER %s as member of %s",
                      logged_in_user(REQUEST), user_id, new_org_id)
 
-        REQUEST.RESPONSE.redirect(self.absolute_url() + '/edit_user?id=' + user_id)
+        REQUEST.RESPONSE.redirect(self.absolute_url() + '/edit_user?id=' +
+                                  user_id)
 
     def _add_to_org(self, agent, org_id, user_id):
         try:
@@ -577,12 +605,13 @@ class UsersAdmin(SimpleItem, PropertyManager):
                     org_agent = obj._get_ldap_agent(bind=True)
                     try:
                         org_agent.remove_from_org(org_id, [user_id])
-                    except ldap.NO_SUCH_ATTRIBUTE:    #user is not in org
+                    except ldap.NO_SUCH_ATTRIBUTE:    # user is not in org
                         pass
                 else:
                     raise
 
     security.declareProtected(eionet_edit_users, 'delete_user')
+
     def delete_user(self, REQUEST):
         """
         View that asks for confirmation of user deletion
@@ -596,6 +625,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template('zpt/users/delete.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'delete_user_action')
+
     def delete_user_action(self, REQUEST):
         """ Performing the delete action """
         id = REQUEST.form['id']
@@ -610,6 +640,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/')
 
     security.declareProtected(eionet_edit_users, 'disable_user')
+
     def disable_user(self, REQUEST):
         """
         View that asks for confirmation of user disable
@@ -623,6 +654,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template('zpt/users/disable.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'disable_user_action')
+
     def disable_user_action(self, REQUEST):
         """ Performing the disable user action """
         id = REQUEST.form['id']
@@ -1000,6 +1032,55 @@ class UsersAdmin(SimpleItem, PropertyManager):
             'Eionet Password Reset Tool')[0]
         email = user_info['email']
         pwreset_tool.ask_for_password_reset(email=email)
+
+    def nfp_has_access(self):
+        """ """
+        return self.nfp_for_country() and self.aq_parent.id == 'nfp-eionet'
+
+    def nfp_has_edit_access(self, user):
+        """ """
+        nfp_country = self.nfp_for_country()
+        if self.aq_parent.id != 'nfp-eionet':
+            return False
+        if nfp_country:
+            country_orgs = self.orgs_in_country(nfp_country)
+            return user['organisation'] in country_orgs
+
+    def orgs_in_country(self, country):
+        """ """
+        agent = self._get_ldap_agent()
+        orgs_by_id = agent.all_organisations()
+        countries = dict(get_country_options(country=country))
+        orgs = {}
+        for org_id, info in orgs_by_id.iteritems():
+            country_info = countries.get(info['country'])
+            if country_info:
+                orgs[org_id] = info
+        return orgs
+
+    def nfp_for_country(self):
+        """ Return country code for which the current user has NFP role
+        or None otherwise"""
+        user_id = self.REQUEST.AUTHENTICATED_USER.getId()
+        if user_id:
+            ldap_groups = self.get_ldap_user_groups(user_id)
+            for group in ldap_groups:
+                if 'eionet-nfp-cc-' in group[0]:
+                    return group[0].replace('eionet-nfp-cc-', '')
+                if 'eionet-nfp-mc-' in group[0]:
+                    return group[0].replace('eionet-nfp-mc-', '')
+
+    def get_ldap_user_groups(self, user_id):
+        """ """
+        try:
+            from eea.usersdb.factories import agent_from_uf
+        except ImportError:
+            return []
+        agent = agent_from_uf(self.restrictedTraverse("/acl_users"))
+        ldap_roles = sorted(agent.member_roles_info('user',
+                                                    user_id,
+                                                    ('description',)))
+        return ldap_roles
 
 
 InitializeClass(UsersAdmin)

@@ -1,5 +1,6 @@
 1.4.43 (unreleased)
 ------------------------
+* allow nfps to create Eionet accounts from nfp-eionet portal [dumitval]
 
 1.4.42 (2014-08-07)
 ------------------------

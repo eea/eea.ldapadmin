@@ -22,7 +22,8 @@
     });
 </script>
 
-<form action="" method="post" name="create-account">
+<form action="" method="post" name="create-account"
+  tal:define="nfp_access options/nfp_access">
 
 <table class="account-table">
 
@@ -73,7 +74,10 @@
     </td>
   </tr>
 </table>
-    <script>
+    <script tal:condition="nfp_access">
+        $(document).ready(function() { $("#edit-organisation").selectize({create:false}); });
+    </script>
+    <script tal:condition="not:nfp_access">
         $(document).ready(function() { $("#edit-organisation").selectize({create:true}); });
     </script>
 </form>
