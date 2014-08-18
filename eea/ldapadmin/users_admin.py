@@ -373,15 +373,47 @@ class UsersAdmin(SimpleItem, PropertyManager):
         if not (self.checkPermissionEditUsers() or
                 self.nfp_has_access()):
             raise Unauthorized
+
         nfp_country = self.nfp_for_country()
         form_data = dict(REQUEST.form)
         errors = {}
         if not form_data.get('password', ''):
             form_data['password'] = generate_password()
 
+        schema = user_info_add_schema.clone()
+        for children in schema.children:
+            help_text = help_messages['create-user'].get(children.name, None)
+            setattr(children, 'help_text', help_text)
+
+        agent = self._get_ldap_agent()
+        if self.checkPermissionEditUsers():
+            agent_orgs = agent.all_organisations()
+        else:
+            agent_orgs = self.orgs_in_country(nfp_country)
+
+        orgs = [{'id': k, 'text': v['name'], 'ldap':True}
+                for k, v in agent_orgs.items()]
+        org = form_data.get('organisation')
+        if org and not (org in agent_orgs):
+            orgs.append({'id': org, 'text': org, 'ldap': False})
+        orgs.sort(lambda x, y: cmp(x['text'], y['text']))
+        choices = [('-', '-')]
+        for org in orgs:
+            if org['ldap']:
+                label = u"%s (%s)" % (org['text'], org['id'])
+            else:
+                label = org['text']
+            choices.append((org['id'], label))
+
+        widget = SelectWidget(values=choices)
+        schema['organisation'].widget = widget
+
+        if (not self.checkPermissionEditUsers()) and self.nfp_has_access():
+            schema['organisation'].missing = colander.required
+
         if 'submit' in REQUEST.form:
             try:
-                user_form = deform.Form(user_info_add_schema)
+                user_form = deform.Form(schema)
                 user_info = user_form.validate(form_data.items())
             except deform.ValidationFailure, e:
                 for field_error in e.error.children:
@@ -420,35 +452,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
                     return REQUEST.RESPONSE.redirect(self.absolute_url())
 
         self._set_breadcrumbs([('Create User', '#')])
-        for children in user_info_add_schema.children:
-            help_text = help_messages['create-user'].get(children.name, None)
-            setattr(children, 'help_text', help_text)
-
-        agent = self._get_ldap_agent()
-        if self.checkPermissionEditUsers():
-            agent_orgs = agent.all_organisations()
-        else:
-            agent_orgs = self.orgs_in_country(nfp_country)
-        orgs = [{'id': k, 'text': v['name'], 'ldap':True}
-                for k, v in agent_orgs.items()]
-        org = form_data.get('organisation')
-        if org and not (org in agent_orgs):
-            orgs.append({'id': org, 'text': org, 'ldap': False})
-        orgs.sort(lambda x, y: cmp(x['text'], y['text']))
-        choices = [('-', '-')]
-        for org in orgs:
-            if org['ldap']:
-                label = u"%s (%s)" % (org['text'], org['id'])
-            else:
-                label = org['text']
-            choices.append((org['id'], label))
-
-        schema = user_info_add_schema.clone()
-        widget = SelectWidget(values=choices)
-        schema['organisation'].widget = widget
-        if not self.checkPermissionEditUsers() and self.nfp_has_access():
-            schema['organisation'].missing = colander.required
-
         options = {
             'form_data': form_data,
             'errors': errors,
