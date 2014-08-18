@@ -1,4 +1,3 @@
-from deform.widget import SelectWidget
 from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
 from AccessControl.unauthorized import Unauthorized
@@ -7,7 +6,10 @@ from App.config import getConfiguration
 from OFS.PropertyManager import PropertyManager
 from OFS.SimpleItem import SimpleItem
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
+from copy import deepcopy
+from countries import get_country_options
 from datetime import datetime
+from deform.widget import SelectWidget
 from eea import usersdb
 from eea.ldapadmin import eionet_profile
 from eea.ldapadmin.constants import NETWORK_NAME
@@ -16,8 +18,9 @@ from eea.ldapadmin.logic_common import _session_pop
 from eea.usersdb import factories
 from eea.usersdb.db_agent import NameAlreadyExists, EmailAlreadyExists
 from email.mime.text import MIMEText
-from import_export import (excel_headers_to_object, generate_excel,
-                           set_response_attachment)
+from import_export import excel_headers_to_object
+from import_export import generate_excel,
+from import_export import set_response_attachment
 from persistent.mapping import PersistentMapping
 from ui_common import CommonTemplateLogic   # load_template,
 from ui_common import SessionMessages, TemplateRenderer
@@ -26,9 +29,8 @@ from unidecode import unidecode
 from zope.component import getUtility
 from zope.component.interfaces import ComponentLookupError
 from zope.sendmail.interfaces import IMailDelivery
-from countries import get_country_options
-import deform
 import colander
+import deform
 import jellyfish
 import ldap
 import ldap_config
@@ -352,11 +354,34 @@ class UsersAdmin(SimpleItem, PropertyManager):
         agent._update_full_name(user_info)
         agent.create_user(user_id, user_info)
         agent.set_user_password(user_id, None, password)
+        if self.nfp_has_access():
+            self._send_new_user_email()
         # put id and password back on user_info, for further processing
         # (mainly sending of email)
         user_info['id'] = user_id
         user_info['password'] = password
         return user_id
+
+    def _send_new_user_email(self, user_info):
+        """ Sends announcement email to helpdesk """
+
+        addr_from = "no-reply@eea.europa.eu"
+        addr_to = "helpdesk@eionet.europa.eu"
+
+        message = MIMEText('')
+        message['From'] = addr_from
+        message['To'] = addr_to
+
+        options = deepcopy(user_info)
+        options['author'] = self.logged_in_user()
+
+        body = self._render_template.render(
+            "zpt/users/new_user_email.zpt",
+            **options)
+
+        message['Subject'] = "[Account created by NFP]"
+        message.set_payload(body.encode('utf-8'), charset='utf-8')
+        _send_email(addr_from, addr_to, message)
 
     def confirmation_email(self, first_name, user_id, REQUEST=None):
         """ Returns body of confirmation email """
@@ -408,7 +433,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         widget = SelectWidget(values=choices)
         schema['organisation'].widget = widget
 
-        if (not self.checkPermissionEditUsers()) and self.nfp_has_access():
+        if not (self.checkPermissionEditUsers() and self.nfp_has_access()):
             schema['organisation'].missing = colander.required
 
         if 'submit' in REQUEST.form:
