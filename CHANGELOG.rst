@@ -1,6 +1,10 @@
-1.4.43 (unreleased)
+1.4.44 (unreleased)
 ------------------------
-* allow nfps to create Eionet accounts from nfp-eionet portal [dumitval]
+
+1.4.43 (2014-08-20)
+------------------------
+* allow nfps to create Eionet accounts from nfp-eionet portal 
+  [dumitval, tiberich #20187]
 
 1.4.42 (2014-08-07)
 ------------------------
