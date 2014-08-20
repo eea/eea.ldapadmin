@@ -53,7 +53,7 @@
     <table class="account-table">
 
       <tal:block repeat="schema_field options/schema">
-        <tr tal:define="full_edit_permission here/checkPermissionEditUsers;
+          <tr tal:define="full_edit_permission options/context/checkPermissionEditUsers;
                         field_name schema_field/name;
                         field python:{
                           'name': field_name,

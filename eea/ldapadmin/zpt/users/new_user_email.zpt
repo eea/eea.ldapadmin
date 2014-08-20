@@ -1,0 +1,8 @@
+A new user has been created:
+
+
+* Name: <span tal:replace="options/first_name"></span>,
+* User id: <span tal:replace="options/user_id"></span>,
+* Member of organisation: <span tal:replace="options/organisation"></span>.
+
+This message is an automated message sent by <span tal:replace="common/network_name"></span>

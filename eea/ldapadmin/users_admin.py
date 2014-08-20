@@ -19,7 +19,7 @@ from eea.usersdb import factories
 from eea.usersdb.db_agent import NameAlreadyExists, EmailAlreadyExists
 from email.mime.text import MIMEText
 from import_export import excel_headers_to_object
-from import_export import generate_excel,
+from import_export import generate_excel
 from import_export import set_response_attachment
 from persistent.mapping import PersistentMapping
 from ui_common import CommonTemplateLogic   # load_template,
@@ -355,14 +355,14 @@ class UsersAdmin(SimpleItem, PropertyManager):
         agent.create_user(user_id, user_info)
         agent.set_user_password(user_id, None, password)
         if self.nfp_has_access():
-            self._send_new_user_email()
+            self._send_new_user_email(user_id, user_info)
         # put id and password back on user_info, for further processing
         # (mainly sending of email)
         user_info['id'] = user_id
         user_info['password'] = password
         return user_id
 
-    def _send_new_user_email(self, user_info):
+    def _send_new_user_email(self, user_id, user_info):
         """ Sends announcement email to helpdesk """
 
         addr_from = "no-reply@eea.europa.eu"
@@ -373,7 +373,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
         message['To'] = addr_to
 
         options = deepcopy(user_info)
-        options['author'] = self.logged_in_user()
+        options['user_id'] = user_id
+        options['author'] = logged_in_user(self.REQUEST)
 
         body = self._render_template.render(
             "zpt/users/new_user_email.zpt",
