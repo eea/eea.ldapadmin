@@ -114,7 +114,8 @@ class TemplateRenderer(Implicit):
         return zope2_tmpl(main_page_macro=main_page_macro, body_html=body_html)
 
     def __call__(self, name, **options):
-        options['context'] = self.aq_parent
+        if 'context' not in options:
+            options['context'] = self.aq_parent
         options['request'] = self.REQUEST
         return self.wrap(self.render(name, **options))
 

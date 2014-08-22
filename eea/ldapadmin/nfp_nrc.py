@@ -1,16 +1,31 @@
 from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
+from AccessControl.unauthorized import Unauthorized
 from OFS.PropertyManager import PropertyManager
 from OFS.SimpleItem import SimpleItem
+from Products.Five.browser import BrowserView
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
+from copy import deepcopy
 from datetime import datetime
+from deform.widget import SelectWidget
 from eea import usersdb
 from eea.ldapadmin.countries import get_country
-from logic_common import _get_user_id, _is_authenticated, _session_pop
+from eea.ldapadmin.help_messages import help_messages
+from eea.ldapadmin.logic_common import _session_pop
+from eea.ldapadmin.users_admin import _is_authenticated
+from eea.ldapadmin.users_admin import _send_email
+from eea.ldapadmin.users_admin import eionet_edit_users
+from eea.ldapadmin.users_admin import user_info_add_schema
+from eea.ldapadmin.users_admin import generate_password
+from eea.usersdb.db_agent import NameAlreadyExists, EmailAlreadyExists
+from email.mime.text import MIMEText
+from logic_common import _get_user_id
 from persistent.mapping import PersistentMapping
 from ui_common import CommonTemplateLogic
 from ui_common import SessionMessages, TemplateRenderer #load_template,
-from ui_common import extend_crumbs, get_role_name, roles_list_to_text
+from ui_common import extend_crumbs
+from ui_common import get_role_name  #, roles_list_to_text
+import colander
 import deform
 import json
 import ldap
@@ -28,6 +43,7 @@ eionet_access_nfp_nrc = 'Eionet access NFP admin for NRC'
 manage_add_nfp_nrc_html = PageTemplateFile('zpt/nfp_nrc/manage_add', globals())
 manage_add_nfp_nrc_html.ldap_config_edit_macro = ldap_config.edit_macro
 manage_add_nfp_nrc_html.config_defaults = lambda: ldap_config.defaults
+
 
 def manage_add_nfp_nrc(parent, id, REQUEST=None):
     """ Adds a new Eionet NFP Admin object """
@@ -604,3 +620,180 @@ reference to an organisation for your country. Please corect!"""
         else:
             agent.set_role_leader(role_id, user_id)
             return json.dumps({'pcp': user_id})
+
+
+class CreateUser(BrowserView):
+    """ A page to create a user
+
+    Uses code from users_admin.py, but this should be merged/moved
+    """
+    _render_template = TemplateRenderer(CommonTemplateLogic)
+
+    def _create_user(self, agent, user_info):
+        """
+        Creates user in ldap using user_info (data already validated)
+
+        """
+        # remove id and password from user_info, so these will not
+        # appear as properties on the user
+        user_id = str(user_info.pop('id'))
+        password = str(user_info.pop('password'))
+        agent._update_full_name(user_info)
+        agent.create_user(user_id, user_info)
+        agent.set_user_password(user_id, None, password)
+        if self.nfp_has_access():
+            self._send_new_user_email(user_id, user_info)
+        # put id and password back on user_info, for further processing
+        # (mainly sending of email)
+        user_info['id'] = user_id
+        user_info['password'] = password
+        return user_id
+
+    def _send_new_user_email(self, user_id, user_info):
+        """ Sends announcement email to helpdesk """
+
+        addr_from = "no-reply@eea.europa.eu"
+        addr_to = "helpdesk@eionet.europa.eu"
+
+        message = MIMEText('')
+        message['From'] = addr_from
+        message['To'] = addr_to
+
+        options = deepcopy(user_info)
+        options['user_id'] = user_id
+        options['author'] = logged_in_user(self.REQUEST)
+
+        body = self._render_template.render(
+            "zpt/users/new_user_email.zpt",
+            **options)
+
+        message['Subject'] = "[Account created by NFP]"
+        message.set_payload(body.encode('utf-8'), charset='utf-8')
+        _send_email(addr_from, addr_to, message)
+
+    def checkPermissionEditUsers(self):
+        """ """
+        user = self.request.AUTHENTICATED_USER
+        return bool(user.has_permission(eionet_edit_users, self))
+
+    def __call__(self):
+
+        if not (self.checkPermissionEditUsers() or
+                self.nfp_has_access()):
+            raise Unauthorized
+
+        nfp_country = self.nfp_for_country()
+        form_data = dict(self.request.form)
+        errors = {}
+        if not form_data.get('password', ''):
+            form_data['password'] = generate_password()
+
+        schema = user_info_add_schema.clone()
+        for children in schema.children:
+            help_text = help_messages['create-user'].get(children.name, None)
+            setattr(children, 'help_text', help_text)
+
+        agent = self.context._get_ldap_agent()
+        if self.checkPermissionEditUsers():
+            agent_orgs = agent.all_organisations()
+        else:
+            agent_orgs = self.context.orgs_in_country(nfp_country)
+
+        orgs = [{'id': k, 'text': v['name'], 'ldap':True}
+                for k, v in agent_orgs.items()]
+        org = form_data.get('organisation')
+        if org and not (org in agent_orgs):
+            orgs.append({'id': org, 'text': org, 'ldap': False})
+        orgs.sort(lambda x, y: cmp(x['text'], y['text']))
+        choices = [('-', '-')]
+        for org in orgs:
+            if org['ldap']:
+                label = u"%s (%s)" % (org['text'], org['id'])
+            else:
+                label = org['text']
+            choices.append((org['id'], label))
+
+        widget = SelectWidget(values=choices)
+        schema['organisation'].widget = widget
+
+        if not (self.checkPermissionEditUsers() and self.nfp_has_access()):
+            schema['organisation'].missing = colander.required
+
+        if 'submit' in self.request.form:
+            try:
+                user_form = deform.Form(schema)
+                user_info = user_form.validate(form_data.items())
+            except deform.ValidationFailure, e:
+                for field_error in e.error.children:
+                    errors[field_error.node.name] = field_error.msg
+                msg = u"Please correct the errors below and try again."
+                _set_session_message(self.request, 'error', msg)
+            else:
+                user_id = user_info['id']
+                agent = self._get_ldap_agent(bind=True)
+                try:
+                    self._create_user(agent, user_info)
+                except NameAlreadyExists, e:
+                    errors['id'] = 'This ID is alreay registered'
+                except EmailAlreadyExists, e:
+                    errors['email'] = 'This email is alreay registered'
+                else:
+                    new_org_id = user_info['organisation']
+                    new_org_id_valid = agent.org_exists(new_org_id)
+
+                    if new_org_id_valid:
+                        self._add_to_org(agent, new_org_id, user_id)
+
+                    send_confirmation = 'send_confirmation' in form_data.keys()
+                    if send_confirmation:
+                        self.send_confirmation_email(user_info)
+                        self.send_password_reset_email(user_info)
+
+                    when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    msg = "User %s created (%s)" % (user_id, when)
+                    _set_session_message(self.request, 'info', msg)
+
+                    log.info("%s CREATED USER %s",
+                             logged_in_user(self.request),
+                             user_id)
+
+                    return self.request.RESPONSE.redirect(
+                        self.context.absolute_url())
+
+        options = {
+            'form_data': form_data,
+            'errors': errors,
+            'schema': schema,
+            'nfp_access': self.nfp_has_access(),
+            'context': self.context,
+        }
+
+        import pdb; pdb.set_trace()
+        #return self._render_template('zpt/users/create.zpt', **options)
+
+    def nfp_has_access(self):
+        """ """
+        return self.nfp_for_country() and self.context.aq_parent.id == 'nfp-eionet'
+
+    def nfp_for_country(self):
+        """ Return country code for which the current user has NFP role
+        or None otherwise"""
+        user_id = self.request.AUTHENTICATED_USER.getId()
+        if user_id:
+            ldap_groups = self.get_ldap_user_groups(user_id)
+            for group in ldap_groups:
+                if 'eionet-nfp-cc-' in group[0]:
+                    return group[0].replace('eionet-nfp-cc-', '')
+                if 'eionet-nfp-mc-' in group[0]:
+                    return group[0].replace('eionet-nfp-mc-', '')
+
+    def get_ldap_user_groups(self, user_id):
+        """ """
+        try:
+            from eea.usersdb.factories import agent_from_uf
+        except ImportError:
+            return []
+        agent = agent_from_uf(self.context.restrictedTraverse("/acl_users"))
+        ldap_roles = sorted(
+            agent.member_roles_info('user', user_id, ('description',)))
+        return ldap_roles

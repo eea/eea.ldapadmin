@@ -341,7 +341,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return duplicate_records
 
     security.declarePrivate('_create_user')
-
     def _create_user(self, agent, user_info):
         """
         Creates user in ldap using user_info (data already validated)

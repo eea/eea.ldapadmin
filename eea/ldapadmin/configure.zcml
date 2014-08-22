@@ -12,4 +12,11 @@
       directory="www"
       />
 
+  <browser:page 
+      name="create_user" 
+      for=".nfp_nrc.NfpNrc" 
+      permission="zope.Public" 
+      class=".nfp_nrc.CreateUser"
+      />
+
 </configure>
