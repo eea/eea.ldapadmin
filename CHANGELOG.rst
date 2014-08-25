@@ -1,5 +1,7 @@
-1.4.44 (unreleased)
+1.4.44 (2014-08-25)
 ------------------------
+* Add the create_user page to nfp_nrc objects to allow them to create users
+  [tiberich #20187]
 
 1.4.43 (2014-08-20)
 ------------------------
