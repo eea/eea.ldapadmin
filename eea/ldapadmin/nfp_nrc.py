@@ -622,12 +622,15 @@ reference to an organisation for your country. Please corect!"""
             return json.dumps({'pcp': user_id})
 
 
+from eea.ldapadmin.ui_common import NaayaViewPageTemplateFile
+
 class CreateUser(BrowserView):
     """ A page to create a user
 
     Uses code from users_admin.py, but this should be merged/moved
     """
-    _render_template = TemplateRenderer(CommonTemplateLogic)
+    #_render_template = TemplateRenderer(CommonTemplateLogic)
+    index = NaayaViewPageTemplateFile('zpt/users/create.zpt')
 
     def _create_user(self, agent, user_info):
         """
@@ -766,10 +769,9 @@ class CreateUser(BrowserView):
             'schema': schema,
             'nfp_access': self.nfp_has_access(),
             'context': self.context,
+            'common': CommonTemplateLogic(self.context),
         }
-
-        import pdb; pdb.set_trace()
-        #return self._render_template('zpt/users/create.zpt', **options)
+        return self.index(**options)
 
     def nfp_has_access(self):
         """ """

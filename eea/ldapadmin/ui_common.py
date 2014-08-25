@@ -1,12 +1,12 @@
 from Acquisition import Implicit
-from zope.pagetemplate.pagetemplatefile import PageTemplateFile as Z3Template
-from persistent.list import PersistentList
-from persistent.mapping import PersistentMapping
-from Products.PageTemplates.PageTemplateFile import PageTemplateFile\
-    as Z2Template
+from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
+from Products.PageTemplates.PageTemplateFile import PageTemplateFile as Z2Template
 from constants import NETWORK_NAME
 from eea.ldapadmin import roles_leaders
 from logic_common import _get_user_id, _is_authenticated
+from persistent.list import PersistentList
+from persistent.mapping import PersistentMapping
+from zope.pagetemplate.pagetemplatefile import PageTemplateFile as Z3Template
 
 
 def get_role_name(agent, role_id):
@@ -227,3 +227,18 @@ class CommonTemplateLogic(object):
 def network_name(self):
     """ E.g. EIONET, SINAnet etc. """
     return NETWORK_NAME
+
+
+class NaayaViewPageTemplateFile(ViewPageTemplateFile):
+    """ A ViewPageTemplateFile that wraps its response in the main macro
+    """
+
+    def __call__(self, __instance, *args, **keywords):
+
+        s = super(NaayaViewPageTemplateFile, self).__call__(__instance,
+                                                            *args, **keywords)
+
+        renderer = TemplateRenderer()
+        renderer = renderer.__of__(__instance.context)
+        result = renderer.wrap(s)
+        return result
