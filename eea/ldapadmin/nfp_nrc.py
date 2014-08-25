@@ -664,9 +664,9 @@ class CreateUser(BrowserView):
 
         options = deepcopy(user_info)
         options['user_id'] = user_id
-        options['author'] = logged_in_user(self.REQUEST)
+        options['author'] = logged_in_user(self.request)
 
-        body = self._render_template.render(
+        body = self.context._render_template.render(
             "zpt/users/new_user_email.zpt",
             **options)
 
@@ -719,7 +719,7 @@ class CreateUser(BrowserView):
         widget = SelectWidget(values=choices)
         schema['organisation'].widget = widget
 
-        if not (self.checkPermissionEditUsers() and self.nfp_has_access()):
+        if self.nfp_has_access():
             schema['organisation'].missing = colander.required
 
         if 'submit' in self.request.form:
@@ -733,7 +733,7 @@ class CreateUser(BrowserView):
                 _set_session_message(self.request, 'error', msg)
             else:
                 user_id = user_info['id']
-                agent = self._get_ldap_agent(bind=True)
+                agent = self.context._get_ldap_agent(bind=True)
                 try:
                     self._create_user(agent, user_info)
                 except NameAlreadyExists, e:
@@ -745,7 +745,7 @@ class CreateUser(BrowserView):
                     new_org_id_valid = agent.org_exists(new_org_id)
 
                     if new_org_id_valid:
-                        self._add_to_org(agent, new_org_id, user_id)
+                        self.context._add_to_org(agent, new_org_id, user_id)
 
                     send_confirmation = 'send_confirmation' in form_data.keys()
                     if send_confirmation:
@@ -764,18 +764,18 @@ class CreateUser(BrowserView):
                         self.context.absolute_url())
 
         options = {
-            'form_data': form_data,
-            'errors': errors,
-            'schema': schema,
-            'nfp_access': self.nfp_has_access(),
-            'context': self.context,
             'common': CommonTemplateLogic(self.context),
+            'context': self.context,
+            'errors': errors,
+            'form_data': form_data,
+            'nfp_access': self.nfp_has_access(),
+            'schema': schema,
         }
         return self.index(**options)
 
     def nfp_has_access(self):
         """ """
-        return self.nfp_for_country() and self.context.aq_parent.id == 'nfp-eionet'
+        return bool(self.nfp_for_country())   # and self.context.aq_parent.id == 'nfp-eionet'
 
     def nfp_for_country(self):
         """ Return country code for which the current user has NFP role
