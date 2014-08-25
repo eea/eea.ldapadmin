@@ -433,9 +433,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         widget = SelectWidget(values=choices)
         schema['organisation'].widget = widget
 
-        if not (self.checkPermissionEditUsers() and self.nfp_has_access()):
-            schema['organisation'].missing = colander.required
-
         if 'submit' in REQUEST.form:
             try:
                 user_form = deform.Form(schema)

@@ -629,7 +629,6 @@ class CreateUser(BrowserView):
 
     Uses code from users_admin.py, but this should be merged/moved
     """
-    #_render_template = TemplateRenderer(CommonTemplateLogic)
     index = NaayaViewPageTemplateFile('zpt/users/create.zpt')
 
     def _create_user(self, agent, user_info):
