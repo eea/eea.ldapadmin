@@ -707,7 +707,7 @@ class CreateUser(BrowserView):
         if org and not (org in agent_orgs):
             orgs.append({'id': org, 'text': org, 'ldap': False})
         orgs.sort(lambda x, y: cmp(x['text'], y['text']))
-        choices = [('-', '-')]
+        choices = [('', '-')]
         for org in orgs:
             if org['ldap']:
                 label = u"%s (%s)" % (org['text'], org['id'])
