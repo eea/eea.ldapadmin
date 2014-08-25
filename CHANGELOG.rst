@@ -1,3 +1,6 @@
+1.4.45 (unreleased)
+------------------------
+
 1.4.44 (2014-08-25)
 ------------------------
 * Add the create_user page to nfp_nrc objects to allow them to create users
