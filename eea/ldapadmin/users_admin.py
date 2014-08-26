@@ -577,8 +577,10 @@ class UsersAdmin(SimpleItem, PropertyManager):
             agent = self._get_ldap_agent(bind=True)
             old_info = agent.user_info(user_id)
 
-            new_info.update(first_name=old_info['first_name'],
-                            last_name=old_info['last_name'])
+            new_info.update(first_name=old_info['first_name'])
+            # allow changing the last name
+            # new_info.update(first_name=old_info['first_name'],
+            #                 last_name=old_info['last_name'])
 
             new_org_id = new_info['organisation']
             old_org_id = old_info['organisation']

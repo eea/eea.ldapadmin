@@ -1,5 +1,7 @@
 1.4.45 (unreleased)
 ------------------------
+* Bug fix: allow changing the last_name of a user, in the account edit form
+  [tiberich #20788]
 
 1.4.44 (2014-08-25)
 ------------------------
