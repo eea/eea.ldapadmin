@@ -490,7 +490,7 @@ reference to an organisation for your country. Please corect!"""
             form_data['organisation'] = org_id
         orgs.sort(lambda x,y:cmp(x['text'], y['text']))
 
-        choices = [('-', '-')]
+        choices = [('', '-')]
         for org in orgs:
             if org['ldap']:
                 label = u"%s (%s)" % (org['text'], org['id'])
@@ -543,16 +543,16 @@ reference to an organisation for your country. Please corect!"""
             old_info = agent.user_info(user_id)
 
             # put these readonly-s back
-            new_info.update(first_name=old_info['first_name'],
-                            last_name=old_info['last_name'])
+            new_info.update(first_name=old_info['first_name'])
 
             new_org_id = new_info['organisation']
-            old_org_id = old_info['organisation']
-
             new_org_id_valid = agent.org_exists(new_org_id)
 
             # make a check if user is changing the organisation
-            if new_org_id != old_org_id:
+            user_orgs = [agent._org_id(org)
+                for org in list(agent.user_organisations(user_id))]
+
+            if not (new_org_id in user_orgs):
                 self._remove_from_all_orgs(agent, user_id)
                 if new_org_id_valid:
                     self._add_to_org(agent, new_org_id, user_id)
@@ -740,11 +740,18 @@ class CreateUser(BrowserView):
                 except EmailAlreadyExists, e:
                     errors['email'] = 'This email is alreay registered'
                 else:
-                    new_org_id = user_info['organisation']
+
+                    new_org_id = form_data['organisation']
                     new_org_id_valid = agent.org_exists(new_org_id)
 
-                    if new_org_id_valid:
-                        self.context._add_to_org(agent, new_org_id, user_id)
+                    # make a check if user is changing the organisation
+                    user_orgs = [agent._org_id(org)
+                        for org in list(agent.user_organisations(user_id))]
+
+                    if not (new_org_id in user_orgs):
+                        self._remove_from_all_orgs(agent, user_id)
+                        if new_org_id_valid:
+                            self.context._add_to_org(agent, new_org_id, user_id)
 
                     send_confirmation = 'send_confirmation' in form_data.keys()
                     if send_confirmation:

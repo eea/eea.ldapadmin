@@ -535,7 +535,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
             form_data['organisation'] = org_id
         orgs.sort(lambda x, y: cmp(x['text'], y['text']))
         schema = user_info_edit_schema.clone()
-        choices = [('-', '-')]
+        choices = [('', '-')]
         for org in orgs:
             if org['ldap']:
                 label = u"%s (%s)" % (org['text'], org['id'])
@@ -583,13 +583,13 @@ class UsersAdmin(SimpleItem, PropertyManager):
             #                 last_name=old_info['last_name'])
 
             new_org_id = new_info['organisation']
-            old_org_id = old_info['organisation']
-
             new_org_id_valid = agent.org_exists(new_org_id)
-            # old_org_id_valid = agent.org_exists(old_org_id)
 
             # make a check if user is changing the organisation
-            if new_org_id != old_org_id:
+            user_orgs = [agent._org_id(org)
+                for org in list(agent.user_organisations(user_id))]
+
+            if not (new_org_id in user_orgs):
                 self._remove_from_all_orgs(agent, user_id)
                 if new_org_id_valid:
                     self._add_to_org(agent, new_org_id, user_id)
