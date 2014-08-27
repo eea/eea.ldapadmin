@@ -1,4 +1,4 @@
-1.4.45 (unreleased)
+1.4.45 (2014-08-27)
 ------------------------
 * Bug fix: allow changing the last_name of a user, in the account edit form
   [tiberich #20788]
@@ -6,6 +6,8 @@
   valid user organisation, but it's not really assigned to the organisation 
   as a member
   [tiberich #20835]
+* Bug fix: fix creating users by NFPs when send confirmation email is checked
+  [tiberich #20187]
 
 1.4.44 (2014-08-25)
 ------------------------
