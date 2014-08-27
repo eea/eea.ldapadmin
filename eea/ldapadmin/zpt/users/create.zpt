@@ -47,7 +47,7 @@
 
             <tr>
                 <td class="right-td">
-                    <input type="checkbox" name="send_confirmation" id="send_confirmation" value="on" />
+                    <input type="checkbox" name="send_confirmation" id="send_confirmation" checked="checked" />
                 </td>
                 <td>
                     <label id="confirmation_email_label" for="send_confirmation">

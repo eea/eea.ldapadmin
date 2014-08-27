@@ -161,6 +161,8 @@ class PasswordResetTool(SimpleItem):
 
     def ask_for_password_reset(self, REQUEST=None, email=None):
         """ view """
+        if REQUEST is None:
+            REQUEST = self.REQUEST
         if not email:
             email = REQUEST.form['email']
         if email in DISABLED_EMAILS:

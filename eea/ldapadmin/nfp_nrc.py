@@ -9,14 +9,16 @@ from copy import deepcopy
 from datetime import datetime
 from deform.widget import SelectWidget
 from eea import usersdb
+from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.countries import get_country
 from eea.ldapadmin.help_messages import help_messages
 from eea.ldapadmin.logic_common import _session_pop
 from eea.ldapadmin.users_admin import _is_authenticated
 from eea.ldapadmin.users_admin import _send_email
 from eea.ldapadmin.users_admin import eionet_edit_users
-from eea.ldapadmin.users_admin import user_info_add_schema
 from eea.ldapadmin.users_admin import generate_password
+from eea.ldapadmin.users_admin import generate_user_id
+from eea.ldapadmin.users_admin import user_info_add_schema
 from eea.usersdb.db_agent import NameAlreadyExists, EmailAlreadyExists
 from email.mime.text import MIMEText
 from logic_common import _get_user_id
@@ -691,6 +693,10 @@ class CreateUser(BrowserView):
             form_data['password'] = generate_password()
 
         schema = user_info_add_schema.clone()
+        # make userid and password optionals
+        schema['id'].missing = None
+        schema['password'].missing = None
+
         for children in schema.children:
             help_text = help_messages['create-user'].get(children.name, None)
             setattr(children, 'help_text', help_text)
@@ -731,8 +737,13 @@ class CreateUser(BrowserView):
                 msg = u"Please correct the errors below and try again."
                 _set_session_message(self.request, 'error', msg)
             else:
-                user_id = user_info['id']
                 agent = self.context._get_ldap_agent(bind=True)
+                user_id = user_info['id']
+                if not user_id:
+                    user_id = user_info['id'] = generate_user_id(
+                        user_info['first_name'], user_info['last_name'],
+                        agent, [])
+
                 try:
                     self._create_user(agent, user_info)
                 except NameAlreadyExists, e:
@@ -744,14 +755,8 @@ class CreateUser(BrowserView):
                     new_org_id = form_data['organisation']
                     new_org_id_valid = agent.org_exists(new_org_id)
 
-                    # make a check if user is changing the organisation
-                    user_orgs = [agent._org_id(org)
-                        for org in list(agent.user_organisations(user_id))]
-
-                    if not (new_org_id in user_orgs):
-                        self._remove_from_all_orgs(agent, user_id)
-                        if new_org_id_valid:
-                            self.context._add_to_org(agent, new_org_id, user_id)
+                    if new_org_id_valid:
+                        self.context._add_to_org(agent, new_org_id, user_id)
 
                     send_confirmation = 'send_confirmation' in form_data.keys()
                     if send_confirmation:
@@ -778,6 +783,38 @@ class CreateUser(BrowserView):
             'schema': schema,
         }
         return self.index(**options)
+
+    def send_confirmation_email(self, user_info):
+        """ Sends confirmation email """
+        addr_from = "no-reply@eea.europa.eu"
+        addr_to = user_info['email']
+        message = MIMEText('')
+        message['From'] = addr_from
+        message['To'] = addr_to
+
+        body = self.confirmation_email(user_info['first_name'],
+                                       user_info['id'])
+        message['Subject'] = "%s Account `%s` Created" % (
+            NETWORK_NAME, user_info['id'])
+        message.set_payload(body.encode('utf-8'), charset='utf-8')
+        _send_email(addr_from, addr_to, message)
+
+    def confirmation_email(self, first_name, user_id, REQUEST=None):
+        """ Returns body of confirmation email """
+        if not self.checkPermissionEditUsers() and not self.nfp_has_access():
+            raise Unauthorized
+        options = {'first_name': first_name, 'user_id': user_id}
+        options['site_title'] = self.context.unrestrictedTraverse('/').title
+        return self.context._render_template.render(
+            "zpt/users/email_registration_confirmation.zpt",
+            **options)
+
+    def send_password_reset_email(self, user_info):
+        """ """
+        pwreset_tool = self.context.restrictedTraverse('/').objectValues(
+            'Eionet Password Reset Tool')[0]
+        email = user_info['email']
+        pwreset_tool.ask_for_password_reset(self.request, email=email)
 
     def nfp_has_access(self):
         """ """
