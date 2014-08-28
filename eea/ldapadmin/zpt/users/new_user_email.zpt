@@ -1,5 +1,4 @@
-A new user has been created:
-
+A new user has been created by <span tal:replace="options/author" />:
 
 * Name: <span tal:replace="options/first_name"></span>,
 * User id: <span tal:replace="options/user_id"></span>,

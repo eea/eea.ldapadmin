@@ -665,7 +665,16 @@ class CreateUser(BrowserView):
 
         options = deepcopy(user_info)
         options['user_id'] = user_id
-        options['author'] = logged_in_user(self.request)
+        agent = self.context._get_ldap_agent()
+        try:
+            requester = logged_in_user(self.request)
+            info = agent.user_info(requester)
+        except:
+            info = {'first_name':'',
+                    'last_name':'',
+                    }
+        options['author'] = u"{} {} ({})".format(
+            info['first_name'], info['last_name'], requester)
 
         body = self.context._render_template.render(
             "zpt/users/new_user_email.zpt",
@@ -673,6 +682,7 @@ class CreateUser(BrowserView):
 
         message['Subject'] = "[Account created by NFP]"
         message.set_payload(body.encode('utf-8'), charset='utf-8')
+        print body
         _send_email(addr_from, addr_to, message)
 
     def checkPermissionEditUsers(self):

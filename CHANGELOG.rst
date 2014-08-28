@@ -1,3 +1,9 @@
+1.4.46 (2014-08-28)
+------------------------
+* Bug fix: added information about the NFP to create the account, in the 
+  helpdesk email that is sent when NFPs create new accounts
+  [tiberich #20187]
+
 1.4.45 (2014-08-27)
 ------------------------
 * Bug fix: allow changing the last_name of a user, in the account edit form
