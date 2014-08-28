@@ -1,3 +1,8 @@
+1.4.47 (2014-08-28)
+------------------------
+* Bug fix: properly allow editing user accounts by NFPs
+  [tiberich #20870]
+
 1.4.46 (2014-08-28)
 ------------------------
 * Bug fix: added information about the NFP to create the account, in the 
