@@ -666,6 +666,8 @@ class CreateUser(BrowserView):
         options = deepcopy(user_info)
         options['user_id'] = user_id
         agent = self.context._get_ldap_agent()
+
+        requester = "System User"
         try:
             requester = logged_in_user(self.request)
             info = agent.user_info(requester)
@@ -673,8 +675,10 @@ class CreateUser(BrowserView):
             info = {'first_name':'',
                     'last_name':'',
                     }
-        options['author'] = u"{} {} ({})".format(
-            info['first_name'], info['last_name'], requester)
+        options['author'] = u"%(firstname)s %(lastname)s (%(requester)s)" % {
+            'firstname': info['first_name'],
+            'lastname': info['last_name'],
+            'requester': requester}
 
         body = self.context._render_template.render(
             "zpt/users/new_user_email.zpt",
