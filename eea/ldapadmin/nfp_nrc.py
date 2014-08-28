@@ -545,7 +545,8 @@ reference to an organisation for your country. Please corect!"""
             old_info = agent.user_info(user_id)
 
             # put these readonly-s back
-            new_info.update(first_name=old_info['first_name'])
+            new_info.update(first_name=old_info['first_name'],
+                            last_name=old_info['last_name'])
 
             new_org_id = new_info['organisation']
             new_org_id_valid = agent.org_exists(new_org_id)
