@@ -11,6 +11,7 @@ from deform.widget import SelectWidget
 from eea import usersdb
 from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.countries import get_country
+from eea.ldapadmin.countries import get_country_options
 from eea.ldapadmin.help_messages import help_messages
 from eea.ldapadmin.logic_common import _session_pop
 from eea.ldapadmin.ui_common import NaayaViewPageTemplateFile
@@ -738,6 +739,18 @@ class CreateUser(BrowserView):
         """ """
         user = self.request.AUTHENTICATED_USER
         return bool(user.has_permission(eionet_edit_users, self))
+
+    def orgs_in_country(self, country):
+        """ """
+        agent = self._get_ldap_agent()
+        orgs_by_id = agent.all_organisations()
+        countries = dict(get_country_options(country=country))
+        orgs = {}
+        for org_id, info in orgs_by_id.iteritems():
+            country_info = countries.get(info['country'])
+            if country_info:
+                orgs[org_id] = info
+        return orgs
 
     def __call__(self):
 

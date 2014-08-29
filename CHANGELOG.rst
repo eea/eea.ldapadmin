@@ -1,3 +1,8 @@
+1.4.50 (2014-08-29)
+------------------------
+* Bug fix: implement missing method in nrc_nfp
+  [tiberich #20187]
+
 1.4.49 (2014-08-29)
 ------------------------
 * Bug fix: fix duplicate email checking in account creation by NFPs
