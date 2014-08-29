@@ -1,3 +1,8 @@
+1.4.48 (2014-08-29)
+------------------------
+* Bug fix: added custom template for email message sent on account creation by NFP
+  [tiberich #20187]
+
 1.4.47 (2014-08-28)
 ------------------------
 * Bug fix: properly allow editing user accounts by NFPs
