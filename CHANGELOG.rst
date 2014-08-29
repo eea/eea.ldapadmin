@@ -1,3 +1,8 @@
+1.4.49 (2014-08-29)
+------------------------
+* Bug fix: fix duplicate email checking in account creation by NFPs
+  [tiberich #20187, #20880]
+
 1.4.48 (2014-08-29)
 ------------------------
 * Bug fix: added custom template for email message sent on account creation by NFP

@@ -19,6 +19,7 @@ from eea.ldapadmin.users_admin import _send_email
 from eea.ldapadmin.users_admin import eionet_edit_users
 from eea.ldapadmin.users_admin import generate_password
 from eea.ldapadmin.users_admin import generate_user_id
+from eea.ldapadmin.users_admin import get_duplicates_by_name
 from eea.ldapadmin.users_admin import user_info_add_schema
 from eea.usersdb.db_agent import NameAlreadyExists, EmailAlreadyExists
 from email.mime.text import MIMEText
@@ -26,8 +27,9 @@ from logic_common import _get_user_id
 from persistent.mapping import PersistentMapping
 from ui_common import CommonTemplateLogic
 from ui_common import SessionMessages, TemplateRenderer #load_template,
-from ui_common import extend_crumbs
+from ui_common import extend_crumbs, TemplateRendererNoWrap
 from ui_common import get_role_name  #, roles_list_to_text
+from unidecode import unidecode
 import colander
 import deform
 import json
@@ -253,6 +255,7 @@ class NfpNrc(SimpleItem, PropertyManager):
     )
 
     _render_template = TemplateRenderer(CommonTemplateLogic)
+    _render_template_no_wrap = TemplateRendererNoWrap(CommonTemplateLogic)
 
     def _set_breadcrumbs(self, stack):
         self.REQUEST._nfp_nrc = stack
@@ -625,6 +628,51 @@ reference to an organisation for your country. Please corect!"""
             agent.set_role_leader(role_id, user_id)
             return json.dumps({'pcp': user_id})
 
+    def checkPermissionEditUsers(self):
+        """ """
+        user = self.REQUEST.AUTHENTICATED_USER
+        return bool(user.has_permission(eionet_edit_users, self))
+
+    security.declarePrivate('_find_duplicates')
+    def _find_duplicates(self, fname, lname, email):
+        """ find similar users """
+        duplicate_records = []
+
+        agent = self._get_ldap_agent()
+        duplicates_by_email = agent.search_user_by_email(email)
+        duplicate_records.extend(duplicates_by_email)
+
+        user_cn = unidecode(("%s %s" % (fname, lname)))
+        # set of uids with similar corresponding names
+        uids_by_name = set(map(agent._user_id,
+                               get_duplicates_by_name(user_cn)))
+        # set of uids with the same associated email
+        uids_by_mail = set(user['uid'] for user in duplicates_by_email)
+        uids_to_search = uids_by_name.difference(uids_by_mail)
+
+        duplicate_records.extend(agent.search_users_by_uid(uids_to_search))
+        return duplicate_records
+
+    def find_duplicates(self, REQUEST):
+        """ view """
+        if not self.checkPermissionEditUsers() and not self.nfp_has_access():
+            raise Unauthorized
+        fname = REQUEST.form.get('first_name', '')
+        lname = REQUEST.form.get('last_name', '')
+        email = REQUEST.form.get('email', '')
+
+        # duplicate_records = []
+
+        if fname and lname and email:
+            duplicates_records = self._find_duplicates(fname, lname, email)
+
+        options = {
+            'is_authenticated': True,
+            'users': dict([(d['uid'], d) for d in duplicates_records])
+        }
+
+        return self._render_template_no_wrap('zpt/users/find_duplicates.zpt',
+                                             **options)
 
 class CreateUser(BrowserView):
     """ A page to create a user
