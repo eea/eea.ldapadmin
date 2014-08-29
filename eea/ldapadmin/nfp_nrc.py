@@ -13,6 +13,7 @@ from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.countries import get_country
 from eea.ldapadmin.help_messages import help_messages
 from eea.ldapadmin.logic_common import _session_pop
+from eea.ldapadmin.ui_common import NaayaViewPageTemplateFile
 from eea.ldapadmin.users_admin import _is_authenticated
 from eea.ldapadmin.users_admin import _send_email
 from eea.ldapadmin.users_admin import eionet_edit_users
@@ -625,8 +626,6 @@ reference to an organisation for your country. Please corect!"""
             return json.dumps({'pcp': user_id})
 
 
-from eea.ldapadmin.ui_common import NaayaViewPageTemplateFile
-
 class CreateUser(BrowserView):
     """ A page to create a user
 
@@ -673,9 +672,7 @@ class CreateUser(BrowserView):
             requester = logged_in_user(self.request)
             info = agent.user_info(requester)
         except:
-            info = {'first_name':'',
-                    'last_name':'',
-                    }
+            info = {'first_name':'', 'last_name':''}
         options['author'] = u"%(firstname)s %(lastname)s (%(requester)s)" % {
             'firstname': info['first_name'],
             'lastname': info['last_name'],
@@ -687,7 +684,6 @@ class CreateUser(BrowserView):
 
         message['Subject'] = "[Account created by NFP]"
         message.set_payload(body.encode('utf-8'), charset='utf-8')
-        print body
         _send_email(addr_from, addr_to, message)
 
     def checkPermissionEditUsers(self):
@@ -821,7 +817,7 @@ class CreateUser(BrowserView):
         options = {'first_name': first_name, 'user_id': user_id}
         options['site_title'] = self.context.unrestrictedTraverse('/').title
         return self.context._render_template.render(
-            "zpt/users/email_registration_confirmation.zpt",
+            "zpt/users/email_account_created.zpt",
             **options)
 
     def send_password_reset_email(self, user_info):
