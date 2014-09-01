@@ -777,7 +777,7 @@ class CreateUser(BrowserView):
         if self.checkPermissionEditUsers():
             agent_orgs = agent.all_organisations()
         else:
-            agent_orgs = self.context.orgs_in_country(nfp_country)
+            agent_orgs = self.orgs_in_country(nfp_country)
 
         orgs = [{'id': k, 'text': v['name'], 'ldap':True}
                 for k, v in agent_orgs.items()]
