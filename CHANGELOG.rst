@@ -1,3 +1,8 @@
+1.4.51 (2014-09-01)
+------------------------
+* Bug fix: use info from naaya.ldapdump if LDAP_DISK_STORAGE is not set
+  [tiberich #20187]
+
 1.4.50 (2014-08-29)
 ------------------------
 * Bug fix: implement missing method in nrc_nfp

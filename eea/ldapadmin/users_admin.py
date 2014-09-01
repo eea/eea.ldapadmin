@@ -125,6 +125,12 @@ def get_users_by_ldap_dump():
     LDAP_DISK_STORAGE = getattr(CONFIG, 'environment',
                                 {}).get('LDAP_DISK_STORAGE', '')
     DB_FILE = os.path.join(LDAP_DISK_STORAGE, 'ldap_eionet_europa_eu.db')
+    if not os.path.exists:
+        from naaya.ldapdump.interfaces import IDumpReader
+        from zope.component import getUtility
+        util = getUtility(IDumpReader)
+        DB_FILE = util.db_path
+        assert os.path.exists(DB_FILE)
     conn = sqlite3.connect(DB_FILE)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -320,7 +326,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template('zpt/statistics.zpt', **options)
 
     security.declarePrivate('_find_duplicates')
-
     def _find_duplicates(self, fname, lname, email):
         """ find similar users """
         duplicate_records = []
