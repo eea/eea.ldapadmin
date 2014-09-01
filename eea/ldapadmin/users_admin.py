@@ -125,7 +125,7 @@ def get_users_by_ldap_dump():
     LDAP_DISK_STORAGE = getattr(CONFIG, 'environment',
                                 {}).get('LDAP_DISK_STORAGE', '')
     DB_FILE = os.path.join(LDAP_DISK_STORAGE, 'ldap_eionet_europa_eu.db')
-    if not os.path.exists:
+    if not os.path.exists(DB_FILE):
         from naaya.ldapdump.interfaces import IDumpReader
         from zope.component import getUtility
         util = getUtility(IDumpReader)
