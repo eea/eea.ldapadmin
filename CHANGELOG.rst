@@ -1,3 +1,6 @@
+1.4.53 (unreleased)
+------------------------
+
 1.4.52 (2014-09-01)
 ------------------------
 * Bug fix: use orgs_in_country method from view code instead of context
