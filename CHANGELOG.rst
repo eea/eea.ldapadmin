@@ -1,5 +1,6 @@
 1.4.53 (unreleased)
 ------------------------
+* added missing method on CreateUser class [dumitval]
 
 1.4.52 (2014-09-01)
 ------------------------

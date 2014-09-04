@@ -740,6 +740,14 @@ class CreateUser(BrowserView):
         user = self.request.AUTHENTICATED_USER
         return bool(user.has_permission(eionet_edit_users, self))
 
+    def _get_ldap_agent(self, bind=False, secondary=False):
+        agent = ldap_config.ldap_agent_with_config(self._config, bind)
+        try:
+            agent._author = logged_in_user(self.REQUEST)
+        except AttributeError:
+            agent._author = "System user"
+        return agent
+
     def orgs_in_country(self, country):
         """ """
         agent = self._get_ldap_agent()
