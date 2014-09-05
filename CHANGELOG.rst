@@ -1,5 +1,6 @@
-1.4.54 (unreleased)
+1.4.54 (2014-09-05)
 ------------------------
+* added missing method on CreateUser class [tiberich]
 
 1.4.53 (2014-09-04)
 ------------------------

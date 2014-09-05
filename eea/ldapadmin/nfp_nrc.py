@@ -750,7 +750,7 @@ class CreateUser(BrowserView):
 
     def orgs_in_country(self, country):
         """ """
-        agent = self._get_ldap_agent()
+        agent = self.context._get_ldap_agent()
         orgs_by_id = agent.all_organisations()
         countries = dict(get_country_options(country=country))
         orgs = {}
