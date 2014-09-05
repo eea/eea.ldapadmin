@@ -1,3 +1,7 @@
+1.4.55 (unreleased)
+------------------------
+* delete method that is not used in CreateUser class [tiberich]
+
 1.4.54 (2014-09-05)
 ------------------------
 * added missing method on CreateUser class [tiberich]
