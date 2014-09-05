@@ -1,6 +1,8 @@
-1.4.55 (unreleased)
+1.4.55 (2014-09-05)
 ------------------------
 * delete method that is not used in CreateUser class [tiberich]
+* Removed the username field from the Account creation page for NFP
+  [tiberich #20187]
 
 1.4.54 (2014-09-05)
 ------------------------

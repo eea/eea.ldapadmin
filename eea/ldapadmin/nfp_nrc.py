@@ -765,8 +765,8 @@ class CreateUser(BrowserView):
             form_data['password'] = generate_password()
 
         schema = user_info_add_schema.clone()
-        # make userid and password optionals
-        schema['id'].missing = None
+        # hide user id, make password optional
+        del schema['id']
         schema['password'].missing = None
 
         for children in schema.children:
@@ -810,11 +810,9 @@ class CreateUser(BrowserView):
                 _set_session_message(self.request, 'error', msg)
             else:
                 agent = self.context._get_ldap_agent(bind=True)
-                user_id = user_info['id']
-                if not user_id:
-                    user_id = user_info['id'] = generate_user_id(
-                        user_info['first_name'], user_info['last_name'],
-                        agent, [])
+                user_id = user_info['id'] = generate_user_id(
+                    user_info['first_name'], user_info['last_name'],
+                    agent, [])
 
                 try:
                     self._create_user(agent, user_info)
