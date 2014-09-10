@@ -1,5 +1,8 @@
-1.4.56 (unreleased)
+1.4.56 (2014-09-10)
 ------------------------
+* Bug fix: added the split() method to SimplifiedRole, to fix the
+  users_editor code
+  [tiberich #20129]
 
 1.4.55 (2014-09-05)
 ------------------------

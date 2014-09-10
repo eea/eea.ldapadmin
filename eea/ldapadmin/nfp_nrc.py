@@ -116,6 +116,9 @@ class SimplifiedRole(object):
         self.leaders = leaders
         self.alternates = alternates
 
+    def split(self, s):
+        return self.role_id.split(s)
+
 
 def get_nfp_roles(agent, request):
     out = []
