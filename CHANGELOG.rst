@@ -1,3 +1,6 @@
+1.4.57 (unreleased)
+------------------------
+
 1.4.56 (2014-09-10)
 ------------------------
 * Bug fix: added the split() method to SimplifiedRole, to fix the
