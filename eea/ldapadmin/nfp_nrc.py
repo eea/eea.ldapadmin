@@ -403,7 +403,8 @@ class NfpNrc(SimpleItem, PropertyManager):
         if not self._allowed(agent, REQUEST, country_code):
             return None
 
-        role_id_list = agent.add_to_role(role_id, 'user', user_id)
+        with agent.new_action():
+            role_id_list = agent.add_to_role(role_id, 'user', user_id)
         role_msg = get_role_name(agent, role_id)
         msg = "User %r added to role %s. \n" % (user_id, role_msg)
 
@@ -456,10 +457,11 @@ reference to an organisation for your country. Please corect!"""
         assert type(user_id_list) is list
 
         if user_id_list:
-            for user_id in user_id_list:
-                roles_id_list = agent.remove_from_role(role_id, 'user', user_id)
-                log.info("%s REMOVED USER %s FROM ROLES %r",
-                          logged_in_user(REQUEST), user_id, roles_id_list)
+            with agent.new_action():
+                for user_id in user_id_list:
+                    roles_id_list = agent.remove_from_role(role_id, 'user', user_id)
+                    log.info("%s REMOVED USER %s FROM ROLES %r",
+                            logged_in_user(REQUEST), user_id, roles_id_list)
 
             msg = "Users %r removed from role %s" % (user_id_list, role_name)
             _set_session_message(REQUEST, 'info', msg)
@@ -563,12 +565,13 @@ reference to an organisation for your country. Please corect!"""
             user_orgs = [agent._org_id(org)
                 for org in list(agent.user_organisations(user_id))]
 
-            if not (new_org_id in user_orgs):
-                self._remove_from_all_orgs(agent, user_id)
-                if new_org_id_valid:
-                    self._add_to_org(agent, new_org_id, user_id)
+            with agent.new_action():
+                if not (new_org_id in user_orgs):
+                    self._remove_from_all_orgs(agent, user_id)
+                    if new_org_id_valid:
+                        self._add_to_org(agent, new_org_id, user_id)
 
-            agent.set_user_info(user_id, new_info)
+                agent.set_user_info(user_id, new_info)
             when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             _set_session_message(REQUEST, 'message', "Profile saved (%s)" % when)
 
@@ -817,35 +820,36 @@ class CreateUser(BrowserView):
                     user_info['first_name'], user_info['last_name'],
                     agent, [])
 
-                try:
-                    self._create_user(agent, user_info)
-                except NameAlreadyExists, e:
-                    errors['id'] = 'This ID is alreay registered'
-                except EmailAlreadyExists, e:
-                    errors['email'] = 'This email is alreay registered'
-                else:
+                with agent.new_action():
+                    try:
+                        self._create_user(agent, user_info)
+                    except NameAlreadyExists, e:
+                        errors['id'] = 'This ID is alreay registered'
+                    except EmailAlreadyExists, e:
+                        errors['email'] = 'This email is alreay registered'
+                    else:
 
-                    new_org_id = form_data['organisation']
-                    new_org_id_valid = agent.org_exists(new_org_id)
+                        new_org_id = form_data['organisation']
+                        new_org_id_valid = agent.org_exists(new_org_id)
 
-                    if new_org_id_valid:
-                        self.context._add_to_org(agent, new_org_id, user_id)
+                        if new_org_id_valid:
+                            self.context._add_to_org(agent, new_org_id, user_id)
 
-                    send_confirmation = 'send_confirmation' in form_data.keys()
-                    if send_confirmation:
-                        self.send_confirmation_email(user_info)
-                        self.send_password_reset_email(user_info)
+                        send_confirmation = 'send_confirmation' in form_data.keys()
+                        if send_confirmation:
+                            self.send_confirmation_email(user_info)
+                            self.send_password_reset_email(user_info)
 
-                    when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    msg = "User %s created (%s)" % (user_id, when)
-                    _set_session_message(self.request, 'info', msg)
+                        when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        msg = "User %s created (%s)" % (user_id, when)
+                        _set_session_message(self.request, 'info', msg)
 
-                    log.info("%s CREATED USER %s",
-                             logged_in_user(self.request),
-                             user_id)
+                        log.info("%s CREATED USER %s",
+                                logged_in_user(self.request),
+                                user_id)
 
-                    return self.request.RESPONSE.redirect(
-                        self.context.absolute_url())
+                        return self.request.RESPONSE.redirect(
+                            self.context.absolute_url())
 
         options = {
             'common': CommonTemplateLogic(self.context),

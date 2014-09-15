@@ -199,6 +199,10 @@ class UsersAdmin(SimpleItem, PropertyManager):
     _render_template = TemplateRenderer(CommonTemplateLogic)
     _render_template_no_wrap = TemplateRendererNoWrap(CommonTemplateLogic)
 
+    def __init__(self, config={}):
+        super(UsersAdmin, self).__init__()
+        self._config = PersistentMapping(config)
+
     def _set_breadcrumbs(self, stack):
         self.REQUEST._users_admin_crumbs = stack
 
@@ -212,12 +216,12 @@ class UsersAdmin(SimpleItem, PropertyManager):
         stack.insert(0, (id, self.absolute_url() + "/edit_user?id=" + id))
         return stack
 
-    def __init__(self, config={}):
-        super(UsersAdmin, self).__init__()
-        self._config = PersistentMapping(config)
+    def _get_ldap_agent(self, bind=False):
+        agent = ldap_config.ldap_agent_with_config(self._config, bind)
+        agent._author = logged_in_user(self.REQUEST)
+        return agent
 
     security.declareProtected(view_management_screens, 'get_config')
-
     def get_config(self):
         return dict(self._config)
 
@@ -226,24 +230,16 @@ class UsersAdmin(SimpleItem, PropertyManager):
     manage_edit.ldap_config_edit_macro = ldap_config.edit_macro
 
     security.declareProtected(view_management_screens, 'manage_edit_save')
-
     def manage_edit_save(self, REQUEST):
         """ save changes to configuration """
         self._config.update(ldap_config.read_form(REQUEST.form, edit=True))
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/manage_edit')
 
-    def _get_ldap_agent(self, bind=False):
-        agent = ldap_config.ldap_agent_with_config(self._config, bind)
-        agent._author = logged_in_user(self.REQUEST)
-        return agent
-
     security.declareProtected(view, 'can_edit_users')
-
     def can_edit_users(self, user):
         return bool(user.has_permission(eionet_edit_users, self))
 
     security.declarePublic('checkPermissionEditUsers')
-
     def checkPermissionEditUsers(self):
         """ """
         user = self.REQUEST.AUTHENTICATED_USER
@@ -273,7 +269,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template('zpt/users_index.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'get_statistics')
-
     def get_statistics(self, REQUEST):
         """ view a simple table of how many users have been registered,
         for each year
@@ -450,33 +445,34 @@ class UsersAdmin(SimpleItem, PropertyManager):
             else:
                 user_id = user_info['id']
                 agent = self._get_ldap_agent(bind=True)
-                try:
-                    self._create_user(agent, user_info)
-                except NameAlreadyExists, e:
-                    errors['id'] = 'This ID is alreay registered'
-                except EmailAlreadyExists, e:
-                    errors['email'] = 'This email is alreay registered'
-                else:
-                    new_org_id = user_info['organisation']
-                    new_org_id_valid = agent.org_exists(new_org_id)
+                with agent.new_action():
+                    try:
+                        self._create_user(agent, user_info)
+                    except NameAlreadyExists, e:
+                        errors['id'] = 'This ID is alreay registered'
+                    except EmailAlreadyExists, e:
+                        errors['email'] = 'This email is alreay registered'
+                    else:
+                        new_org_id = user_info['organisation']
+                        new_org_id_valid = agent.org_exists(new_org_id)
 
-                    if new_org_id_valid:
-                        self._add_to_org(agent, new_org_id, user_id)
+                        if new_org_id_valid:
+                            self._add_to_org(agent, new_org_id, user_id)
 
-                    send_confirmation = 'send_confirmation' in form_data.keys()
-                    if send_confirmation:
-                        self.send_confirmation_email(user_info)
-                        self.send_password_reset_email(user_info)
+                        send_confirmation = 'send_confirmation' in form_data.keys()
+                        if send_confirmation:
+                            self.send_confirmation_email(user_info)
+                            self.send_password_reset_email(user_info)
 
-                    when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    msg = "User %s created (%s)" % (user_id, when)
-                    _set_session_message(REQUEST, 'info', msg)
+                        when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        msg = "User %s created (%s)" % (user_id, when)
+                        _set_session_message(REQUEST, 'info', msg)
 
-                    log.info("%s CREATED USER %s",
-                             logged_in_user(REQUEST),
-                             user_id)
+                        log.info("%s CREATED USER %s",
+                                logged_in_user(REQUEST),
+                                user_id)
 
-                    return REQUEST.RESPONSE.redirect(self.absolute_url())
+                return REQUEST.RESPONSE.redirect(self.absolute_url())
 
         self._set_breadcrumbs([('Create User', '#')])
         options = {
@@ -560,7 +556,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template('zpt/users/edit.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'edit_user_action')
-
     def edit_user_action(self, REQUEST):
         """ view """
         user_id = REQUEST.form['id']
@@ -594,21 +589,23 @@ class UsersAdmin(SimpleItem, PropertyManager):
             user_orgs = [agent._org_id(org)
                 for org in list(agent.user_organisations(user_id))]
 
-            if not (new_org_id in user_orgs):
-                self._remove_from_all_orgs(agent, user_id)
-                if new_org_id_valid:
-                    self._add_to_org(agent, new_org_id, user_id)
+            with agent.new_action():
+                if not (new_org_id in user_orgs):
+                    self._remove_from_all_orgs(agent, user_id)
+                    if new_org_id_valid:
+                        self._add_to_org(agent, new_org_id, user_id)
 
-            agent.set_user_info(user_id, new_info)
+                agent.set_user_info(user_id, new_info)
+
             when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            _set_session_message(REQUEST, 'message', "Profile saved (%s)"
-                                 % when)
+            _set_session_message(
+                REQUEST, 'message', "Profile saved (%s)" % when)
 
             log.info("%s EDITED USER %s as member of %s",
                      logged_in_user(REQUEST), user_id, new_org_id)
 
-        REQUEST.RESPONSE.redirect(self.absolute_url() + '/edit_user?id=' +
-                                  user_id)
+        REQUEST.RESPONSE.redirect(
+            self.absolute_url() + '/edit_user?id=' + user_id)
 
     def _add_to_org(self, agent, org_id, user_id):
         try:
@@ -643,7 +640,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
                     raise
 
     security.declareProtected(eionet_edit_users, 'delete_user')
-
     def delete_user(self, REQUEST):
         """
         View that asks for confirmation of user deletion
@@ -657,12 +653,12 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template('zpt/users/delete.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'delete_user_action')
-
     def delete_user_action(self, REQUEST):
         """ Performing the delete action """
         id = REQUEST.form['id']
         agent = self._get_ldap_agent(bind=True)
-        agent.delete_user(id)
+        with agent.new_action():
+            agent.delete_user(id)
 
         _set_session_message(REQUEST, 'info',
                              'User "%s" has been deleted.' % id)
@@ -672,7 +668,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/')
 
     security.declareProtected(eionet_edit_users, 'disable_user')
-
     def disable_user(self, REQUEST):
         """
         View that asks for confirmation of user disable
@@ -686,22 +681,19 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template('zpt/users/disable.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'disable_user_action')
-
     def disable_user_action(self, REQUEST):
         """ Performing the disable user action """
         id = REQUEST.form['id']
         agent = self._get_ldap_agent(bind=True)
-        agent.disable_user(id)
+        with agent.new_action():
+            agent.disable_user(id)
 
-        _set_session_message(REQUEST, 'info',
-                             'User "%s" has been disabled.' % id)
-
+        _set_session_message(
+            REQUEST, 'info', 'User "%s" has been disabled.' % id)
         log.info("%s DISABLED USER %s", logged_in_user(REQUEST), id)
-
-        REQUEST.RESPONSE.redirect(self.absolute_url() + '/')
+        return REQUEST.RESPONSE.redirect(self.absolute_url() + '/')
 
     security.declareProtected(eionet_edit_users, 'enable_user')
-
     def enable_user(self, REQUEST):
         """
         View that asks for confirmation of user enable
@@ -715,12 +707,12 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template('zpt/users/enable.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'enable_user_action')
-
     def enable_user_action(self, REQUEST):
         """ Performing the enable user action """
         id = REQUEST.form['id']
         agent = self._get_ldap_agent(bind=True)
-        agent.enable_user(id)
+        with agent.new_action():
+            agent.enable_user(id)
 
         log.info("%s ENABLED USER %s", logged_in_user(REQUEST), id)
 
@@ -741,7 +733,10 @@ class UsersAdmin(SimpleItem, PropertyManager):
             mailer.send(addr_from, [addr_to], message.as_string())
         except ComponentLookupError:
             mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
-            mailer.send(addr_from, [addr_to], message.as_string())
+            try:
+                mailer.send(addr_from, [addr_to], message.as_string())
+            except AssertionError:
+                mailer.send(addr_from, [addr_to], message)
 
         _set_session_message(REQUEST, 'info',
                              'Account enabled for "%s".' % id)
@@ -749,7 +744,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/')
 
     security.declareProtected(eionet_edit_users, 'change_password')
-
     def change_password(self, REQUEST):
         """ View for changing user password """
         id = REQUEST.form['id']
@@ -762,13 +756,13 @@ class UsersAdmin(SimpleItem, PropertyManager):
                                      **options)
 
     security.declareProtected(eionet_edit_users, 'change_password_action')
-
     def change_password_action(self, REQUEST):
         """ Performing the delete action """
         id = REQUEST.form['id']
         agent = self._get_ldap_agent(bind=True)
         password = str(REQUEST.form['password'])
-        agent.set_user_password(id, None, password)
+        with agent.new_action:
+            agent.set_user_password(id, None, password)
 
         user_info = agent.user_info(id)
         addr_from = "no-reply@eea.europa.eu"
@@ -792,7 +786,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/')
 
     security.declareProtected(eionet_edit_users, 'bulk_check_username')
-
     def bulk_check_username(self, REQUEST):
         """ Bulk verify usernames for conformance """
         usernames = []
@@ -827,7 +820,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
                                      **options)
 
     security.declareProtected(eionet_edit_users, 'bulk_get_emails')
-
     def bulk_get_emails(self, REQUEST):
         """
         Return all email addresses
@@ -852,7 +844,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return json.dumps(bulk_emails)
 
     security.declareProtected(eionet_edit_users, 'bulk_check_email')
-
     def bulk_check_email(self, REQUEST):
         """ Bulk verify emails for conformance """
         # from ldap import NO_SUCH_OBJECT
@@ -888,13 +879,11 @@ class UsersAdmin(SimpleItem, PropertyManager):
                                      **options)
 
     security.declareProtected(eionet_edit_users, 'bulk_create_user')
-
     def bulk_create_user(self, REQUEST=None):
         """ upload view """
         return self._render_template('zpt/users/bulk_create.zpt')
 
     security.declareProtected(eionet_edit_users, 'download_template')
-
     def download_template(self, REQUEST):
         """ Force download of excel template """
 
@@ -902,13 +891,12 @@ class UsersAdmin(SimpleItem, PropertyManager):
         content_type = 'application/vnd.ms-excel'
         filename = 'create_users_template.xls'
 
-        set_response_attachment(REQUEST.RESPONSE, filename, content_type,
-                                len(ret))
+        set_response_attachment(
+            REQUEST.RESPONSE, filename, content_type, len(ret))
 
         return ret
 
     security.declareProtected(eionet_edit_users, 'bulk_create_user_action')
-
     def bulk_create_user_action(self, data=None, REQUEST=None):
         """ view """
         errors = []
@@ -1021,7 +1009,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template('zpt/users/bulk_create.zpt')
 
     security.declareProtected(eionet_edit_users, 'eionet_profile')
-
     def eionet_profile(self, REQUEST):
         """ Renders eionet full profile page """
         uid = REQUEST.form['id']
@@ -1032,7 +1019,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template('zpt/users/eionet_profile.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'eionet_profile')
-
     def get_endpoint(self, REQUEST):
         """ Returns call for a service """
         title = REQUEST.form['service']
@@ -1113,7 +1099,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
                                                     user_id,
                                                     ('description',)))
         return ldap_roles
-
 
 InitializeClass(UsersAdmin)
 

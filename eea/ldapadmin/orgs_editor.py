@@ -482,7 +482,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             return
 
         agent = self._get_ldap_agent(bind=True)
-        agent.create_org(org_id, org_info)
+        with agent.new_action():
+            agent.create_org(org_id, org_info)
 
         msg = 'Organisation "%s" created successfully.' % org_id
         _set_session_message(REQUEST, 'info', msg)
@@ -553,7 +554,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             return
 
         agent = self._get_ldap_agent(bind=True)
-        agent.set_org_info(org_id, org_info)
+        with agent.new_action():
+            agent.set_org_info(org_id, org_info)
 
         when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         _set_session_message(REQUEST, 'info', "Organisation saved (%s)" % when)
@@ -602,8 +604,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         agent = self._get_ldap_agent(bind=True)
 
         try:
-            agent.rename_org(org_id, new_org_id)
-
+            with agent.new_action():
+                agent.rename_org(org_id, new_org_id)
         except eea.usersdb.NameAlreadyExists:
             msg = ('Organisation "%s" could not be renamed because "%s" '
                    'already exists.' % (org_id, new_org_id))
@@ -659,7 +661,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                                       '/organisation?id=' + org_id)
             return None
         agent = self._get_ldap_agent(bind=True)
-        agent.delete_org(org_id)
+        with agent.new_action():
+            agent.delete_org(org_id)
 
         _set_session_message(REQUEST, 'info',
                              'Organisation "%s" has been deleted.' % org_id)
@@ -816,7 +819,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             assert type(user_id) is str
 
         agent = self._get_ldap_agent(bind=True)
-        agent.remove_from_org(org_id, user_id_list)
+        with agent.new_action():
+            agent.remove_from_org(org_id, user_id_list)
 
         _set_session_message(REQUEST, 'info',
                              'Removed %d members from organisation "%s".' %
@@ -881,13 +885,14 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             assert type(user_id) is str
 
         agent = self._get_ldap_agent(bind=True)
-        for user_id in user_id_list:
-            old_info = agent.user_info(user_id)
-            self._remove_from_all_orgs(agent, user_id)
-            old_info['organisation'] = org_id
-            agent.set_user_info(user_id, old_info)
+        with agent.new_action():
+            for user_id in user_id_list:
+                old_info = agent.user_info(user_id)
+                self._remove_from_all_orgs(agent, user_id)
+                old_info['organisation'] = org_id
+                agent.set_user_info(user_id, old_info)
 
-        agent.add_to_org(org_id, user_id_list)
+            agent.add_to_org(org_id, user_id_list)
 
         _set_session_message(REQUEST, 'info',
                              'Added %d members to organisation "%s".' %
@@ -1014,12 +1019,13 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             new_org_id_valid = agent.org_exists(new_org_id)
 
             # make a check if user is changing the organisation
-            if new_org_id != old_org_id:
-                self._remove_from_all_orgs(agent, user_id)
-                if new_org_id_valid:
-                    self._add_to_org(agent, new_org_id, user_id)
+            with agent.new_action():
+                if new_org_id != old_org_id:
+                    self._remove_from_all_orgs(agent, user_id)
+                    if new_org_id_valid:
+                        self._add_to_org(agent, new_org_id, user_id)
 
-            agent.set_user_info(user_id, new_info)
+                agent.set_user_info(user_id, new_info)
             when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             _set_session_message(REQUEST,
                                  'message',

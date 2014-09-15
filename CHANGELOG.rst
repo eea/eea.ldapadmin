@@ -1,5 +1,7 @@
 1.4.57 (unreleased)
 ------------------------
+* Feature: for the user changelog feature, added the posibility to group LDAP action through an "action id"
+  [tiberich #20422]
 
 1.4.56 (2014-09-10)
 ------------------------
