@@ -1,3 +1,6 @@
+1.4.58 (unreleased)
+------------------------
+
 1.4.57 (2014-09-19)
 ------------------------
 * Feature: for the user changelog feature, added the posibility to group LDAP action through an "action id"
