@@ -5,6 +5,7 @@ from App.class_init import InitializeClass
 from App.config import getConfiguration
 from OFS.PropertyManager import PropertyManager
 from OFS.SimpleItem import SimpleItem
+from Products.Five.browser import BrowserView
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from copy import deepcopy
 from countries import get_country_options
@@ -15,6 +16,7 @@ from eea.ldapadmin import eionet_profile
 from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.help_messages import help_messages
 from eea.ldapadmin.logic_common import _session_pop
+from eea.ldapadmin.ui_common import NaayaViewPageTemplateFile
 from eea.usersdb import factories
 from eea.usersdb.db_agent import NameAlreadyExists, EmailAlreadyExists
 from email.mime.text import MIMEText
@@ -1110,3 +1112,32 @@ def _send_email(addr_from, addr_to, message):
     except ComponentLookupError:
         mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
         mailer.send(addr_from, [addr_to], message)
+
+
+class ResetUser(BrowserView):
+    """ A view to reset the roles of a user
+    """
+
+    index = NaayaViewPageTemplateFile('zpt/users/reset.zpt')
+
+    def __call__(self):
+        user_id = self.request.form.get('id')
+
+        agent = self.context._get_ldap_agent(bind=True)
+        if 'submit' in self.request.form:
+            with agent.new_action():
+                agent.reset_user_roles(user_id)
+            _set_session_message(
+                self.request, 'info',
+                'Roles for user "%s" have been reseted (deleted).' % user_id)
+            log.info("%s RESETED USER %s", logged_in_user(self.request), user_id)
+            url = self.context.absolute_url() + '/edit_user?id=' + user_id
+            return self.request.RESPONSE.redirect(url)
+
+        user = agent.user_info(user_id)
+        options = {
+            'common': CommonTemplateLogic(self.context),
+            'context': self.context,
+            'user': user,
+        }
+        return self.index(**options)

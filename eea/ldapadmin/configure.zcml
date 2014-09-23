@@ -7,6 +7,8 @@
       initialize="eea.ldapadmin.initialize"
       />
 
+  <permission id="eionet.EditUsers" title="Eionet edit users" />
+
   <browser:resourceDirectory
       name="eea.ldapadmin-www"
       directory="www"
@@ -17,6 +19,13 @@
       for=".nfp_nrc.NfpNrc" 
       permission="zope.Public" 
       class=".nfp_nrc.CreateUser"
+      />
+
+  <browser:page 
+      name="reset_user" 
+      for=".users_admin.UsersAdmin" 
+      permission="eionet.EditUsers" 
+      class=".users_admin.ResetUser"
       />
 
 </configure>
