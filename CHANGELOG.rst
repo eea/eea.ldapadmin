@@ -1,4 +1,7 @@
-1.4.58 (unreleased)
+1.4.59 (unreleased)
+------------------------
+
+1.4.58 (2014-09-23)
 ------------------------
 * remove 'Status' from user listing in roles [dumitval]
 
