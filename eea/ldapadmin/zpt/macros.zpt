@@ -44,7 +44,6 @@
                 <td>Email</td>
                 <td>Tel/Fax</td>
                 <td>Organisation</td>
-                <td>Status</td>
             </tal:block>
         </tr>
     </thead>
