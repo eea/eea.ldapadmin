@@ -92,14 +92,14 @@
                 <td>
                     <span tal:content="user_info/id" />
                 </td>
-    
+
                 <td>
                     <a tal:condition="user_info/email"
                     tal:attributes="href string:mailto:${user_info/email}"
                     tal:content="user_info/email"
                     class="user-email"></a>
                 </td>
-    
+
                 <td>
                     <span class="user-phone"
                        tal:content="user_info/phone" />
@@ -112,9 +112,6 @@
                     <span tal:content="user_info/organisation" />
                 </td>
 
-                <td>
-                    <span tal:content="user_info/status" />
-                </td>
                 </tal:block>
             </tr>
         </tal:block>
