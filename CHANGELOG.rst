@@ -1,5 +1,7 @@
-1.4.59 (unreleased)
+1.4.59 (2014-09-24)
 ------------------------
+* Feature: added the Reset user action in the user edit page
+  [tiberich #9164]
 
 1.4.58 (2014-09-23)
 ------------------------
