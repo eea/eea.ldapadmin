@@ -1,3 +1,6 @@
+1.4.60 (unreleased)
+------------------------
+
 1.4.59 (2014-09-24)
 ------------------------
 * Feature: added the Reset user action in the user edit page
