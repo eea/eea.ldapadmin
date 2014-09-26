@@ -1,5 +1,6 @@
 1.4.60 (unreleased)
 ------------------------
+* allow changing first name on user edit [dumitval]
 
 1.4.59 (2014-09-24)
 ------------------------
