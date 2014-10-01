@@ -915,6 +915,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
             id_list = []
             for record_number, row in enumerate(rows):
+                row = [x.strip() for x in row]
                 properties = {}
                 for column, value in zip(header, row):
                     properties[column.lower()] = value
