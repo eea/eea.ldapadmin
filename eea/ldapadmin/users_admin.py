@@ -397,6 +397,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
     def create_user(self, REQUEST):
         """ view """
+        agent = self._get_ldap_agent()
+
         if not (self.checkPermissionEditUsers() or
                 self.nfp_has_access()):
             raise Unauthorized
@@ -407,12 +409,18 @@ class UsersAdmin(SimpleItem, PropertyManager):
         if not form_data.get('password', ''):
             form_data['password'] = generate_password()
 
+
+        def no_duplicate_id_validator(node, value):
+            if list(agent.existing_usernames([value])):
+                raise colander.Invalid(node, 'This username is taken')
+
         schema = user_info_add_schema.clone()
         for children in schema.children:
             help_text = help_messages['create-user'].get(children.name, None)
             setattr(children, 'help_text', help_text)
+        schema['id'].validator = colander.All(
+            schema['id'].validator, no_duplicate_id_validator)
 
-        agent = self._get_ldap_agent()
         if self.checkPermissionEditUsers():
             agent_orgs = agent.all_organisations()
         else:
@@ -577,7 +585,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
             _set_session_message(REQUEST, 'error', msg)
         else:
             agent = self._get_ldap_agent(bind=True)
-            old_info = agent.user_info(user_id)
 
             new_org_id = new_info['organisation']
             new_org_id_valid = agent.org_exists(new_org_id)

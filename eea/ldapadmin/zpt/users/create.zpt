@@ -153,10 +153,14 @@
                                 tal:content="python: ch[1]">1</option>
                         </tal:def>
                     </select>
-                    <p class="error-hint"
-                        tal:attributes="id string:error-${field_id}"
-                        tal:condition="field/error"
-                        tal:content="field/error" />
+                    <tal:def define="errors python: isinstance(field['error'], list) and field['error'] or [field['error']]">
+                        <tal:rep tal:repeat="error errors">
+                            <p class="error-hint" 
+                                tal:attributes="id string:error-${field_id}"
+                                tal:condition="error"
+                                tal:content="error" />
+                        </tal:rep>
+                    </tal:def>
                 </td>
             </tal:block>
 
