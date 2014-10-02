@@ -1,6 +1,8 @@
-1.4.61 (unreleased)
+1.4.61 (2014-10-02)
 ------------------------
 * Bug fix: fix bulk creation of accounts with unicode spaces in row values
+  [tiberich #21233]
+* Bug fix: validate duplicate usernames on account creation
   [tiberich #21233]
 
 1.4.60 (2014-09-26)
