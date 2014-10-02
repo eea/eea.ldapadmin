@@ -1,3 +1,6 @@
+1.4.62 (unreleased)
+------------------------
+
 1.4.61 (2014-10-02)
 ------------------------
 * Bug fix: fix bulk creation of accounts with unicode spaces in row values
