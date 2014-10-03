@@ -775,19 +775,15 @@ class CreateUser(BrowserView):
         # hide user id, make password optional
         del schema['id']
         schema['password'].missing = None
+        for children in schema.children:
+            help_text = help_messages['create-user'].get(children.name, None)
+            setattr(children, 'help_text', help_text)
         schema['destinationIndicator'].help_text = \
             ("Please indicate reason of account creation like e.g. "
              "NRC nomination, data reporter in Reportnet for directive XYZ, "
              "project XXXX cooperation ....")
 
-        for children in schema.children:
-            help_text = help_messages['create-user'].get(children.name, None)
-            setattr(children, 'help_text', help_text)
-
         agent = self.context._get_ldap_agent()
-        # if self.checkPermissionEditUsers():
-        #     agent_orgs = agent.all_organisations()
-        # else:
         agent_orgs = self.orgs_in_country(nfp_country)
 
         orgs = [{'id': k, 'text': v['name'], 'ldap':True}

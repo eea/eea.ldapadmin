@@ -116,11 +116,9 @@
         <metal:block define-macro="form-field">
             <tal:block define="field_id string:edit-${field/name}">
                 <td class="right-td">
-                    <label tal:define="required_cls python:['required' if
-                        field['required'] else '']"
-                        tal:attributes="for field_id; class python:' '.join(['question'] +
-                        required_cls);
-                        title field/help_text"
+                    <label tal:define="required_cls python:['required' if field['required'] else '']"
+                        tal:attributes="for field_id; class python:' '.join(['question'] + required_cls);
+                                        title field/help_text"
                         tal:content="string:${field/label}:"/>
                 </td>
                 <td tal:define="widget_template field/widget/template|string:textinput;
