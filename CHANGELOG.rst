@@ -1,5 +1,7 @@
-1.4.62 (unreleased)
+1.4.62 (2014-10-03)
 ------------------------
+* Change: only show country organisations in the NFP create user page
+  [tiberich ]
 
 1.4.61 (2014-10-02)
 ------------------------

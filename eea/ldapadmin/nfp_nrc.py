@@ -261,6 +261,10 @@ class NfpNrc(SimpleItem, PropertyManager):
     _render_template = TemplateRenderer(CommonTemplateLogic)
     _render_template_no_wrap = TemplateRendererNoWrap(CommonTemplateLogic)
 
+    security.declareProtected(view_management_screens, 'manage_edit')
+    manage_edit = PageTemplateFile('zpt/nfp_nrc/manage_edit', globals())
+    manage_edit.ldap_config_edit_macro = ldap_config.edit_macro
+
     def _set_breadcrumbs(self, stack):
         self.REQUEST._nfp_nrc = stack
 
@@ -298,10 +302,6 @@ class NfpNrc(SimpleItem, PropertyManager):
     security.declareProtected(view_management_screens, 'get_config')
     def get_config(self):
         return dict(self._config)
-
-    security.declareProtected(view_management_screens, 'manage_edit')
-    manage_edit = PageTemplateFile('zpt/nfp_nrc/manage_edit', globals())
-    manage_edit.ldap_config_edit_macro = ldap_config.edit_macro
 
     security.declareProtected(view_management_screens, 'manage_edit_save')
     def manage_edit_save(self, REQUEST):
@@ -775,16 +775,20 @@ class CreateUser(BrowserView):
         # hide user id, make password optional
         del schema['id']
         schema['password'].missing = None
+        schema['destinationIndicator'].help_text = \
+            ("Please indicate reason of account creation like e.g. "
+             "NRC nomination, data reporter in Reportnet for directive XYZ, "
+             "project XXXX cooperation ....")
 
         for children in schema.children:
             help_text = help_messages['create-user'].get(children.name, None)
             setattr(children, 'help_text', help_text)
 
         agent = self.context._get_ldap_agent()
-        if self.checkPermissionEditUsers():
-            agent_orgs = agent.all_organisations()
-        else:
-            agent_orgs = self.orgs_in_country(nfp_country)
+        # if self.checkPermissionEditUsers():
+        #     agent_orgs = agent.all_organisations()
+        # else:
+        agent_orgs = self.orgs_in_country(nfp_country)
 
         orgs = [{'id': k, 'text': v['name'], 'ldap':True}
                 for k, v in agent_orgs.items()]

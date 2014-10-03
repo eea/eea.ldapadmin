@@ -409,7 +409,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         if not form_data.get('password', ''):
             form_data['password'] = generate_password()
 
-
         def no_duplicate_id_validator(node, value):
             if list(agent.existing_usernames([value])):
                 raise colander.Invalid(node, 'This username is taken')
