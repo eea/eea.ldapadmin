@@ -1,10 +1,12 @@
-1.4.63 (unreleased)
+1.4.63 (2014-10-03)
 ------------------------
+* Bug fix: fix label for destinationIndicator field of user account creation form (for NFPs)
+  [tiberich #21265]
 
 1.4.62 (2014-10-03)
 ------------------------
 * Change: only show country organisations in the NFP create user page
-  [tiberich ]
+  [tiberich #21265]
 
 1.4.61 (2014-10-02)
 ------------------------
