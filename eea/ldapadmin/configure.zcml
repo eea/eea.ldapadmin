@@ -8,6 +8,7 @@
       />
 
   <permission id="eionet.EditUsers" title="Eionet edit users" />
+  <permission id="eionet.EditRoles" title="Eionet edit roles" />
 
   <browser:resourceDirectory
       name="eea.ldapadmin-www"
@@ -26,6 +27,27 @@
       for=".users_admin.UsersAdmin" 
       permission="eionet.EditUsers" 
       class=".users_admin.ResetUser"
+      />
+
+  <browser:page 
+      name="extended_management"
+      for=".roles_editor.RolesEditor"
+      permission="eionet.EditRoles"
+      class=".roles_editor.ExtendedManagementEditor"
+      />
+
+  <browser:page 
+      name="is_extended_enabled"
+      for=".roles_editor.RolesEditor"
+      permission="zope2.View"
+      class=".roles_editor.IsExtendedEnabled"
+      />
+
+  <browser:page 
+      name="extended_users"
+      for=".roles_editor.RolesEditor"
+      permission="eionet.EditRoles"
+      class=".roles_editor.ExtendedManagementUsers"
       />
 
 </configure>

@@ -70,6 +70,13 @@
                class="middle-image image12" alt="" title="Remove members" />
           Remove members
         </a>
+
+        <a class="button"
+            tal:attributes="href string:${common/base_url}/@@extended_users?role_id=${options/role_id|nothing}" 
+            tal:condition="python:common.context.restrictedTraverse('@@is_extended_enabled')(options.get('role_id'))">
+            <img class="middle-image image12" src="/++resource++eea.ldapadmin-www/delete_user.png" />Extended management
+        </a>
+
       </div>
     </div>
   
@@ -107,28 +114,40 @@
   
       <div class="low-row">
        <ul id="manage-role" class="button">
-        <li><a href="#" class="button">
-        <img src="/++resource++eea.ldapadmin-www/users.png"
-                      class="middle-image image12" alt="" title="Manage senders" />
-        Manage Role &#x25BC;</a>
+           <li>
+               <a href="#" class="button">
+                   <img src="/++resource++eea.ldapadmin-www/users.png"
+                       class="middle-image image12" alt="" title="Manage senders" />
+                   Manage Role &#x25BC;</a>
 
-            <ul tal:define="role_param python:options.get('role_id') or '';
-                            editable_role python:role_param and options.get('can_edit_members')">
-                <li><a tal:define="new_url string:${common/base_url}/edit_owners"
-                  tal:condition="editable_role"
-                  tal:attributes="href string:${new_url}?role_id=${role_param}"
-                  >Owners&nbsp;&nbsp;&nbsp;</a></li>
-                <li>
-                <a tal:define="new_url string:${common/base_url}/edit_senders"
-                  tal:condition="python:common.supports_mailing and editable_role"
-                  tal:attributes="href string:${new_url}?role_id=${role_param}"
-                  >Senders&nbsp;&nbsp;</a></li>
-                <li><a tal:define="new_url string:${common/base_url}/edit_leaders_html"
-                  tal:condition="python:editable_role and options.get('leaders_enabled')"
-                  tal:attributes="href string:${new_url}?role_id=${role_param}"
-                  >Memberships</a></li>
-            </ul>
-        </li>
+               <ul tal:define="role_param python:options.get('role_id') or '';
+                   editable_role python:role_param and options.get('can_edit_members')">
+                   <li>
+                       <a tal:define="new_url string:${common/base_url}/edit_owners"
+                           tal:condition="editable_role"
+                           tal:attributes="href string:${new_url}?role_id=${role_param}"
+                           >Owners&nbsp;&nbsp;&nbsp;</a>
+                   </li>
+                   <li>
+                       <a tal:define="new_url string:${common/base_url}/edit_senders"
+                           tal:condition="python:common.supports_mailing and editable_role"
+                           tal:attributes="href string:${new_url}?role_id=${role_param}"
+                           >Senders&nbsp;&nbsp;</a>
+                   </li>
+                   <li>
+                       <a tal:define="new_url string:${common/base_url}/edit_leaders_html"
+                           tal:condition="python:editable_role and options.get('leaders_enabled')"
+                           tal:attributes="href string:${new_url}?role_id=${role_param}"
+                           >Memberships</a>
+                   </li>
+                   <li>
+                       <a tal:define="new_url string:${common/base_url}/@@extended_management"
+                           tal:condition="editable_role"
+                           tal:attributes="href string:${new_url}?role_id=${role_param}"
+                           >Extended management</a>
+                   </li>
+               </ul>
+           </li>
        </ul>
 
        <tal:block condition="options/members_in_role"

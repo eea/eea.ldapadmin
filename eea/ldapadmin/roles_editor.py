@@ -3,6 +3,7 @@ from AccessControl.Permissions import view, view_management_screens
 from App.class_init import InitializeClass
 from DateTime import DateTime
 from OFS.Folder import Folder
+from Products.Five.browser import BrowserView
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from StringIO import StringIO
 from collections import defaultdict
@@ -11,6 +12,7 @@ from eea.ldapadmin import ldap_config
 from eea.ldapadmin import roles_leaders
 from eea.ldapadmin.import_export import generate_excel
 from eea.ldapadmin.ui_common import CommonTemplateLogic
+from eea.ldapadmin.ui_common import NaayaViewPageTemplateFile
 from eea.ldapadmin.ui_common import SessionMessages, TemplateRenderer
 from eea.ldapadmin.ui_common import get_role_name, roles_list_to_text
 from lxml.builder import E
@@ -19,7 +21,9 @@ from lxml.html.soupparser import fromstring
 from persistent.mapping import PersistentMapping
 from string import ascii_lowercase, digits
 import codecs
+import colander
 import csv
+import deform
 import logging
 import operator
 import query
@@ -501,7 +505,6 @@ class RolesEditor(Folder):
         # Create new roles
         # structure in xls is role_id -> description
         roles = {}
-        import pdb; pdb.set_trace()
         try:
             sheet = wb.sheet_by_index(0)
         except IndexError:
@@ -1376,3 +1379,133 @@ def extend_crumbs(crumbs_html, editor_url, extra_crumbs):
     last_crumb.text = last_crumb_text
 
     return tostring(crumbs)
+
+
+class ExtendedManagementEditor(BrowserView):
+    """ A class to manage extended management
+    """
+    index = NaayaViewPageTemplateFile('zpt/roles_extended_management.zpt')
+
+    def __call__(self):
+        agent = self.context._get_ldap_agent(bind=True)
+        role_id = self.request.form.get('role_id')
+        assert role_id
+
+        if self.request['REQUEST_METHOD'] == 'POST':
+            is_extended = self.request.form.get('is_extended') == 'on' and True or False
+            agent.set_role_extended_management(role_id, is_extended)
+            _set_session_message(self.request, 'info', 'Saved.')
+
+        info = agent.role_info(role_id)
+
+        options = {
+            'common': CommonTemplateLogic(self.context),
+            'context': self.context,
+            'errors': [],
+            'role_id': role_id,
+            'is_extended': info['extendedManagement'],
+        }
+        return self.index(**options)
+
+
+def get_extended_role_id(child_role_id, agent):
+    """ Returns the id of the parent role that has extended management enabled
+    """
+
+    role_dn = agent._role_dn(child_role_id)
+    parent_id = agent._role_id_parent(role_dn)
+    if not parent_id:
+        return False
+
+    parent_dn = agent._role_dn(parent_id)
+    parent_dns = agent._ancestor_roles_dn(parent_dn)
+    for parent_dn in parent_dns:
+        info = agent._role_info(parent_dn)
+        if info['extendedManagement']:
+            return agent._role_id(parent_dn)
+
+    return None
+
+
+class IsExtendedEnabled(BrowserView):
+    """ A view (usable from code/templates) that returns extended status
+    for the role parents
+    """
+
+    def __call__(self, role_id):
+        agent = self.context._get_ldap_agent(bind=True)
+
+        if not role_id:
+            return False
+
+        return bool(get_extended_role_id(role_id, agent))
+
+
+class ExtendedManagementUsersSchema(colander.MappingSchema):
+    users = colander.SchemaNode(colander.String(),
+                                widget=deform.widget.TextAreaWidget(
+                                    rows=10, cols=60),
+                                description="List of current members")
+
+
+class ExtendedManagementUsers(BrowserView):
+    """ A class to manage users in extended management
+    """
+    index = NaayaViewPageTemplateFile('zpt/roles_extended_users.zpt')
+
+    def __call__(self):
+        if self.request['REQUEST_METHOD'] == 'POST':
+            return self.processForm()
+
+        return self.view()
+
+    def view(self):
+        agent = self.context._get_ldap_agent(bind=True)
+        role_id = self.request.form.get('role_id')
+        assert role_id
+
+        extended_role_id = get_extended_role_id(role_id, agent)
+        if not extended_role_id:
+            raise ValueError("This role is not an extended managed role")
+
+        all_possible_members = agent.members_in_role_and_subroles(extended_role_id)['users']
+        members = agent.members_in_role_and_subroles(role_id)['users']
+
+        schema = ExtendedManagementUsersSchema()
+
+        options = {
+            'common':               CommonTemplateLogic(self.context),
+            'context':              self.context,
+            'errors':               {},
+            'role_id':              role_id,
+            'form_data':            {'users':'\n'.join(members)},
+            'schema':               schema,
+            'all_possible_members': all_possible_members,
+            'extended_role_id':     extended_role_id,
+        }
+
+        return self.index(**options)
+
+    def processForm(self):
+
+        agent = self.context._get_ldap_agent(bind=True)
+        role_id = self.request.form.get('role_id')
+        assert role_id
+
+        users = set(filter(None,
+                           [x.strip() for x in
+                            self.request.form.get('users', '').split('\n')]))
+
+        current_users = set(agent.members_in_role_and_subroles(role_id)['users'])
+
+        new_users = users.difference(current_users)
+        removed_users = current_users.difference(users)
+
+        with agent.new_action():
+            for user_id in new_users:
+                agent.add_to_role(role_id, 'user', user_id)
+            for user_id in removed_users:
+                agent.remove_from_role(role_id, 'user', user_id)
+
+        _set_session_message(self.request, 'info', 'Changes saved')
+        return self.view()

@@ -1,0 +1,87 @@
+<tal:def define="common options/common | common">
+
+    <h1>Extended management of users for role <span tal:replace="options/role_id" /></h1>
+    <a href="" tal:attributes="href string:${context/absolute_url}/?role_id=${options/extended_role_id}">
+        Manage the parent extended role <span tal:content="options/extended_role_id" />
+    </a>
+
+    <tal:block content="structure common/message_boxes"/>
+
+    <p>List of all possible members</p>
+    <ul>
+        <li tal:repeat="member options/all_possible_members" tal:content="member">Member id</li>
+    </ul>
+
+    <form action="" tal:attributes="action string:${context/absolute_url}/@@extended_users" method="post">
+        <input type="hidden" name="role_id" tal:attributes="value options/role_id" />
+
+        <tal:block repeat="schema_field options/schema">
+            <div tal:define="field_name schema_field/name;
+                field python:{
+                'name': field_name,
+                'value': options['form_data'].get(field_name, ''),
+                'label': schema_field.description,
+                'error': options['errors'].get(field_name, None),
+                'widget': schema_field.widget,
+                'required': schema_field.required,
+                'help_text': schema_field.description,
+                }">
+                <metal:block use-macro="template/macros/form-field" />
+            </div>
+        </tal:block>
+
+        <input type="submit" value="Save changes" name="submit"
+            class="primary-button" />
+    </form>
+
+    <tal:block condition="nothing">
+        <metal:block define-macro="form-field">
+            <tal:block define="field_id string:edit-${field/name}">
+                    <label tal:define="required_cls python:['required' if field['required'] else '']"
+                        tal:attributes="for field_id; class python:' '.join(['question'] + required_cls);
+                                        title field/help_text"
+                        tal:content="string:${field/label}:"/>
+                <div tal:define="widget_template field/widget/template|string:textinput;
+                    input_classes python:['error'] if field['error'] else [];
+                    is_textarea python: widget_template == 'textarea';
+                    is_select python: widget_template=='select';">
+                    <span tal:condition="field/required"/>
+                    <input tal:condition="python: not (is_textarea or is_select)"
+                        type="text" size="50"
+                        tal:attributes="id field_id;
+                        class python:' '.join(input_classes +
+                        ['text-input', 'large']);
+                        name string:${field/name}:utf8:ustring;
+                        value field/value" />
+                    <textarea tal:condition="is_textarea"
+                        class="account-textarea large"
+                        tal:attributes="id field_id;
+                        class python:' '.join(input_classes +
+                        ['account-textarea', 'large']);
+                        name string:${field/name}:utf8:ustring"
+                        tal:content="field/value"></textarea>
+                    <select tal:condition="is_select"
+                        tal:attributes="id field_id; 
+                        name string:${field/name}:utf8:ustring"
+                        >
+                        <tal:def tal:define="choices python:field['widget'].values">
+                            <option 
+                                tal:repeat="ch choices" 
+                                tal:attributes="value python:ch[0]; selected python:ch[0] == field['value']" 
+                                tal:content="python: ch[1]">1</option>
+                        </tal:def>
+                    </select>
+                    <tal:def define="errors python: isinstance(field['error'], list) and field['error'] or [field['error']]">
+                        <tal:rep tal:repeat="error errors">
+                            <p class="error-hint" 
+                                tal:attributes="id string:error-${field_id}"
+                                tal:condition="error"
+                                tal:content="error" />
+                        </tal:rep>
+                    </tal:def>
+                </div>
+            </tal:block>
+
+        </metal:block>
+    </tal:block>
+</tal:def>
