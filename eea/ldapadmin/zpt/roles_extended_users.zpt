@@ -6,11 +6,20 @@
     </a>
 
     <tal:block content="structure common/message_boxes"/>
+    <style>
+        .all_possible_members {
+        float: right;
+        border: 1px solid #CCC;
+        background-color: aliceblue;
+        }
+    </style>
 
-    <p>List of all possible members</p>
-    <ul>
-        <li tal:repeat="member options/all_possible_members" tal:content="member">Member id</li>
-    </ul>
+    <div class="all_possible_members">
+        <h3>List of all possible members</h3>
+        <ul>
+            <li tal:repeat="member options/all_possible_members" tal:content="member">Member id</li>
+        </ul>
+    </div>
 
     <form action="" tal:attributes="action string:${context/absolute_url}/@@extended_users" method="post">
         <input type="hidden" name="role_id" tal:attributes="value options/role_id" />

@@ -50,4 +50,11 @@
       class=".roles_editor.ExtendedManagementUsers"
       />
 
+  <browser:page 
+      name="index.html"
+      for=".roles_editor.NoExtendedManagementRoleError"
+      permission="zope.Public"
+      class=".roles_editor.NoExceptionManagementView"
+      />
+
 </configure>

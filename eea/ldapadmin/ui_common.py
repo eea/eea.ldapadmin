@@ -239,6 +239,9 @@ class NaayaViewPageTemplateFile(ViewPageTemplateFile):
                                                             *args, **keywords)
 
         renderer = TemplateRenderer()
-        renderer = renderer.__of__(__instance.context)
+        try:
+            renderer = renderer.__of__(__instance.context)
+        except TypeError:   #this happens in case instance is a browser view
+            renderer = renderer.__of__(__instance.aq_chain[1])
         result = renderer.wrap(s)
         return result

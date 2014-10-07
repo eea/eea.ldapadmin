@@ -1448,6 +1448,27 @@ class ExtendedManagementUsersSchema(colander.MappingSchema):
                                 description="List of current members")
 
 
+class NoExtendedManagementRoleError(Exception):
+    """
+    """
+
+
+class NoExceptionManagementView(BrowserView):
+    """
+    """
+    index = NaayaViewPageTemplateFile('zpt/roles_no_extended_management.zpt')
+
+    def __call__(self):
+        role_id = self.request.form.get("role_id")
+        options = {
+            'common':               CommonTemplateLogic(self.context),
+            'context':              self.context,
+            'role_id':              role_id,
+        }
+
+        return self.index(**options)
+
+
 class ExtendedManagementUsers(BrowserView):
     """ A class to manage users in extended management
     """
@@ -1466,9 +1487,11 @@ class ExtendedManagementUsers(BrowserView):
 
         extended_role_id = get_extended_role_id(role_id, agent)
         if not extended_role_id:
-            raise ValueError("This role is not an extended managed role")
+            __traceback_info__ = "Not in extended role hierarchy: %s" % role_id
+            raise NoExtendedManagementRoleError()
 
-        all_possible_members = agent.members_in_role_and_subroles(extended_role_id)['users']
+        all_possible_members = agent.members_in_role_and_subroles(
+            extended_role_id)['users']
         members = agent.members_in_role_and_subroles(role_id)['users']
 
         schema = ExtendedManagementUsersSchema()
@@ -1496,6 +1519,7 @@ class ExtendedManagementUsers(BrowserView):
                            [x.strip() for x in
                             self.request.form.get('users', '').split('\n')]))
 
+        #TODO: if we calculate difference based on +subroles, things will be bad
         current_users = set(agent.members_in_role_and_subroles(role_id)['users'])
 
         new_users = users.difference(current_users)
@@ -1507,5 +1531,15 @@ class ExtendedManagementUsers(BrowserView):
             for user_id in removed_users:
                 agent.remove_from_role(role_id, 'user', user_id)
 
-        _set_session_message(self.request, 'info', 'Changes saved')
+        if not (new_users or removed_users):
+            msg = u"No changes."
+        else:
+            msg = u"Changed saved. "
+        if new_users:
+            msg += u"Added users: " + u", ".join(new_users) + u". "
+        if removed_users:
+            msg += u"Removed users: " + u", ".join(removed_users) + u"."
+
+        _set_session_message(self.request, 'info', msg)
         return self.view()
+
