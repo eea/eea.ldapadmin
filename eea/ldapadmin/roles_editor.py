@@ -1466,7 +1466,7 @@ class NoExceptionManagementView(BrowserView):
 
         options = {
             'common':  CommonTemplateLogic(self.context),
-            'context': self.context,
+            'context': self.aq_chain[1],
             'role_id': role_id,
         }
 

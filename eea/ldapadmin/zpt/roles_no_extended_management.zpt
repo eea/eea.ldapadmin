@@ -3,3 +3,6 @@
 <p>You are seeing this error because you are trying to manage users for a role
     that does not belong to an extended management hierarchy. Please make sure
     to make one of this role's parents an extended management role</p>
+
+<a href="" tal:attributes="href options/context/absolute_url" >Jump to top roles</a> or
+<a href="" tal:attributes="href string:${options/context/absolute_url}/?role_id=${options/role_id}">Manage this role</a>
