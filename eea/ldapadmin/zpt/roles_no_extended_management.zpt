@@ -1,4 +1,4 @@
-<h1>Error: this role is not a child of an extended managed role</h1>
+<h1>Error: this role (<span tal:replace="options/role_id" />) is not a child of an extended managed role</h1>
 
 <p>You are seeing this error because you are trying to manage users for a role
     that does not belong to an extended management hierarchy. Please make sure

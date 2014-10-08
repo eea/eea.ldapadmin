@@ -1459,11 +1459,15 @@ class NoExceptionManagementView(BrowserView):
     index = NaayaViewPageTemplateFile('zpt/roles_no_extended_management.zpt')
 
     def __call__(self):
-        role_id = self.request.form.get("role_id")
+        if self.context.args:
+            role_id = self.context.args[0]
+        else:
+            role_id = self.request.form.get('role_id')
+
         options = {
-            'common':               CommonTemplateLogic(self.context),
-            'context':              self.context,
-            'role_id':              role_id,
+            'common':  CommonTemplateLogic(self.context),
+            'context': self.context,
+            'role_id': role_id,
         }
 
         return self.index(**options)
@@ -1488,7 +1492,7 @@ class ExtendedManagementUsers(BrowserView):
         extended_role_id = get_extended_role_id(role_id, agent)
         if not extended_role_id:
             __traceback_info__ = "Not in extended role hierarchy: %s" % role_id
-            raise NoExtendedManagementRoleError()
+            raise NoExtendedManagementRoleError(role_id)
 
         all_possible_members = agent.members_in_role_and_subroles(
             extended_role_id)['users']
