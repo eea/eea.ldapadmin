@@ -1,5 +1,9 @@
 1.4.64 (unreleased)
 ------------------------
+* WIP: enable extended management of roles
+  [tiberich #21218]
+* Bug fix: cleanup code to import roles
+  [tiberich #21731]
 
 1.4.63 (2014-10-03)
 ------------------------
