@@ -517,6 +517,7 @@ class RolesEditor(Folder):
                     continue
                 roles[id] = title
         problems['creation'] = self._create_roles(roles)
+        return
 
         # Change role descriptions
         # structure in xls is role_id -> new description
@@ -584,14 +585,8 @@ class RolesEditor(Folder):
         agent = self._get_ldap_agent(bind=True)
 
         problems = []
-        has_esd = False
-        has_dwd = False
 
         for role_id in sorted(roles.keys()):
-            if 'esd' in role_id:
-                has_esd = True
-            if 'dwd' in role_id:
-                has_dwd = True
             description = roles[role_id]
             slug = role_id.split('-')[-1]
             parent_role_id="-".join(role_id.split('-')[:-1])
@@ -603,16 +598,8 @@ class RolesEditor(Folder):
             except RoleCreationError:
                 problems.append(role_id)
             else:
-                # add owners of parent role
                 if parent_role_id:
-                    #owners = agent.mail_group_info(parent_role_id)['owner']
-                    # for owner_id in owners:
-                    #     agent.add_role_owner(role_id, owner_id)
-                    if has_esd:
-                        agent.add_role_owner(role_id, 'sporemel')
-                    if has_dwd:
-                        agent.add_role_owner(role_id, 'fantamir')
-                        agent.add_role_owner(role_id, 'nerifern')
+                    agent.add_role_owner(role_id, 'nerifern')
 
         return problems
 
