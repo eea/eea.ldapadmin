@@ -51,6 +51,13 @@
       />
 
   <browser:page 
+      name="extended_user_roles"
+      for=".roles_editor.RolesEditor"
+      permission="eionet.EditRoles"
+      class=".roles_editor.ExtendedManagementUserRoles"
+      />
+
+  <browser:page 
       name="index.html"
       for=".roles_editor.NoExtendedManagementRoleError"
       permission="zope.Public"

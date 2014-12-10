@@ -1,11 +1,5 @@
 <tal:def define="common options/common | common">
 
-    <h1>Extended management of users for role <span tal:replace="options/role_id" /></h1>
-    <a href="" tal:attributes="href string:${context/absolute_url}/?role_id=${options/extended_role_id}">
-        Manage the parent extended role <span tal:content="options/extended_role_id" />
-    </a>
-
-    <tal:block content="structure common/message_boxes"/>
     <style>
         .floated_right_box {
             float: right;
@@ -18,14 +12,21 @@
         }
     </style>
 
+    <h1>Extended management of users for role <span tal:replace="options/role_id" /></h1>
+    <a href="" tal:attributes="href string:${context/absolute_url}/?role_id=${options/extended_role_id}">
+        Manage the parent extended role <span tal:content="options/extended_role_id" />
+    </a>
+
+    <tal:block content="structure common/message_boxes"/>
+
     <div class="floated_right_box">
-        <h3>List of all possible members</h3>
+        <h3>List of all possible roles</h3>
         <ul>
-            <li tal:repeat="member options/all_possible_members" tal:content="member">Member id</li>
+            <li tal:repeat="role options/all_possible_roles" tal:content="role">Role</li>
         </ul>
     </div>
 
-    <form action="" tal:attributes="action string:${context/absolute_url}/@@extended_users" method="post">
+    <form action="" tal:attributes="action string:${context/absolute_url}/@@extended_user_roles" method="post">
         <input type="hidden" name="role_id" tal:attributes="value options/role_id" />
 
         <tal:block repeat="schema_field options/schema">
@@ -43,9 +44,19 @@
             </div>
         </tal:block>
 
-        <input type="submit" value="Save changes" name="submit" class="primary-button" />
+        <input type="submit" value="Save changes" name="save" class="primary-button" />
     </form>
-    
+    <script>
+        jQuery(document).ready(function(){
+        $("#edit-member").change(function(){
+            console.log(this, this.value);
+            var form = $(this).closest("form")[0];
+            console.log(form);
+            $(form).submit();
+        });
+        });
+    </script>
+
     <tal:block condition="nothing">
         <metal:block define-macro="form-field">
             <tal:block define="field_id string:edit-${field/name}">
@@ -58,6 +69,7 @@
                     is_textarea python: widget_template == 'textarea';
                     is_select python: widget_template=='select';">
                     <span tal:condition="field/required"/>
+                    <span tal:content="python:field['widget'](context, request)" />
                     <input tal:condition="python: not (is_textarea or is_select)"
                         type="text" size="50"
                         tal:attributes="id field_id;

@@ -1398,8 +1398,11 @@ class ExtendedManagementEditor(BrowserView):
 def get_extended_role_id(child_role_id, agent):
     """ Returns the id of the parent role that has extended management enabled
     """
-
     role_dn = agent._role_dn(child_role_id)
+    info = agent._role_info(role_dn)
+    if info['extendedManagement']:
+        return child_role_id
+
     parent_id = agent._role_id_parent(role_dn)
     if not parent_id:
         return False
@@ -1429,10 +1432,10 @@ class IsExtendedEnabled(BrowserView):
 
 
 class ExtendedManagementUsersSchema(colander.MappingSchema):
-    users = colander.SchemaNode(colander.String(),
-                                widget=deform.widget.TextAreaWidget(
-                                    rows=10, cols=60),
-                                description="List of current members")
+    users = colander.SchemaNode(
+        colander.String(),
+        widget=deform.widget.TextAreaWidget( rows=10, cols=60),
+        description="List of current members. Add new member ids here.")
 
 
 class NoExtendedManagementRoleError(Exception):
@@ -1477,6 +1480,9 @@ class ExtendedManagementUsers(BrowserView):
         assert role_id
 
         extended_role_id = get_extended_role_id(role_id, agent)
+
+        all_possible_roles = [agent._role_id(x)
+                              for x in agent._all_roles_list(extended_role_id)]
         if not extended_role_id:
             __traceback_info__ = "Not in extended role hierarchy: %s" % role_id
             raise NoExtendedManagementRoleError(role_id)
@@ -1495,6 +1501,7 @@ class ExtendedManagementUsers(BrowserView):
             'form_data':            {'users':'\n'.join(members)},
             'schema':               schema,
             'all_possible_members': all_possible_members,
+            'all_possible_roles':   all_possible_roles,
             'extended_role_id':     extended_role_id,
         }
 
@@ -1533,4 +1540,123 @@ class ExtendedManagementUsers(BrowserView):
 
         _set_session_message(self.request, 'info', msg)
         return self.view()
+
+
+@colander.deferred
+def member_selection_widget(context, request):
+    import pdb; pdb.set_trace()
+    choices = (('-', 'mumu'),)
+    return deform.widget.SelectWidget(values=choices)
+
+
+class ExtendedManagementUserRolesSchema(colander.MappingSchema):
+
+    member = colander.SchemaNode(
+        colander.String(),
+        widget=member_selection_widget,
+        description="Select a member")
+
+    user_roles = colander.SchemaNode(
+                colander.String(),
+                description="Assigned roles for select member",
+                widget=deform.widget.TextAreaWidget(rows=10, cols=60),
+                default=u"mumu",
+        )
+
+
+
+class ExtendedManagementUserRoles(BrowserView):
+    """ A class to manage roles for users in extended management
+    """
+    index = NaayaViewPageTemplateFile('zpt/roles_extended_user_roles.zpt')
+
+    def __call__(self):
+        # if self.request['REQUEST_METHOD'] == 'POST':
+        #     if self.request.form.get('member'):
+        #         return self.processForm()
+
+        return self.view()
+
+    def view(self):
+        selected_member = self.request.form.get('member')
+        agent = self.context._get_ldap_agent(bind=True)
+        role_id = self.request.form.get('role_id')
+        assert role_id
+
+        extended_role_id = get_extended_role_id(role_id, agent)
+
+        all_possible_roles = [agent._role_id(x)
+                              for x in agent._all_roles_list(extended_role_id)]
+        if not extended_role_id:
+            __traceback_info__ = "Not in extended role hierarchy: %s" % role_id
+            raise NoExtendedManagementRoleError(role_id)
+
+        all_possible_members = agent.members_in_role_and_subroles(
+            extended_role_id)['users']
+
+        choices = [('', '-')]
+        for member in all_possible_members:
+            name = agent.user_info(member)['full_name']
+            label = u"{} ({})".format(member, name)
+            choices.append((member, label))
+
+        choices.sort()
+        print choices
+
+        schema = ExtendedManagementUserRolesSchema()
+        #widget = deform.widget.SelectWidget(values=choices)
+        # schema['member'].widget = widget
+        # schema['user_roles'].default = 'mumu'
+        # schema['user_roles'].value = 'mumu value'
+        #import pdb; pdb.set_trace()
+
+        options = {
+            'common':               CommonTemplateLogic(self.context),
+            'context':              self.context,
+            'errors':               {},
+            'role_id':              role_id,
+            'form_data':            {},
+            'schema':               schema,
+            'all_possible_members': all_possible_members,
+            'all_possible_roles':   all_possible_roles,
+            'extended_role_id':     extended_role_id,
+        }
+
+        return self.index(**options)
+
+    def processForm(self):
+        return
+
+        agent = self.context._get_ldap_agent(bind=True)
+        role_id = self.request.form.get('role_id')
+        assert role_id
+
+        users = set(filter(None,
+                           [x.strip() for x in
+                            self.request.form.get('users', '').split('\n')]))
+
+        #TODO: if we calculate difference based on +subroles, things will be bad
+        current_users = set(agent.members_in_role_and_subroles(role_id)['users'])
+
+        new_users = users.difference(current_users)
+        removed_users = current_users.difference(users)
+
+        with agent.new_action():
+            for user_id in new_users:
+                agent.add_to_role(role_id, 'user', user_id)
+            for user_id in removed_users:
+                agent.remove_from_role(role_id, 'user', user_id)
+
+        if not (new_users or removed_users):
+            msg = u"No changes."
+        else:
+            msg = u"Changed saved. "
+        if new_users:
+            msg += u"Added users: " + u", ".join(new_users) + u". "
+        if removed_users:
+            msg += u"Removed users: " + u", ".join(removed_users) + u"."
+
+        _set_session_message(self.request, 'info', msg)
+        return self.view()
+
 
