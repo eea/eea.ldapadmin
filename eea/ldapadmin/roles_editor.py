@@ -1435,7 +1435,9 @@ class ExtendedManagementUsersSchema(colander.MappingSchema):
     users = colander.SchemaNode(
         colander.String(),
         widget=deform.widget.TextAreaWidget( rows=10, cols=60),
-        description="List of current members. Add new member ids here.")
+        description="""List of current members. Add new member ids here.
+        Removing a member from this list will remove all roles from this
+        branch""")
 
 
 class NoExtendedManagementRoleError(Exception):
