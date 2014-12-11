@@ -1545,22 +1545,24 @@ class ExtendedManagementUsers(BrowserView):
 @colander.deferred
 def member_selection_widget(context, request):
     import pdb; pdb.set_trace()
-    choices = (('-', 'mumu'),)
+    choices = (('-', 'test'),)
     return deform.widget.SelectWidget(values=choices)
 
 
+choices = (('-', 'test'),)
 class ExtendedManagementUserRolesSchema(colander.MappingSchema):
 
     member = colander.SchemaNode(
         colander.String(),
-        widget=member_selection_widget,
+        #widget=member_selection_widget,
+        widget=deform.widget.SelectWidget(values=choices),
         description="Select a member")
 
     user_roles = colander.SchemaNode(
                 colander.String(),
                 description="Assigned roles for select member",
                 widget=deform.widget.TextAreaWidget(rows=10, cols=60),
-                default=u"mumu",
+                default=u"test",
         )
 
 
@@ -1571,9 +1573,10 @@ class ExtendedManagementUserRoles(BrowserView):
     index = NaayaViewPageTemplateFile('zpt/roles_extended_user_roles.zpt')
 
     def __call__(self):
-        # if self.request['REQUEST_METHOD'] == 'POST':
-        #     if self.request.form.get('member'):
-        #         return self.processForm()
+        if self.request['REQUEST_METHOD'] == 'POST':
+            #import pdb; pdb.set_trace()
+            if not self.request.form.get('submit_source'):
+                return self.processForm()
 
         return self.view()
 
@@ -1601,14 +1604,13 @@ class ExtendedManagementUserRoles(BrowserView):
             choices.append((member, label))
 
         choices.sort()
-        print choices
 
-        schema = ExtendedManagementUserRolesSchema()
-        #widget = deform.widget.SelectWidget(values=choices)
-        # schema['member'].widget = widget
-        # schema['user_roles'].default = 'mumu'
-        # schema['user_roles'].value = 'mumu value'
-        #import pdb; pdb.set_trace()
+        selected_member_roles = ""
+        if selected_member:
+            member_dn = agent._user_dn(selected_member)
+            selected_member_roles = "\n".join([
+                agent._role_id(x) for x in list(agent._sub_roles_with_member(
+                    agent._role_dn(role_id), member_dn))])
 
         options = {
             'common':               CommonTemplateLogic(self.context),
@@ -1616,47 +1618,47 @@ class ExtendedManagementUserRoles(BrowserView):
             'errors':               {},
             'role_id':              role_id,
             'form_data':            {},
-            'schema':               schema,
-            'all_possible_members': all_possible_members,
+            'all_possible_members': choices,
             'all_possible_roles':   all_possible_roles,
+            'selected_member':      selected_member or '',
+            'selected_member_roles': selected_member_roles or '',
             'extended_role_id':     extended_role_id,
         }
 
         return self.index(**options)
 
     def processForm(self):
-        return
-
         agent = self.context._get_ldap_agent(bind=True)
         role_id = self.request.form.get('role_id')
         assert role_id
 
-        users = set(filter(None,
-                           [x.strip() for x in
-                            self.request.form.get('users', '').split('\n')]))
+        user_id = self.request.form.get('member')
+        member_dn = agent._user_dn(user_id)
+        role_ids = set(filter(
+            None, [x.strip()
+                   for x in self.request.form.get("member_roles").split()]))
+        current_role_ids = set(
+            [agent._role_id(role_dn) for role_dn in
+             agent._sub_roles_with_member(agent._role_dn(role_id), member_dn)])
 
-        #TODO: if we calculate difference based on +subroles, things will be bad
-        current_users = set(agent.members_in_role_and_subroles(role_id)['users'])
-
-        new_users = users.difference(current_users)
-        removed_users = current_users.difference(users)
+        new_roles = role_ids.difference(current_role_ids)
+        removed_roles = current_role_ids.difference(role_ids)
 
         with agent.new_action():
-            for user_id in new_users:
+            for role_id in removed_roles:
+                if not (role_id in agent.list_member_roles('user', user_id)):
+                    agent.remove_from_role(role_id, 'user', user_id)
+            for role_id in new_roles:
                 agent.add_to_role(role_id, 'user', user_id)
-            for user_id in removed_users:
-                agent.remove_from_role(role_id, 'user', user_id)
 
-        if not (new_users or removed_users):
+        if not (new_roles or removed_roles):
             msg = u"No changes."
         else:
             msg = u"Changed saved. "
-        if new_users:
-            msg += u"Added users: " + u", ".join(new_users) + u". "
-        if removed_users:
-            msg += u"Removed users: " + u", ".join(removed_users) + u"."
+        if new_roles:
+            msg += u"Added to roles: " + u", ".join(new_roles) + u". "
+        if removed_roles:
+            msg += u"Removed roles: " + u", ".join(removed_roles) + u"."
 
         _set_session_message(self.request, 'info', msg)
         return self.view()
-
-

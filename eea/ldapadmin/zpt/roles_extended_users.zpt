@@ -1,50 +1,64 @@
 <tal:def define="common options/common | common">
-
-    <h1>Extended management of users for role <span tal:replace="options/role_id" /></h1>
-    <a href="" tal:attributes="href string:${context/absolute_url}/?role_id=${options/extended_role_id}">
-        Manage the parent extended role <span tal:content="options/extended_role_id" />
-    </a>
-
-    <tal:block content="structure common/message_boxes"/>
     <style>
-        .floated_right_box {
-            float: right;
+        .floated_left_box {
+            float: left;
             border: 1px solid #CCC;
             background-color: aliceblue;
+            margin:0 10px;
         }
         .extra-padding {
             height:60px;
             clear:both;
         }
+        .form-container {
+            overflow:hidden;
+            margin-top: 20px;
+        }
     </style>
 
-    <div class="floated_right_box">
-        <h3>List of all possible members</h3>
-        <ul>
-            <li tal:repeat="member options/all_possible_members" tal:content="member">Member id</li>
-        </ul>
+    <h1>Extended management of users for role <span tal:replace="options/role_id" /></h1>
+    <ul>
+        <li>
+            <a href="" tal:attributes="href string:${context/absolute_url}/?role_id=${options/extended_role_id}">
+                Manage the Extended Management Role</a>: <strong tal:content="options/extended_role_id" />
+        </li>
+        <li>
+            <a href="" tal:attributes="href string:${context/absolute_url}/@@extended_user_roles?role_id=${options/extended_role_id}">
+                Assign roles to members of this Extended Management Role</a>: <strong tal:content="options/extended_role_id" />
+        </li>
+    </ul>
+
+    <tal:block content="structure common/message_boxes"/>
+
+    <div class="form-container">
+        <form action="" style="float:left" tal:attributes="action string:${context/absolute_url}/@@extended_users" method="post">
+            <input type="hidden" name="role_id" tal:attributes="value options/role_id" />
+
+            <tal:block repeat="schema_field options/schema">
+                <div tal:define="field_name schema_field/name;
+                    field python:{
+                    'name': field_name,
+                    'value': options['form_data'].get(field_name, ''),
+                    'label': schema_field.description,
+                    'error': options['errors'].get(field_name, None),
+                    'widget': schema_field.widget,
+                    'required': schema_field.required,
+                    'help_text': schema_field.description,
+                    }">
+                    <metal:block use-macro="template/macros/form-field" />
+                </div>
+            </tal:block>
+
+            <input type="submit" value="Save changes" name="submit" class="primary-button" />
+        </form>
+
+        <div class="floated_left_box">
+            <h3>List of all possible members</h3>
+            <ul>
+                <li tal:repeat="member options/all_possible_members" tal:content="member">Member id</li>
+            </ul>
+        </div>
     </div>
-
-    <form action="" tal:attributes="action string:${context/absolute_url}/@@extended_users" method="post">
-        <input type="hidden" name="role_id" tal:attributes="value options/role_id" />
-
-        <tal:block repeat="schema_field options/schema">
-            <div tal:define="field_name schema_field/name;
-                field python:{
-                'name': field_name,
-                'value': options['form_data'].get(field_name, ''),
-                'label': schema_field.description,
-                'error': options['errors'].get(field_name, None),
-                'widget': schema_field.widget,
-                'required': schema_field.required,
-                'help_text': schema_field.description,
-                }">
-                <metal:block use-macro="template/macros/form-field" />
-            </div>
-        </tal:block>
-
-        <input type="submit" value="Save changes" name="submit" class="primary-button" />
-    </form>
     
     <tal:block condition="nothing">
         <metal:block define-macro="form-field">
