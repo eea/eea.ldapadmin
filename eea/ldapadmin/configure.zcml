@@ -58,6 +58,13 @@
       />
 
   <browser:page 
+      name="roles_statistics"
+      for=".roles_editor.RolesEditor"
+      permission="eionet.EditRoles"
+      class=".roles_editor.RolesStatistics"
+      />
+
+  <browser:page 
       name="index.html"
       for=".roles_editor.NoExtendedManagementRoleError"
       permission="zope.Public"

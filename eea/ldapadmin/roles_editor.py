@@ -1368,20 +1368,80 @@ def extend_crumbs(crumbs_html, editor_url, extra_crumbs):
     return tostring(crumbs)
 
 
+class RolesStatistics(BrowserView):
+    """ A class to manage extended management
+    """
+    index = NaayaViewPageTemplateFile('zpt/roles_statistics.zpt')
+
+    def __call__(self):
+
+        agent = self.context._get_ldap_agent(bind=True)
+        extended_role_id = self.request.form.get('role_id')
+        assert extended_role_id
+
+        roles_dns = agent._all_roles_list(extended_role_id)
+        roles = []
+        for role_dn in roles_dns:
+            role_id = agent._role_id(role_dn)
+            user_ids = agent.members_in_role_and_subroles(role_id)['users']
+            roles.append((role_id, len(user_ids)))
+
+        options = {
+            'common': CommonTemplateLogic(self.context),
+            'context': self.context,
+            'errors': [],
+            'role_id': extended_role_id,
+            'roles': roles,
+        }
+        return self.index(**options)
+
+
 class ExtendedManagementEditor(BrowserView):
     """ A class to manage extended management
     """
     index = NaayaViewPageTemplateFile('zpt/roles_extended_management.zpt')
+    submits = ('enable_extended_management', 'empty_branch')
 
-    def __call__(self):
+    def handle_enable_extended_management(self):
+        is_extended = self.request.form.get('is_extended') == 'on' and True or False
+        agent.set_role_extended_management(role_id, is_extended)
+        _set_session_message(self.request, 'info', 'Saved.')
+        return self.view()
+
+    def handle_empty_branch(self):
         agent = self.context._get_ldap_agent(bind=True)
         role_id = self.request.form.get('role_id')
         assert role_id
 
+        info = agent.role_info(role_id)
+        if not info['extendedManagement']:
+            _set_session_message(self.request,
+                                 'warning',
+                                 'This role is not extended managed.')
+            return self.view()
+
+        with agent.new_action():
+            roles_dns = agent._all_roles_list(role_id)
+            for role_dn in roles_dns:
+                role_id = agent._role_id(role_dn)
+                user_ids = agent.members_in_role_and_subroles(role_id)['users']
+                for user_id in user_ids:
+                    agent.remove_from_role(role_id, "user", user_id)
+
+        return self.view()
+
+    def __call__(self):
         if self.request['REQUEST_METHOD'] == 'POST':
-            is_extended = self.request.form.get('is_extended') == 'on' and True or False
-            agent.set_role_extended_management(role_id, is_extended)
-            _set_session_message(self.request, 'info', 'Saved.')
+            for handle in self.submits:
+                if handle in self.request.form:
+                    return getattr(self, 'handle_' + handle)()
+
+        return self.view()
+
+    def view(self):
+        agent = self.context._get_ldap_agent(bind=True)
+        role_id = self.request.form.get('role_id')
+        assert role_id
 
         info = agent.role_info(role_id)
 

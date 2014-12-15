@@ -1,0 +1,55 @@
+<div tal:define="common options/common">
+    <h1>Roles and subroles statistics for <tt tal:content="options/role_id" /></h1>
+    <ul>
+        <li>
+            <a href="" tal:attributes="href string:${context/absolute_url}/@@extended_management?role_id=${options/role_id}">
+                Manage the Extended Management Role</a>: <strong tal:content="options/role_id" />
+        </li>
+        <li>
+            <a href="" tal:attributes="href string:${context/absolute_url}/?role_id=${options/role_id}">View this role in the Role Editor</a>
+        </li>
+        <li>
+            <a href="" tal:attributes="href string:${context/absolute_url}/@@extended_users?role_id=${options/role_id}">
+                Assign members to this Extended Management Role</a>: <strong tal:content="options/role_id" />
+        </li>
+        <li>
+            <a href="" tal:attributes="href string:${context/absolute_url}/@@extended_user_roles?role_id=${options/role_id}">
+                Assign roles to members of this Extended Management Role</a>: <strong tal:content="options/role_id" />
+        </li>
+    </ul>
+
+    <tal:block content="structure common/message_boxes"/>
+
+    <style>
+        .highlight {
+            background-color:#FF7E80;
+        }
+        .statistics {
+            margin:10px;
+        }
+        .statistics td {
+            padding:2px 4px;
+        }
+        .statistics th {
+            text-align:left;
+            font-weight:bold;
+            background-color:#CCC;
+            }
+    </style>
+
+    <table class="statistics">
+        <thead>
+            <tr>
+                <th>Role ID</th>
+                <th># Members</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr tal:repeat="role options/roles" tal:attributes="class python: role[1] == 0 and 'highlight' or ''">
+                <td tal:content="python:role[0]">Role ID</td>
+                <td tal:content="python:role[1]"># Members</td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
