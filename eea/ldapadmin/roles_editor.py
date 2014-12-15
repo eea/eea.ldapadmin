@@ -1662,7 +1662,7 @@ class ExtendedManagementUserRoles(BrowserView):
         choices = [('', '-')]
         for member in all_possible_members:
             name = agent.user_info(member)['full_name']
-            label = u"{} ({})".format(member, name)
+            label = u"%s (%s)" % (member, name)
             choices.append((member, label))
 
         choices.sort()
