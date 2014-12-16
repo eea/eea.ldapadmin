@@ -1,0 +1,24 @@
+<div tal:define="common options/common">
+    <h1>Enable/disable extended management for <tt tal:content="options/role_id" /></h1>
+
+    <tal:block content="structure common/message_boxes"/>
+    <div metal:use-macro="context/@@extended_management_menu/macros/menu" />
+
+    <form tal:attributes="action string:${common/base_url}/@@extended_management"
+        method="post">
+        <p>Extended management for a role allows some extra batch operations to be performed on the role.
+            This is useful in the context of ESD roles.
+        </p>
+        <label for="is_extended">Enable extended management?</label>
+        <input type='checkbox' name="is_extended" tal:attributes="checked options/is_extended" />
+        <input type="hidden" name="role_id" tal:attributes="value options/role_id" />
+        <input type="submit" name="enable_extended_management" value="Set extended status" class="primary-button" />
+
+        <h2>Empty this role</h2>
+        <p style="color:Red"><strong>Warning</strong>: this is a destructive operation</p>
+        <p>All users that have roles and subroles in this branch will have those roles removed.</p>
+        <input type="submit" name="empty_branch" value="Empty branch" class="primary-button" />
+
+    </form>
+</div>
+

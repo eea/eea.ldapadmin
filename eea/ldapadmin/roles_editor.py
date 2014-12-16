@@ -1371,13 +1371,15 @@ def extend_crumbs(crumbs_html, editor_url, extra_crumbs):
 class RolesStatistics(BrowserView):
     """ A class to manage extended management
     """
-    index = NaayaViewPageTemplateFile('zpt/roles_statistics.zpt')
+    index = NaayaViewPageTemplateFile('zpt/extended/statistics.zpt')
 
     def __call__(self):
 
         agent = self.context._get_ldap_agent(bind=True)
-        extended_role_id = self.request.form.get('role_id')
-        assert extended_role_id
+        this_role_id = self.request.form.get('role_id')
+        assert this_role_id
+
+        extended_role_id = get_extended_role_id(this_role_id, agent)
 
         roles_dns = agent._all_roles_list(extended_role_id)
         roles = []
@@ -1390,7 +1392,8 @@ class RolesStatistics(BrowserView):
             'common': CommonTemplateLogic(self.context),
             'context': self.context,
             'errors': [],
-            'role_id': extended_role_id,
+            'role_id': this_role_id,
+            'extended_role_id': extended_role_id,
             'roles': roles,
         }
         return self.index(**options)
@@ -1399,10 +1402,13 @@ class RolesStatistics(BrowserView):
 class ExtendedManagementEditor(BrowserView):
     """ A class to manage extended management
     """
-    index = NaayaViewPageTemplateFile('zpt/roles_extended_management.zpt')
+    index = NaayaViewPageTemplateFile('zpt/extended/management.zpt')
     submits = ('enable_extended_management', 'empty_branch')
 
     def handle_enable_extended_management(self):
+        agent = self.context._get_ldap_agent(bind=True)
+        role_id = self.request.form.get('role_id')
+        assert role_id
         is_extended = self.request.form.get('is_extended') == 'on' and True or False
         agent.set_role_extended_management(role_id, is_extended)
         _set_session_message(self.request, 'info', 'Saved.')
@@ -1440,16 +1446,17 @@ class ExtendedManagementEditor(BrowserView):
 
     def view(self):
         agent = self.context._get_ldap_agent(bind=True)
-        role_id = self.request.form.get('role_id')
-        assert role_id
+        this_role_id = self.request.form.get('role_id')
+        assert this_role_id
 
-        info = agent.role_info(role_id)
+        info = agent.role_info(this_role_id)
 
         options = {
             'common': CommonTemplateLogic(self.context),
             'context': self.context,
             'errors': [],
-            'role_id': role_id,
+            'role_id': this_role_id,
+            'extended_role_id': this_role_id,
             'is_extended': info['extendedManagement'],
         }
         return self.index(**options)
@@ -1508,7 +1515,7 @@ class NoExtendedManagementRoleError(Exception):
 class NoExceptionManagementView(BrowserView):
     """
     """
-    index = NaayaViewPageTemplateFile('zpt/roles_no_extended_management.zpt')
+    index = NaayaViewPageTemplateFile('zpt/extended/no_extended_management.zpt')
 
     def __call__(self):
         if self.context.args:
@@ -1525,10 +1532,11 @@ class NoExceptionManagementView(BrowserView):
         return self.index(**options)
 
 
-class ExtendedManagementUsers(BrowserView):
+class EditMembersOfOneRole(BrowserView):
     """ A class to manage users in extended management
     """
-    index = NaayaViewPageTemplateFile('zpt/roles_extended_users.zpt')
+    index = NaayaViewPageTemplateFile(
+        'zpt/extended/edit_members_one_role.zpt')
 
     def __call__(self):
         if self.request['REQUEST_METHOD'] == 'POST':
@@ -1538,20 +1546,22 @@ class ExtendedManagementUsers(BrowserView):
 
     def view(self):
         agent = self.context._get_ldap_agent(bind=True)
-        role_id = self.request.form.get('role_id')
-        assert role_id
+        this_role_id = self.request.form.get('role_id')
+        assert this_role_id
 
-        extended_role_id = get_extended_role_id(role_id, agent)
+        extended_role_id = get_extended_role_id(this_role_id, agent)
+
+        if not extended_role_id:
+            __traceback_info__ = "Not in extended role hierarchy: %s" \
+                % this_role_id
+            raise NoExtendedManagementRoleError(this_role_id)
 
         all_possible_roles = [agent._role_id(x)
-                              for x in agent._all_roles_list(extended_role_id)]
-        if not extended_role_id:
-            __traceback_info__ = "Not in extended role hierarchy: %s" % role_id
-            raise NoExtendedManagementRoleError(role_id)
+                              for x in agent._all_roles_list(this_role_id)]
 
         all_possible_members = agent.members_in_role_and_subroles(
             extended_role_id)['users']
-        members = agent.members_in_role_and_subroles(role_id)['users']
+        members = agent.members_in_role_and_subroles(this_role_id)['users']
 
         schema = ExtendedManagementUsersSchema()
 
@@ -1559,18 +1569,18 @@ class ExtendedManagementUsers(BrowserView):
             'common':               CommonTemplateLogic(self.context),
             'context':              self.context,
             'errors':               {},
-            'role_id':              role_id,
             'form_data':            {'users':'\n'.join(members)},
             'schema':               schema,
             'all_possible_members': all_possible_members,
             'all_possible_roles':   all_possible_roles,
+
+            'role_id':              this_role_id,
             'extended_role_id':     extended_role_id,
         }
 
         return self.index(**options)
 
     def processForm(self):
-
         agent = self.context._get_ldap_agent(bind=True)
         role_id = self.request.form.get('role_id')
         assert role_id
@@ -1604,39 +1614,15 @@ class ExtendedManagementUsers(BrowserView):
         return self.view()
 
 
-@colander.deferred
-def member_selection_widget(context, request):
-    import pdb; pdb.set_trace()
-    choices = (('-', 'test'),)
-    return deform.widget.SelectWidget(values=choices)
-
-
-choices = (('-', 'test'),)
-class ExtendedManagementUserRolesSchema(colander.MappingSchema):
-
-    member = colander.SchemaNode(
-        colander.String(),
-        #widget=member_selection_widget,
-        widget=deform.widget.SelectWidget(values=choices),
-        description="Select a member")
-
-    user_roles = colander.SchemaNode(
-                colander.String(),
-                description="Assigned roles for select member",
-                widget=deform.widget.TextAreaWidget(rows=10, cols=60),
-                default=u"test",
-        )
-
-
-
-class ExtendedManagementUserRoles(BrowserView):
+class EditRolesOfOneMember(BrowserView):
     """ A class to manage roles for users in extended management
     """
-    index = NaayaViewPageTemplateFile('zpt/roles_extended_user_roles.zpt')
+
+    index = NaayaViewPageTemplateFile(
+        'zpt/extended/edit_roles_one_member.zpt')
 
     def __call__(self):
         if self.request['REQUEST_METHOD'] == 'POST':
-            #import pdb; pdb.set_trace()
             if not self.request.form.get('submit_source'):
                 return self.processForm()
 
@@ -1645,16 +1631,17 @@ class ExtendedManagementUserRoles(BrowserView):
     def view(self):
         selected_member = self.request.form.get('member')
         agent = self.context._get_ldap_agent(bind=True)
-        role_id = self.request.form.get('role_id')
-        assert role_id
+        this_role_id = self.request.form.get('role_id')
+        assert this_role_id
 
-        extended_role_id = get_extended_role_id(role_id, agent)
+        extended_role_id = get_extended_role_id(this_role_id, agent)
 
         all_possible_roles = [agent._role_id(x)
                               for x in agent._all_roles_list(extended_role_id)]
         if not extended_role_id:
-            __traceback_info__ = "Not in extended role hierarchy: %s" % role_id
-            raise NoExtendedManagementRoleError(role_id)
+            __traceback_info__ = "Not in extended role hierarchy: %s" \
+                % this_role_id
+            raise NoExtendedManagementRoleError(this_role_id)
 
         all_possible_members = agent.members_in_role_and_subroles(
             extended_role_id)['users']
@@ -1672,18 +1659,19 @@ class ExtendedManagementUserRoles(BrowserView):
             member_dn = agent._user_dn(selected_member)
             selected_member_roles = "\n".join([
                 agent._role_id(x) for x in list(agent._sub_roles_with_member(
-                    agent._role_dn(role_id), member_dn))])
+                    agent._role_dn(this_role_id), member_dn))])
 
         options = {
             'common':               CommonTemplateLogic(self.context),
             'context':              self.context,
             'errors':               {},
-            'role_id':              role_id,
             'form_data':            {},
             'all_possible_members': choices,
             'all_possible_roles':   all_possible_roles,
             'selected_member':      selected_member or '',
             'selected_member_roles': selected_member_roles or '',
+
+            'role_id':              this_role_id,
             'extended_role_id':     extended_role_id,
         }
 
@@ -1696,9 +1684,15 @@ class ExtendedManagementUserRoles(BrowserView):
 
         user_id = self.request.form.get('member')
         member_dn = agent._user_dn(user_id)
-        role_ids = set(filter(
-            None, [x.strip()
-                   for x in self.request.form.get("member_roles").split()]))
+        role_ids = set(
+            filter(
+                agent.role_exists,
+                filter(None,
+                       [x.strip()
+                        for x in self.request.form.get("member_roles").split()]
+                       )
+            )
+        )
         current_role_ids = set(
             [agent._role_id(role_dn) for role_dn in
              agent._sub_roles_with_member(agent._role_dn(role_id), member_dn)])
@@ -1708,7 +1702,7 @@ class ExtendedManagementUserRoles(BrowserView):
 
         with agent.new_action():
             for role_id in removed_roles:
-                if not (role_id in agent.list_member_roles('user', user_id)):
+                if role_id in agent.list_member_roles('user', user_id):
                     agent.remove_from_role(role_id, 'user', user_id)
             for role_id in new_roles:
                 agent.add_to_role(role_id, 'user', user_id)
