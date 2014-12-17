@@ -72,7 +72,7 @@
         </a>
 
         <a class="button"
-            tal:attributes="href string:${common/base_url}/@@extended_users?role_id=${options/role_id|nothing}" 
+            tal:attributes="href string:${common/base_url}/@@edit_members_of_one_role?role_id=${options/role_id|nothing}" 
             tal:condition="python:common.context.restrictedTraverse('@@is_extended_enabled')(options.get('role_id'))">
             <img class="middle-image image12" src="/++resource++eea.ldapadmin-www/delete_user.png" />Extended management
         </a>
