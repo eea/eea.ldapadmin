@@ -1447,6 +1447,7 @@ class ExtendedManagementEditor(BrowserView):
     def view(self):
         agent = self.context._get_ldap_agent(bind=True)
         this_role_id = self.request.form.get('role_id')
+        print this_role_id
         assert this_role_id
 
         info = agent.role_info(this_role_id)
@@ -1549,6 +1550,10 @@ class EditMembersOfOneRole(BrowserView):
         this_role_id = self.request.form.get('role_id')
         assert this_role_id
 
+        this_role_id = self.request.form.get('role_id')
+        if isinstance(this_role_id, list):  # support a modified form handler
+            this_role_id = list(set(this_role_id))[0]
+
         extended_role_id = get_extended_role_id(this_role_id, agent)
 
         if not extended_role_id:
@@ -1584,6 +1589,9 @@ class EditMembersOfOneRole(BrowserView):
         agent = self.context._get_ldap_agent(bind=True)
         role_id = self.request.form.get('role_id')
         assert role_id
+
+        if isinstance(role_id, list):  # support a modified form handler
+            role_id = list(set(role_id))[0]
 
         users = set(filter(None,
                            [x.strip() for x in
@@ -1632,6 +1640,8 @@ class EditRolesOfOneMember(BrowserView):
         selected_member = self.request.form.get('member')
         agent = self.context._get_ldap_agent(bind=True)
         this_role_id = self.request.form.get('role_id')
+        if isinstance(this_role_id, list):  # support a modified form handler
+            this_role_id = list(set(this_role_id))[0]
         assert this_role_id
 
         extended_role_id = get_extended_role_id(this_role_id, agent)
@@ -1681,6 +1691,9 @@ class EditRolesOfOneMember(BrowserView):
         agent = self.context._get_ldap_agent(bind=True)
         role_id = self.request.form.get('role_id')
         assert role_id
+
+        if isinstance(role_id, list):  # support a modified form handler
+            role_id = list(set(role_id))[0]
 
         user_id = self.request.form.get('member')
         member_dn = agent._user_dn(user_id)

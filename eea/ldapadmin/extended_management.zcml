@@ -1,0 +1,47 @@
+<configure xmlns="http://namespaces.zope.org/zope"
+           xmlns:browser="http://namespaces.zope.org/browser"
+           xmlns:five="http://namespaces.zope.org/five">
+
+  <browser:page 
+      name="extended_management"
+      for=".roles_editor.RolesEditor"
+      permission="eionet.EditRoles"
+      class=".roles_editor.ExtendedManagementEditor"
+      />
+
+  <browser:page 
+      name="is_extended_enabled"
+      for=".roles_editor.RolesEditor"
+      permission="zope2.View"
+      class=".roles_editor.IsExtendedEnabled"
+      />
+
+  <browser:page 
+      name="edit_members_of_one_role"
+      for=".roles_editor.RolesEditor"
+      permission="eionet.EditRoles"
+      class=".roles_editor.EditMembersOfOneRole"
+      />
+
+  <browser:page 
+      name="edit_roles_of_one_member"
+      for=".roles_editor.RolesEditor"
+      permission="eionet.EditRoles"
+      class=".roles_editor.EditRolesOfOneMember"
+      />
+
+  <browser:page 
+      name="extended_management_menu"
+      for=".roles_editor.RolesEditor"
+      permission="eionet.EditRoles"
+      template="zpt/extended/menu.pt"
+      />
+
+  <browser:page 
+      name="roles_statistics"
+      for=".roles_editor.RolesEditor"
+      permission="eionet.EditRoles"
+      class=".roles_editor.RolesStatistics"
+      />
+
+</configure>
