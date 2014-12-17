@@ -5,9 +5,13 @@
             border: 1px solid #CCC;
             background-color: aliceblue;
             margin:0 10px;
-            width:400px;
+            width:250px;
             padding:10px;
         }
+        .floated_left_box textarea {
+            width:100%;
+            height:200px;
+            }
         .extra-padding {
             height:60px;
             clear:both;
@@ -49,7 +53,7 @@
             </div>
 
             <div class="floated_left_box">
-                <h3>List of all possible members</h3>
+                <strong>List of members of <span tal:content="options/extended_role_id">Role ID</span></strong>
                 <ul>
                     <li tal:repeat="member options/all_possible_members" tal:content="member">Member id</li>
                 </ul>
@@ -82,11 +86,8 @@
                         name string:${field/name}:utf8:ustring;
                         value field/value" />
                     <textarea tal:condition="is_textarea"
-                        class="account-textarea large"
                         tal:attributes="id field_id;
-                        class python:' '.join(input_classes +
-                        ['account-textarea', 'large']);
-                        name string:${field/name}:utf8:ustring"
+                                        name string:${field/name}:utf8:ustring"
                         tal:content="field/value"></textarea>
                     <select tal:condition="is_select"
                         tal:attributes="id field_id; 

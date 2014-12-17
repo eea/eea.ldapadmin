@@ -1639,6 +1639,7 @@ class EditRolesOfOneMember(BrowserView):
     def view(self):
         selected_member = self.request.form.get('member')
         agent = self.context._get_ldap_agent(bind=True)
+
         this_role_id = self.request.form.get('role_id')
         if isinstance(this_role_id, list):  # support a modified form handler
             this_role_id = list(set(this_role_id))[0]
@@ -1647,7 +1648,7 @@ class EditRolesOfOneMember(BrowserView):
         extended_role_id = get_extended_role_id(this_role_id, agent)
 
         all_possible_roles = [agent._role_id(x)
-                              for x in agent._all_roles_list(extended_role_id)]
+                              for x in agent._all_roles_list(this_role_id)]
         if not extended_role_id:
             __traceback_info__ = "Not in extended role hierarchy: %s" \
                 % this_role_id

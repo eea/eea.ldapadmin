@@ -18,7 +18,7 @@
         }
         .member_roles {
             height:200px;
-            width:400px;
+            width:250px;
         }
     </style>
 
@@ -42,6 +42,9 @@
                     tal:attributes="value python:member[0]; selected python:member[0] == options['selected_member'];" 
                     tal:content="python:member[1]">Member</option>
             </select>
+            <div tal:condition="python: options.get('selected_member') and options['extended_role_id'] != options['role_id']">
+                <a href="" tal:attributes="href string:${context/absolute_url}/@@edit_roles_of_one_member?role_id=${options/extended_role_id}&member=${options/selected_member}">Edit <span tal:content="options/selected_member" />'s roles in <span tal:content="options/extended_role_id"/></a>
+            </div>
             <div class="padded-top">
                 <input type="submit" value="Save changes" name="save" class="primary-button" />
             </div>
