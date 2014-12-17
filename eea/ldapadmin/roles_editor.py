@@ -30,6 +30,7 @@ import query
 import re
 import sys
 import xlrd
+import xlwt
 
 try:
     import json
@@ -1732,3 +1733,71 @@ class EditRolesOfOneMember(BrowserView):
 
         _set_session_message(self.request, 'info', msg)
         return self.view()
+
+
+class ExportExcel(BrowserView):
+    def __call__(self):
+        agent = self.context._get_ldap_agent(bind=True)
+        this_role_id = self.request.form.get('role_id')
+        assert this_role_id
+
+        all_possible_roles_ids = [agent._role_id(x)
+                              for x in agent._all_roles_list(this_role_id)]
+
+        roles = {}
+        for role_id in all_possible_roles_ids:
+            user_ids = agent.members_in_role_and_subroles(role_id)['users']
+            roles[role_id] = user_ids
+
+        wb = xlwt.Workbook()
+        roles_sheet = wb.add_sheet("Roles")
+
+        style_header = xlwt.XFStyle()
+        style_org_header = xlwt.XFStyle()
+        style_normal = xlwt.XFStyle()
+
+        normalfont = xlwt.Font()
+        headerfont = xlwt.Font()
+        headerfont.bold = True
+        biggerheaderfont = xlwt.Font()
+        biggerheaderfont.bold = True
+        biggerheaderfont.height = int(biggerheaderfont.height * 1.3)
+
+        style_header.font = headerfont
+        style_normal.font = normalfont
+        style_org_header.font = biggerheaderfont
+
+        cols = [
+            'role_id',
+            'members',
+            ]
+
+        for i, col in enumerate(cols):
+            roles_sheet.write(0, i, col.capitalize(), style_header)
+
+        roles_sheet.col(0).set_width(14000)
+
+        i = 1
+        for role_id in sorted(roles.keys()):
+            roles_sheet.write(i, 0, role_id, style_header)
+            i += 1
+            for user_id in sorted(roles[role_id]):
+                roles_sheet.write(i, 1, user_id, style_normal)
+                i += 1
+
+        out = StringIO()
+        wb.save(out)
+        out.seek(0)
+        out = out.read()
+
+        RESPONSE = self.request.RESPONSE
+
+        RESPONSE.setHeader('Content-Type', "application/vnd.ms-excel")
+        RESPONSE.setHeader('Content-Length', len(out))
+        RESPONSE.setHeader('Pragma', 'public')
+        RESPONSE.setHeader('Cache-Control', 'max-age=0')
+        RESPONSE.addHeader("content-disposition",
+                           "attachment; filename=roles_export-%s.xls" %
+                           this_role_id)
+
+        return out

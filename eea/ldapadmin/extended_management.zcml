@@ -44,4 +44,11 @@
       class=".roles_editor.RolesStatistics"
       />
 
+  <browser:page 
+      name="export2xls"
+      for=".roles_editor.RolesEditor"
+      permission="eionet.EditRoles"
+      class=".roles_editor.ExportExcel"
+      />
+
 </configure>
