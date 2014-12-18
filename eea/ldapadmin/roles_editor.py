@@ -20,6 +20,7 @@ from lxml.html import tostring
 from lxml.html.soupparser import fromstring
 from persistent.mapping import PersistentMapping
 from string import ascii_lowercase, digits
+from zope.component import getMultiAdapter
 import codecs
 import colander
 import csv
@@ -1404,7 +1405,7 @@ class ExtendedManagementEditor(BrowserView):
     """ A class to manage extended management
     """
     index = NaayaViewPageTemplateFile('zpt/extended/management.zpt')
-    submits = ('enable_extended_management', 'empty_branch')
+    submits = ('enable_extended_management', 'empty_branch', 'export2xls')
 
     def handle_enable_extended_management(self):
         agent = self.context._get_ldap_agent(bind=True)
@@ -1427,6 +1428,9 @@ class ExtendedManagementEditor(BrowserView):
                                  'This role is not extended managed.')
             return self.view()
 
+        export = getMultiAdapter((self.context, self.request),
+                                 name="export2xls")()
+
         with agent.new_action():
             roles_dns = agent._all_roles_list(role_id)
             for role_dn in roles_dns:
@@ -1435,7 +1439,12 @@ class ExtendedManagementEditor(BrowserView):
                 for user_id in user_ids:
                     agent.remove_from_role(role_id, "user", user_id)
 
-        return self.view()
+        return export
+
+    def handle_export2xls(self):
+        export = getMultiAdapter((self.context, self.request),
+                                 name="export2xls")()
+        return export
 
     def __call__(self):
         if self.request['REQUEST_METHOD'] == 'POST':
@@ -1448,7 +1457,6 @@ class ExtendedManagementEditor(BrowserView):
     def view(self):
         agent = self.context._get_ldap_agent(bind=True)
         this_role_id = self.request.form.get('role_id')
-        print this_role_id
         assert this_role_id
 
         info = agent.role_info(this_role_id)
@@ -1736,6 +1744,7 @@ class EditRolesOfOneMember(BrowserView):
 
 
 class ExportExcel(BrowserView):
+
     def __call__(self):
         agent = self.context._get_ldap_agent(bind=True)
         this_role_id = self.request.form.get('role_id')

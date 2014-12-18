@@ -17,8 +17,17 @@
         <h2>Empty this role</h2>
         <p style="color:Red"><strong>Warning</strong>: this is a destructive operation</p>
         <p>All users that have roles and subroles in this branch will have those roles removed.</p>
-        <input type="submit" name="empty_branch" value="Empty branch" class="primary-button" />
+
+        <input type="submit" name="export2xls" value="Export to Excel" class="primary-button" />
+        <input type="submit" id="empty_branch" name="empty_branch" value="Empty branch" class="primary-button" />
 
     </form>
+    <script>
+        jQuery(document).ready(function(){
+        $("#empty_branch").click(function(){
+            return confirm("Are you sure you want to empty this branch?");
+        });
+        });
+    </script>
 </div>
 
