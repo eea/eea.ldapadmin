@@ -1383,7 +1383,7 @@ class RolesStatistics(BrowserView):
 
         extended_role_id = get_extended_role_id(this_role_id, agent)
 
-        roles_dns = agent._all_roles_list(extended_role_id)
+        roles_dns = agent._all_roles_list(this_role_id)
         roles = []
         for role_dn in roles_dns:
             role_id = agent._role_id(role_dn)

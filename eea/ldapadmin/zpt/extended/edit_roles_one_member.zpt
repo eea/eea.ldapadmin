@@ -62,7 +62,9 @@
         <button id="roles_filter_btn" value="Apply" >Apply</button>
         <br />
         <ul id="all_roles">
-            <li tal:repeat="role options/all_possible_roles" tal:content="role">Role</li>
+            <li tal:repeat="role options/all_possible_roles">
+                <a href="" tal:attributes="href string:${context/absolute_url}/@@edit_roles_of_one_member?role_id=${role}" tal:content="role">Role</a>
+            </li>
         </ul>
     </div>
     <script>
