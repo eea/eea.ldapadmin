@@ -69,12 +69,32 @@
     </div>
     <script>
         jQuery(document).ready(function(){
+            var glob_match = function(s, pattern){
+                /* return true if pattern matches string s */
+                if (s.indexOf(pattern) > -1 ) return true;
+
+                // convert globs to regular expression
+                var aFrags = pattern.split('-');
+                var globs = [];
+                $(aFrags).each(function(){
+                    var g;
+                    if (this == "*"){
+                        g = '.+';
+                    } else {
+                        g = this;
+                    }
+                    globs.push(g);
+                });
+                reg = (globs).join("-");
+                return s.match(reg);
+            }
             $("#roles_filter_btn").click(function(){
                 var filter = $("#roles_filter").val().toLowerCase();
 
                 var $roles = $("#all_roles li");
                 $roles.each(function(){
-                    if ($(this).html().toLowerCase().search(filter) > -1 ){
+                    //if ($(this).html().toLowerCase().search(filter) > -1 ){
+                    if (glob_match($(this).html().toLowerCase(), filter)){
                         $(this).show();
                     } else {
                         $(this).hide();
