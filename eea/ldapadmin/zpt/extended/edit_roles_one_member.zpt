@@ -68,7 +68,7 @@
     </form>
 
     <div class="floated_left_box">
-        <label>Filter subroles:</label>
+        <label>Filter subroles (<a href="#" id="globs-help" title="You can use *-subpart-* as filter">globs allowed</a>):</label>
         <br />
         <input type="text" id="roles_filter" value="" />
         <button id="roles_filter_btn" value="Apply" >Apply filter (<span id="roles_counter">0</span>)</button>
