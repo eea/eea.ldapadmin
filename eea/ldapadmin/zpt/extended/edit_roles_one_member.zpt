@@ -20,6 +20,18 @@
             height:200px;
             width:250px;
         }
+        #all_roles {
+            margin:6px 0;
+            padding:0;
+        }
+        #all_roles li {
+            list-style-type: none;
+            padding:6px;
+            background-color:#DDD;
+            margin-bottom:2px;
+        }
+        #all_roles li a {
+        }
     </style>
 
     <h1>Edit the subroles for members in this Branch Role <span tal:replace="options/role_id" /></h1>
@@ -59,7 +71,7 @@
         <label>Filter subroles:</label>
         <br />
         <input type="text" id="roles_filter" value="" />
-        <button id="roles_filter_btn" value="Apply" >Apply</button>
+        <button id="roles_filter_btn" value="Apply" >Apply filter (<span id="roles_counter">0</span>)</button>
         <br />
         <ul id="all_roles">
             <li tal:repeat="role options/all_possible_roles">
@@ -88,7 +100,12 @@
                 reg = (globs).join("-");
                 return s.match(reg);
             }
+
+            var counter = $("#roles_counter");
+            counter.html($("#all_roles li").length.toString());
+
             $("#roles_filter_btn").click(function(){
+                var c = 0;
                 var filter = $("#roles_filter").val().toLowerCase();
 
                 var $roles = $("#all_roles li");
@@ -96,6 +113,7 @@
                     //if ($(this).html().toLowerCase().search(filter) > -1 ){
                     if (glob_match($(this).html().toLowerCase(), filter)){
                         $(this).show();
+                        counter.html((c++).toString());
                     } else {
                         $(this).hide();
                     }
