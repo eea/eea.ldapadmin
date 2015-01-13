@@ -53,8 +53,12 @@
             </div>
 
             <div class="floated_left_box">
-                <strong>List of members of <span tal:content="options/extended_role_id">Role ID</span></strong>
-                <ul>
+                <label>Filter members of <span tal:content="options/extended_role_id">Role ID</span></label>
+                <br />
+                <input type="text" id="members_filter" value="" />
+                <button id="members_filter_btn" value="Apply" >Apply filter (<span id="members_counter">0</span>)</button>
+                <br />
+                <ul id="all_members">
                     <li tal:repeat="member options/all_possible_members" tal:content="member">Member id</li>
                 </ul>
             </div>
@@ -62,6 +66,35 @@
             <div style="clear:both; margin:10px; padding-top:10px;">
                 <input type="submit" value="Save changes" name="submit" class="primary-button" />
             </div>
+            <script>
+            jQuery(document).ready(function(){
+                var counter = $("#members_counter");
+                counter.html($("#all_members li").length.toString());
+
+                $("#members_filter_btn").click(function(){
+                    var c = 0;
+                    var filter = $("#members_filter").val().toLowerCase();
+
+                    var $members = $("#all_members li");
+                    $members.each(function(){
+                        if ($(this).html().toLowerCase().search(filter.toLowerCase()) > -1){
+                            $(this).show();
+                            counter.html((++c).toString());
+                        } else {
+                            $(this).hide();
+                        }
+                    });
+                    return false;
+                });
+
+                $("#member-select").change(function(){
+                    var form = $(this).closest("form")[0];
+                    var source = $(this).closest("form").find('.submit_source');
+                    source.val('select');
+                    $("#edit-member-form").submit();
+                });
+            });
+        </script>
         </form>
 
     </div>

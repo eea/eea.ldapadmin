@@ -111,13 +111,14 @@
                 var $roles = $("#all_roles li");
                 $roles.each(function(){
                     //if ($(this).html().toLowerCase().search(filter) > -1 ){
-                    if (glob_match($(this).html().toLowerCase(), filter)){
+                    if (glob_match($(this).html().toLowerCase(), filter.toLowerCase())){
                         $(this).show();
-                        counter.html((c++).toString());
+                        counter.html((++c).toString());
                     } else {
                         $(this).hide();
                     }
                 });
+                return false;
             });
             $("#member-select").change(function(){
                 var form = $(this).closest("form")[0];

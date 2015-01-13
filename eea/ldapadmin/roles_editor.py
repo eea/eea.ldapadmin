@@ -1573,9 +1573,10 @@ class EditMembersOfOneRole(BrowserView):
         all_possible_roles = [agent._role_id(x)
                               for x in agent._all_roles_list(this_role_id)]
 
-        all_possible_members = agent.members_in_role_and_subroles(
-            extended_role_id)['users']
-        members = agent.members_in_role_and_subroles(this_role_id)['users']
+        all_possible_members = sorted(
+            agent.members_in_role_and_subroles(extended_role_id)['users'])
+        members = sorted(
+            agent.members_in_role_and_subroles(this_role_id)['users'])
 
         schema = ExtendedManagementUsersSchema()
 
