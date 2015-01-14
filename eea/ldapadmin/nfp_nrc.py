@@ -384,7 +384,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         }
         if search_name:
             options['search_results'] = {
-                'users': agent.search_user(search_name)
+                'users': agent.search_user(search_name, no_disabled=True)
             }
 
         self._set_breadcrumbs([("Browsing NRC-s in %s" % country_name,

@@ -5,7 +5,7 @@
             border: 1px solid #CCC;
             background-color: aliceblue;
             margin:0 10px;
-            width:250px;
+            width:350px;
             padding:10px;
         }
         .floated_left_box textarea {
@@ -19,6 +19,22 @@
         .form-container {
             overflow:hidden;
             margin-top: 20px;
+        }
+        #edit-users {
+            background-color: White;
+            border: 1px solid #CCC;
+            height: 400px;
+            overflow: auto;
+        }
+        .user_id {
+            width: 100px;
+            display: inline-block;
+        }
+
+        .fullname {
+            color: #444;
+            padding-left:16px;
+            font-weight: bold;
         }
     </style>
 
@@ -36,20 +52,19 @@
             <input type="hidden" name="role_id" tal:attributes="value options/role_id" />
 
             <div class="floated_left_box">
-                <tal:block repeat="schema_field options/schema">
-                    <div tal:define="field_name schema_field/name;
-                        field python:{
-                        'name': field_name,
-                        'value': options['form_data'].get(field_name, ''),
-                        'label': schema_field.description,
-                        'error': options['errors'].get(field_name, None),
-                        'widget': schema_field.widget,
-                        'required': schema_field.required,
-                        'help_text': schema_field.description,
-                        }">
-                        <metal:block use-macro="template/macros/form-field" />
-                    </div>
-                </tal:block>
+                <textarea name="users:utf8:ustring" style="display:none"></textarea>
+                <div id="edit-users" 
+                    tal:define="members options/form_data/users">
+                    <tal:rep repeat="member members">
+                        <div tal:define="msplit python: member.split(' - ', 1);
+                            user_id python:msplit[0];
+                            fullname python:msplit[1];
+                            ">
+                            <span class="user_id" tal:content="user_id">userid</span>
+                            <span class="fullname" tal:content="fullname" >fullname</span>
+                        </div>
+                    </tal:rep>
+                </div>
             </div>
 
             <div class="floated_left_box">
@@ -59,7 +74,15 @@
                 <button id="members_filter_btn" value="Apply" >Apply filter (<span id="members_counter">0</span>)</button>
                 <br />
                 <ul id="all_members">
-                    <li tal:repeat="member options/all_possible_members" tal:content="member">Member id</li>
+                    <tal:rep repeat="member options/all_possible_members">
+                        <li tal:define="msplit python: member.split(' - ', 1);
+                            user_id python:msplit[0];
+                            fullname python:msplit[1];
+                            ">
+                            <span class="user_id" tal:content="user_id">userid</span>
+                            <span class="fullname" tal:content="fullname" >fullname</span>
+                        </li>
+                    </tal:rep>
                 </ul>
             </div>
 
@@ -70,6 +93,7 @@
             jQuery(document).ready(function(){
                 var counter = $("#members_counter");
                 counter.html($("#all_members li").length.toString());
+                $("#edit-users").get(0).contentEditable = true;
 
                 $("#members_filter_btn").click(function(){
                     var c = 0;

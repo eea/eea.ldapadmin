@@ -125,6 +125,7 @@ def filter_result_html(agent, pattern, renderer):
 
 
 class RoleCreationError(Exception):
+
     def __init__(self, messages):
         self.messages = messages
 
@@ -282,6 +283,7 @@ class RolesEditor(Folder):
         self._config = PersistentMapping(config)
 
     security.declareProtected(view_management_screens, 'get_config')
+
     def get_config(self):
         return dict(self._config)
 
@@ -290,6 +292,7 @@ class RolesEditor(Folder):
     manage_edit.ldap_config_edit_macro = ldap_config.edit_macro
 
     security.declareProtected(view_management_screens, 'manage_edit_save')
+
     def manage_edit_save(self, REQUEST):
         """ save changes to configuration """
         self._config.update(ldap_config.read_form(REQUEST.form, edit=True))
@@ -315,6 +318,7 @@ class RolesEditor(Folder):
         return result
 
     security.declareProtected(view, 'index_html')
+
     def index_html(self, REQUEST):
         """ view """
         role_id = REQUEST.form.get('role_id', None)
@@ -351,7 +355,8 @@ class RolesEditor(Folder):
         user = REQUEST.AUTHENTICATED_USER
 
         parent = self.getPhysicalRoot()
-        has_groupware = False   # used to show alternative links in the Locations section
+        # used to show alternative links in the Locations section
+        has_groupware = False
 
         all_roles = [role_id] + subrole_ids
         locations = {}
@@ -398,7 +403,7 @@ class RolesEditor(Folder):
             'locations': locations,
             'agent': agent,
             'get_user_info': get_user_info,
-            'has_groupware':has_groupware,
+            'has_groupware': has_groupware,
         }
 
         self._set_breadcrumbs(self._role_parents_stack(role_id))
@@ -413,7 +418,7 @@ class RolesEditor(Folder):
             if not any(role_info['owner'] + role_info['permittedPerson'] + role_info['permittedSender']):
                 roles.append((role_cn, role_info))
         options = {
-            'problematic_roles':roles
+            'problematic_roles': roles
         }
         return self._render_template("zpt/table_problematic_roles.zpt", **options)
 
@@ -438,12 +443,14 @@ class RolesEditor(Folder):
         return self._render_template('zpt/roles_filter.zpt', **options)
 
     security.declareProtected(view, 'filter')
+
     def filter(self, REQUEST):
         """ view """
         pattern = REQUEST.form.get('pattern', '')
         return self._filter_results(pattern)
 
     security.declareProtected(view, 'filter_users_csv')
+
     def filter_users_csv(self, REQUEST):
         """ view """
         if not _is_authenticated(REQUEST):
@@ -479,6 +486,7 @@ class RolesEditor(Folder):
         return codecs.BOM_UTF8 + output_file.getvalue()
 
     security.declareProtected(view_management_screens, 'import_xls')
+
     def import_xls(self, REQUEST):
         """ Import an excel file """
 
@@ -489,19 +497,19 @@ class RolesEditor(Folder):
         if not xls:
             _set_session_message(REQUEST, 'error', "Not a valid file")
             return self._render_template('zpt/roles_import_xls.zpt',
-                                         **{'error':'Not a valid file'})
+                                         **{'error': 'Not a valid file'})
 
         content = xls.read()
         try:
             wb = xlrd.open_workbook(file_contents=content)
         except xlrd.XLRDError:
             return self._render_template('zpt/roles_import_xls.zpt',
-                                         **{'error':'Not a valid file'})
+                                         **{'error': 'Not a valid file'})
         problems = {
-            'creation':[],
-            'renaming':[],
-            'merging':[],
-            'prefill':[],
+            'creation': [],
+            'renaming': [],
+            'merging': [],
+            'prefill': [],
         }
 
         # Create new roles
@@ -515,7 +523,7 @@ class RolesEditor(Folder):
             for i in range(1, sheet.nrows):
                 row = sheet.row(i)
                 id, title = row[0].value, row[1].value
-                if not (id and title):  #skip empty rows
+                if not (id and title):  # skip empty rows
                     continue
                 roles[id] = title
         problems['creation'] = self._create_roles(roles)
@@ -532,7 +540,7 @@ class RolesEditor(Folder):
             for i in range(1, sheet.nrows):
                 row = sheet.row(i)
                 id, title = row[0].value, row[1].value
-                if not (id and title):  #skip empty rows
+                if not (id and title):  # skip empty rows
                     continue
                 roles[id] = title
             problems['renaming'] = self._rename_roles(roles)
@@ -549,7 +557,7 @@ class RolesEditor(Folder):
             for i in range(1, sheet.nrows):
                 row = sheet.row(i)
                 role_to_merge, role_destination = row[0].value, row[1].value
-                if not (role_to_merge and role_destination):  #skip empty rows
+                if not (role_to_merge and role_destination):  # skip empty rows
                     continue
                 roles[role_to_merge] = role_destination
             problems['merging'] = self._merge_roles(roles)
@@ -566,12 +574,12 @@ class RolesEditor(Folder):
             for i in range(1, sheet.nrows):
                 row = sheet.row(i)
                 role_destination, role_source = row[0].value, row[1].value
-                if not (role_source and role_destination):  #skip empty rows
+                if not (role_source and role_destination):  # skip empty rows
                     continue
                 roles[role_destination] = role_source
             problems['prefill'] = self._prefill_roles(roles)
 
-        return self._render_template('zpt/roles_import_xls.zpt', **{'problems':problems})
+        return self._render_template('zpt/roles_import_xls.zpt', **{'problems': problems})
 
     def _merge_roles(self, roles):
         agent = self._get_ldap_agent(bind=True)
@@ -591,7 +599,7 @@ class RolesEditor(Folder):
         for role_id in sorted(roles.keys()):
             description = roles[role_id]
             slug = role_id.split('-')[-1]
-            parent_role_id="-".join(role_id.split('-')[:-1])
+            parent_role_id = "-".join(role_id.split('-')[:-1])
 
             try:
                 role_id = self._make_role(agent, slug=slug,
@@ -620,10 +628,12 @@ class RolesEditor(Folder):
         return problems
 
     security.declareProtected(view, 'can_edit_roles')
+
     def can_edit_roles(self, user):
         return bool(user.has_permission(eionet_edit_roles, self))
 
     security.declareProtected(view, 'can_edit_members')
+
     def can_edit_members(self, role_id, user):
         """
         This could have been done as a decorator, but unfortunatelly
@@ -644,6 +654,7 @@ class RolesEditor(Folder):
         return agent._user_dn(user.getId()) in role_info['owner']
 
     security.declareProtected(view, 'can_delete_role')
+
     def can_delete_role(self, role_id, user):
         """
         A role can also be deleted by owner if it does not contain any members
@@ -668,6 +679,7 @@ class RolesEditor(Folder):
         return not agent.role_names_in_role(role_id)
 
     security.declareProtected(view, 'create_role_html')
+
     def create_role_html(self, REQUEST):
         """ view """
         parent_role_id = REQUEST.form['parent_role_id']
@@ -716,6 +728,7 @@ class RolesEditor(Folder):
         return role_id
 
     security.declareProtected(view, 'create_role')
+
     def create_role(self, REQUEST):
         """ add a role """
         user_id = logged_in_user(REQUEST)
@@ -750,11 +763,11 @@ class RolesEditor(Folder):
                     agent.add_role_owner(role_id, user_id)
                 except Exception, e:
                     msg = ("Can not set owner '%r' for role '%r': %r"
-                        % (user_id, role_id, e.args))
+                           % (user_id, role_id, e.args))
                     _set_session_message(REQUEST, 'error', msg)
                 else:
                     log.info("%s ADDED %s OWNER for ROLE %s" %
-                            (user_id, user_id, role_id))
+                             (user_id, user_id, role_id))
                 # also add owners of parent role
                 if parent_role_id:
                     owners = agent.mail_group_info(parent_role_id)['owner']
@@ -765,6 +778,7 @@ class RolesEditor(Folder):
                                       '/?role_id=' + role_id)
 
     security.declareProtected(view, 'delete_role_html')
+
     def delete_role_html(self, REQUEST):
         """ view """
         role_id = REQUEST.form['role_id']
@@ -785,6 +799,7 @@ class RolesEditor(Folder):
         return self._render_template('zpt/roles_delete.zpt', **options)
 
     security.declareProtected(view, 'delete_role')
+
     def delete_role(self, REQUEST):
         """ remove a role and all its sub-roles """
         role_id = REQUEST.form['role_id']
@@ -808,6 +823,7 @@ class RolesEditor(Folder):
         REQUEST.RESPONSE.redirect(self.absolute_url() + rel_url)
 
     security.declareProtected(view, 'add_member_html')
+
     def add_member_html(self, REQUEST):
         """ view """
         role_id = REQUEST.form['role_id']
@@ -835,6 +851,7 @@ class RolesEditor(Folder):
         return self._render_template('zpt/roles_add_member.zpt', **options)
 
     security.declareProtected(view, 'add_user')
+
     def add_user(self, REQUEST):
         """ Add user `user_id` to role `role_id` """
         role_id = REQUEST.form['role_id']
@@ -854,6 +871,7 @@ class RolesEditor(Folder):
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/?role_id=' + role_id)
 
     security.declareProtected(view, 'remove_members_html')
+
     def remove_members_html(self, REQUEST):
         """ Bulk-remove several members """
         role_id = REQUEST.form['role_id']
@@ -871,6 +889,7 @@ class RolesEditor(Folder):
         return self._render_template('zpt/roles_remove_members.zpt', **options)
 
     security.declareProtected(view, 'remove_members')
+
     def remove_members(self, REQUEST):
         """ Remove user several members from a role """
         agent = self._get_ldap_agent(bind=True)
@@ -886,17 +905,18 @@ class RolesEditor(Folder):
             with agent.new_action():
                 for user_id in user_id_list:
                     roles_id_list = agent.remove_from_role(role_id,
-                                                        'user',
-                                                        user_id)
+                                                           'user',
+                                                           user_id)
                     log.info("%s REMOVED USER %s FROM ROLES %r",
-                            logged_in_user(REQUEST), user_id, roles_id_list)
+                             logged_in_user(REQUEST), user_id, roles_id_list)
 
             msg = "Users %r removed from role %r" % (user_id_list, role_name)
             _set_session_message(REQUEST, 'info', msg)
 
-        REQUEST.RESPONSE.redirect(self.absolute_url()+'/?role_id='+role_id)
+        REQUEST.RESPONSE.redirect(self.absolute_url() + '/?role_id=' + role_id)
 
     security.declareProtected(view, 'remove_user_from_role_html')
+
     def remove_user_from_role_html(self, REQUEST):
         """ view """
         role_id = REQUEST.form['role_id']
@@ -929,6 +949,7 @@ class RolesEditor(Folder):
         return role_id_list
 
     security.declareProtected(view, 'remove_user_from_role')
+
     def remove_user_from_role(self, REQUEST):
         """ Remove a single user from the role """
         role_id = REQUEST.form['role_id']
@@ -948,6 +969,7 @@ class RolesEditor(Folder):
                                   '/search_users?user_id=' + user_id)
 
     security.declareProtected(eionet_edit_roles, 'search_users')
+
     def search_users(self, REQUEST):
         """ view """
         search_name = REQUEST.form.get('name', '')
@@ -968,6 +990,7 @@ class RolesEditor(Folder):
         return self._render_template('zpt/roles_search_users.zpt', **options)
 
     security.declareProtected(view, 'export_members')
+
     def export_members(self, REQUEST):
         """ Exports xls of members in role given by role_id in QUERY_STRING """
         role_id = REQUEST.form.get('role_id', None)
@@ -1011,6 +1034,7 @@ class RolesEditor(Folder):
         return generate_excel(header, rows)
 
     security.declareProtected(view, 'edit_owners')
+
     def edit_owners(self, REQUEST):
         """ Manage owners of a role """
         role_id = REQUEST.form.get('role_id')
@@ -1037,7 +1061,7 @@ class RolesEditor(Folder):
                                 'Successfully removed owner %r from roles %r' % (
                                     owner, updated)
                             log.info("%s REMOVED OWNER %r FOR ROLES %r",
-                                    logged_in_user(REQUEST), owner, updated)
+                                     logged_in_user(REQUEST), owner, updated)
                         _set_session_message(REQUEST, t, msg)
                 elif action == 'search':
                     search_name = REQUEST.form.get('name')
@@ -1064,7 +1088,7 @@ class RolesEditor(Folder):
                                 'Successfully added owner %r for roles %r' % (
                                     owner, updated)
                             log.info("%s ADDED OWNER %r FOR ROLES %r",
-                                    logged_in_user(REQUEST), owner, updated)
+                                     logged_in_user(REQUEST), owner, updated)
                         _set_session_message(REQUEST, t, msg)
 
         mailgroup_info = agent.mail_group_info(role_id)
@@ -1078,6 +1102,7 @@ class RolesEditor(Folder):
         return self._render_template('zpt/roles_edit_owners.zpt', **options)
 
     security.declareProtected(view, 'edit_senders')
+
     def edit_senders(self, REQUEST, extra_opts={}):
         """ Manage mail group senders of a role """
         role_id = REQUEST.form.get('role_id')
@@ -1101,6 +1126,7 @@ class RolesEditor(Folder):
         return self._render_template('zpt/roles_edit_senders.zpt', **options)
 
     security.declareProtected(view, 'edit_senders_senders')
+
     def edit_senders_senders(self, REQUEST):
         """ Form actions for senders in Manage mail group senders of a role """
         role_id = REQUEST.form.get('role_id')
@@ -1123,13 +1149,13 @@ class RolesEditor(Folder):
                             agent.remove_permittedSender(role_id, existing)
                         except Exception, e:
                             t, msg = 'error',\
-                                    'Error removing sender %s: %r' % (existing,
-                                                                    e.args)
+                                'Error removing sender %s: %r' % (existing,
+                                                                  e.args)
                         else:
                             t, msg = 'info',\
-                                    'Successfully removed sender %r' % existing
+                                'Successfully removed sender %r' % existing
                             log.info("%s REMOVED PERMITTEDSENDER %r FOR ROLE %s",
-                                    logged_in_user(REQUEST), existing, role_id)
+                                     logged_in_user(REQUEST), existing, role_id)
                         _set_session_message(REQUEST, t, msg)
 
                 for sender in senders:
@@ -1138,18 +1164,19 @@ class RolesEditor(Folder):
                             agent.add_permittedSender(role_id, sender)
                         except Exception, e:
                             t, msg = 'error',\
-                                    'Error adding sender %s: %r'\
-                                    % (sender, e.args)
+                                'Error adding sender %s: %r'\
+                                % (sender, e.args)
                         else:
                             t, msg = 'info',\
-                                    'Successfully added sender %r' % sender
+                                'Successfully added sender %r' % sender
                             log.info("%s ADDED PERMITTEDSENDER %r FOR ROLE %s",
-                                    logged_in_user(REQUEST), sender, role_id)
+                                     logged_in_user(REQUEST), sender, role_id)
                         _set_session_message(REQUEST, t, msg)
 
         return self.edit_senders(REQUEST)
 
     security.declareProtected(view, 'edit_senders_persons')
+
     def edit_senders_persons(self, REQUEST):
         """ Form actions for persons in Manage mail group senders of a role """
         role_id = REQUEST.form.get('role_id')
@@ -1167,19 +1194,19 @@ class RolesEditor(Folder):
                             agent.remove_permittedPerson(role_id, sender)
                         except Exception, e:
                             t, msg = 'error',\
-                                    'Error removing sender %s: %r' % (sender,
-                                                                    e.args)
+                                'Error removing sender %s: %r' % (sender,
+                                                                  e.args)
                         else:
                             t, msg = 'info',\
-                                    'Successfully removed sender %r' % sender
+                                'Successfully removed sender %r' % sender
                             log.info("%s REMOVED PERMITTEDPERSON %r FOR ROLE %s",
-                                    logged_in_user(REQUEST), sender, role_id)
+                                     logged_in_user(REQUEST), sender, role_id)
                         _set_session_message(REQUEST, t, msg)
                 elif action == 'search':
                     search_name = REQUEST.form.get('name')
                     extra_opts = {'search_name': search_name,
-                                'results': dict((x['id'], x) for x in
-                                                agent.search_user(search_name))}
+                                  'results': dict((x['id'], x) for x in
+                                                  agent.search_user(search_name))}
                     return self.edit_senders(REQUEST, extra_opts=extra_opts)
                 elif action == 'add-persons':
                     for sender in user_id_list:
@@ -1187,17 +1214,18 @@ class RolesEditor(Folder):
                             agent.add_permittedPerson(role_id, sender)
                         except Exception, e:
                             t, msg = 'error',\
-                                    'Error adding sender %s: %r' % (sender,
-                                                                    e.args)
+                                'Error adding sender %s: %r' % (sender,
+                                                                e.args)
                         else:
                             t, msg = 'info',\
-                                    'Successfully added sender %r' % sender
+                                'Successfully added sender %r' % sender
                             log.info("%s ADDED PERMITTEDPERSON %r FOR ROLE %s",
-                                    logged_in_user(REQUEST), sender, role_id)
+                                     logged_in_user(REQUEST), sender, role_id)
                         _set_session_message(REQUEST, t, msg)
         return self.edit_senders(REQUEST)
 
     security.declareProtected(view, 'edit_leaders_html')
+
     def edit_leaders_html(self, REQUEST):
         """ Edit leaders of a role - main view """
         role_id = REQUEST.form.get('role_id')
@@ -1224,6 +1252,7 @@ class RolesEditor(Folder):
         return self._render_template('zpt/roles_edit_leaders.zpt', **options)
 
     security.declareProtected(view, 'edit_leaders')
+
     def edit_leaders(self, REQUEST):
         """ Action on form in edit_leaders_html """
         role_id = REQUEST.form.get('role_id')
@@ -1265,6 +1294,7 @@ class RolesEditor(Folder):
                                   % (self.absolute_url(), role_id))
 
     security.declareProtected(view, 'all_members')
+
     def all_members(self, REQUEST):
         """
         Lists all users of a specified role
@@ -1305,6 +1335,7 @@ class RolesEditor(Folder):
         return self._render_template('zpt/roles_all_members.zpt', **options)
 
     security.declareProtected(view, 'edit_role_name')
+
     def edit_role_name(self, REQUEST):
         """ Form actions for persons in Manage mail group senders of a role """
         role_id = REQUEST.form.get('role_id')
@@ -1371,6 +1402,7 @@ def extend_crumbs(crumbs_html, editor_url, extra_crumbs):
 
 
 class RolesStatistics(BrowserView):
+
     """ A class to manage extended management
     """
     index = NaayaViewPageTemplateFile('zpt/extended/statistics.zpt')
@@ -1402,6 +1434,7 @@ class RolesStatistics(BrowserView):
 
 
 class ExtendedManagementEditor(BrowserView):
+
     """ A class to manage extended management
     """
     index = NaayaViewPageTemplateFile('zpt/extended/management.zpt')
@@ -1411,7 +1444,8 @@ class ExtendedManagementEditor(BrowserView):
         agent = self.context._get_ldap_agent(bind=True)
         role_id = self.request.form.get('role_id')
         assert role_id
-        is_extended = self.request.form.get('is_extended') == 'on' and True or False
+        is_extended = self.request.form.get(
+            'is_extended') == 'on' and True or False
         agent.set_role_extended_management(role_id, is_extended)
         _set_session_message(self.request, 'info', 'Saved.')
         return self.view()
@@ -1495,6 +1529,7 @@ def get_extended_role_id(child_role_id, agent):
 
 
 class IsExtendedEnabled(BrowserView):
+
     """ A view (usable from code/templates) that returns extended status
     for the role parents
     """
@@ -1511,21 +1546,24 @@ class IsExtendedEnabled(BrowserView):
 class ExtendedManagementUsersSchema(colander.MappingSchema):
     users = colander.SchemaNode(
         colander.String(),
-        widget=deform.widget.TextAreaWidget( rows=10, cols=60),
+        widget=deform.widget.TextAreaWidget(rows=10, cols=60),
         description="""List of current members. Add new member ids here.
         Removing a member from this list will remove all roles from this
         branch""")
 
 
 class NoExtendedManagementRoleError(Exception):
+
     """
     """
 
 
 class NoExceptionManagementView(BrowserView):
+
     """
     """
-    index = NaayaViewPageTemplateFile('zpt/extended/no_extended_management.zpt')
+    index = NaayaViewPageTemplateFile(
+        'zpt/extended/no_extended_management.zpt')
 
     def __call__(self):
         if self.context.args:
@@ -1543,6 +1581,7 @@ class NoExceptionManagementView(BrowserView):
 
 
 class EditMembersOfOneRole(BrowserView):
+
     """ A class to manage users in extended management
     """
     index = NaayaViewPageTemplateFile(
@@ -1573,10 +1612,18 @@ class EditMembersOfOneRole(BrowserView):
         all_possible_roles = [agent._role_id(x)
                               for x in agent._all_roles_list(this_role_id)]
 
+        all_possible_members = \
+            agent.members_in_role_and_subroles(extended_role_id)['users']
         all_possible_members = sorted(
-            agent.members_in_role_and_subroles(extended_role_id)['users'])
+            ["%s - %s" % (userid, agent.user_info(userid)['full_name'])
+             for userid in all_possible_members])
+
         members = sorted(
             agent.members_in_role_and_subroles(this_role_id)['users'])
+        members = sorted(
+            ["%s - %s" % (userid, agent.user_info(userid)['full_name'])
+             for userid in members])
+
 
         schema = ExtendedManagementUsersSchema()
 
@@ -1584,7 +1631,7 @@ class EditMembersOfOneRole(BrowserView):
             'common':               CommonTemplateLogic(self.context),
             'context':              self.context,
             'errors':               {},
-            'form_data':            {'users':'\n'.join(members)},
+            'form_data':            {'users': members},
             'schema':               schema,
             'all_possible_members': all_possible_members,
             'all_possible_roles':   all_possible_roles,
@@ -1607,8 +1654,10 @@ class EditMembersOfOneRole(BrowserView):
                            [x.strip() for x in
                             self.request.form.get('users', '').split('\n')]))
 
-        #TODO: if we calculate difference based on +subroles, things will be bad
-        current_users = set(agent.members_in_role_and_subroles(role_id)['users'])
+        # TODO: if we calculate difference based on +subroles, things will be
+        # bad
+        current_users = set(
+            agent.members_in_role_and_subroles(role_id)['users'])
 
         new_users = users.difference(current_users)
         removed_users = current_users.difference(users)
@@ -1633,6 +1682,7 @@ class EditMembersOfOneRole(BrowserView):
 
 
 class EditRolesOfOneMember(BrowserView):
+
     """ A class to manage roles for users in extended management
     """
 
@@ -1752,7 +1802,7 @@ class ExportExcel(BrowserView):
         assert this_role_id
 
         all_possible_roles_ids = [agent._role_id(x)
-                              for x in agent._all_roles_list(this_role_id)]
+                                  for x in agent._all_roles_list(this_role_id)]
 
         roles = {}
         for role_id in all_possible_roles_ids:
@@ -1780,7 +1830,7 @@ class ExportExcel(BrowserView):
         cols = [
             'role_id',
             'members',
-            ]
+        ]
 
         for i, col in enumerate(cols):
             roles_sheet.write(0, i, col.capitalize(), style_header)
