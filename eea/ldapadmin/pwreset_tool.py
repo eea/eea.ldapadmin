@@ -165,26 +165,29 @@ class PasswordResetTool(SimpleItem):
             REQUEST = self.REQUEST
         if not email:
             email = REQUEST.form['email']
+
         if email in DISABLED_EMAILS:
-            log.info("Attempt to reset password with the address"
-                     "disabled@eionet.europa.eu")
             msg = ("The email %s is attached to disabled users "
                    "and cannot be used for password reset" % email)
             _set_session_message(REQUEST, 'error', msg)
             location = self.absolute_url() + '/'
             return REQUEST.RESPONSE.redirect(location)
+
         agent = self._get_ldap_agent()
-        users = agent.search_user_by_email(email)
+        users = agent.search_user_by_email(email, no_disabled=True)
 
         if users:
             # some people have multiple accounts; send mail for each account.
             for user_info in users:
+                if user_info['status'] == 'disabled':
+                    continue
+
                 token = self._new_token(user_info['id'])
                 log.info("Sending password recovery email to user %r at %r.",
                          user_info['id'], email)
                 self._send_token_email(email, token, user_info)
-            location = self.absolute_url() + '/messages_html?msg=email-sent'
 
+            location = self.absolute_url() + '/messages_html?msg=email-sent'
         else:
             log.info("Requested password recovery with invalid email %r.",
                      email)
