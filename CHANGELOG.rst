@@ -1,9 +1,11 @@
-1.4.64 (unreleased)
+1.4.64 (2015-01-15)
 ------------------------
-* WIP: enable extended management of roles
+* Feature: enable extended management of roles
   [tiberich #21218]
 * Bug fix: cleanup code to import roles
   [tiberich #21731]
+* Bug fix: don't allow disabled users to have their email changed and to recover their password
+  [tiberich #22488]
 
 1.4.63 (2014-10-03)
 ------------------------
