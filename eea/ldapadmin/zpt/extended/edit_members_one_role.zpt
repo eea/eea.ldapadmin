@@ -1,11 +1,13 @@
 <tal:def define="common options/common | common">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+
     <style>
         .floated_left_box {
             float: left;
             border: 1px solid #CCC;
             background-color: aliceblue;
             margin:0 10px;
-            width:350px;
+            width:400px;
             padding:10px;
         }
         .floated_left_box textarea {
@@ -24,17 +26,60 @@
             background-color: White;
             border: 1px solid #CCC;
             height: 400px;
-            overflow: auto;
+            overflow-x: hidden;
+            overflow-y: scroll;
+            padding: 6px 10px;
+            margin:0;
+        }
+        #all_members {
+            padding: 6px 10px;
+            margin:0;
+        }
+        #edit-users li, #all_members li {
+            list-style-type: none;
+            cursor: pointer;
+        }
+        #edit-users li button {
+            visibility:hidden;
         }
         .user_id {
-            width: 100px;
             display: inline-block;
+            font-family: monospace;
+            width:5.5em;
         }
 
         .fullname {
             color: #444;
             padding-left:16px;
             font-weight: bold;
+        }
+
+        .mouseover button {
+            visibility: visible !important;
+        }
+
+
+
+
+
+        buttons_bar {
+            border-top: 1px solid #AAA;
+            padding-top:10px;
+            margin-top:10px;
+        }
+        #search_tabs {
+            font-size:80% !important;
+            margin-bottom: 16px;
+        }
+        #advanced_edit_form, #save_advanced_members {
+            display: none;
+        }
+        td.actions { display: none}
+        #current_members table th {
+            border-bottom: 1px solid #444;
+        }
+        .filter_bar {
+            margin-bottom: 20px;
         }
     </style>
 
@@ -46,128 +91,128 @@
 
     <div class="form-container">
         <form 
+            id="current_members"
             action="" style="float:left" 
             tal:attributes="action string:${context/absolute_url}/@@edit_members_of_one_role?role_id=${options/role_id}" method="post">
 
             <input type="hidden" name="role_id" tal:attributes="value options/role_id" />
 
-            <div class="floated_left_box">
-                <textarea name="users:utf8:ustring" style="display:none"></textarea>
-                <div id="edit-users" 
-                    tal:define="members options/form_data/users">
-                    <tal:rep repeat="member members">
-                        <div tal:define="msplit python: member.split(' - ', 1);
-                            user_id python:msplit[0];
-                            fullname python:msplit[1];
-                            ">
-                            <span class="user_id" tal:content="user_id">userid</span>
-                            <span class="fullname" tal:content="fullname" >fullname</span>
-                        </div>
-                    </tal:rep>
+            <div class="floated_left_box" >
+
+                <div id="advanced_edit_form">
+                    <textarea name="users:utf8:ustring" tal:content="python:'\n'.join([x.split('-')[0] for x in options['form_data']['users']])"></textarea>
+                    <button id="save_advanced_members"><span class="fa fa-save"><span> Save</button>
+                </div>
+
+                <table id="members_table">
+                    <thead>
+                        <tr>
+                            <th>&nbsp;</th>
+                            <th>Username</th>
+                            <th>Full name</th>
+                            <th>&nbsp;</th>
+                    </thead>
+                    <tbody tal:define="members options/form_data/users">
+                        <tal:rep repeat="member members">
+                            <tr tal:define="msplit python: member.split(' - ', 1);
+                                user_id python:msplit[0];
+                                fullname python:msplit[1];
+                                ">
+                                <td><input type="checkbox" value="" tal:attributes="value user_id"/></td>
+                                <td class="user_id" tal:content="user_id">userid</td>
+                                <td class="fullname" tal:content="fullname" >fullname</td>
+                                <td class='actions'><button class="btn_delete"><i class="fa fa-trash"></i></button></td>
+                            </tr>
+                        </tal:rep>
+                    </tbody>
+                </table>
+                <div class="buttons_bar">
+                    <button type="button" id="members_remove_selected"><i class="fa fa-trash"></i> Remove selected</button>
+                    <button type="button" id="members_advanced_edit"><i class="fa fa-edit"></i> Advanced edit</button>
                 </div>
             </div>
 
             <div class="floated_left_box">
-                <label>Filter members of <span tal:content="options/extended_role_id">Role ID</span></label>
-                <br />
-                <input type="text" id="members_filter" value="" />
-                <button id="members_filter_btn" value="Apply" >Apply filter (<span id="members_counter">0</span>)</button>
-                <br />
-                <ul id="all_members">
-                    <tal:rep repeat="member options/all_possible_members">
-                        <li tal:define="msplit python: member.split(' - ', 1);
-                            user_id python:msplit[0];
-                            fullname python:msplit[1];
-                            ">
-                            <span class="user_id" tal:content="user_id">userid</span>
-                            <span class="fullname" tal:content="fullname" >fullname</span>
-                        </li>
-                    </tal:rep>
-                </ul>
+                <div id="search_tabs">
+                    <ul>
+                        <li><a href="#filter-members">Role members</a></li>
+                        <li><a href="#search-eionet">Eionet members</a></li>
+                    </ul>
+                    <div id="filter-members">
+                        <div class="filter_bar">
+                            <label>Filter members of <span tal:content="options/extended_role_id">Role ID</span></label>
+                            <br />
+                            <input type="text" id="members_filter" value="" />
+                            <button id="members_filter_btn" value="Apply" ><span class="fa fa-search"></span> Apply filter (<span id="members_counter">0</span>)</button>
+                        </div>
+
+                        <table id="members_source_table">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Username</th>
+                                    <th>Full name</th>
+                                    <th>&nbsp;</th>
+                                </tr>
+                            </thead>
+                            <tbody tal:define="members options/all_possible_members">
+                                <tal:rep repeat="member members">
+                                    <tr tal:define="msplit python: member.split(' - ', 1);
+                                        user_id python:msplit[0];
+                                        fullname python:msplit[1];
+                                        ">
+                                        <td><input type="checkbox" tal:attributes="value user_id"/></td>
+                                        <td class="user_id" tal:content="user_id">userid</td>
+                                        <td class="fullname" tal:content="fullname" >fullname</td>
+                                        <td class="actions"><button class="btn_add"><i class="fa fa-plus"></i></button></td>
+                                    </tr>
+                                </tal:rep>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="search-eionet">
+                        <div class="filter_bar">
+                            <label>Search Eionet members</label>
+                            <br/>
+                            <input type="text" id="eionet_search" value="" />
+                            <button id="eionet_filter_btn"><span class="fa fa-search"></span> Search</button>
+                        </div>
+                        <table id="members_search_table">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Username</th>
+                                    <th>Full name</th>
+                                    <th>&nbsp;</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+                <div class="buttons_bar">
+                    <button type="button" id="add_selected_btn"><i class="fa fa-arrow-circle-left"></i> Add selected</button>
+                </div>
+
             </div>
 
             <div style="clear:both; margin:10px; padding-top:10px;">
                 <input type="submit" value="Save changes" name="submit" class="primary-button" />
             </div>
-            <script>
-            jQuery(document).ready(function(){
-                var counter = $("#members_counter");
-                counter.html($("#all_members li").length.toString());
-                $("#edit-users").get(0).contentEditable = true;
-
-                $("#members_filter_btn").click(function(){
-                    var c = 0;
-                    var filter = $("#members_filter").val().toLowerCase();
-
-                    var $members = $("#all_members li");
-                    $members.each(function(){
-                        if ($(this).html().toLowerCase().search(filter.toLowerCase()) > -1){
-                            $(this).show();
-                            counter.html((++c).toString());
-                        } else {
-                            $(this).hide();
-                        }
-                    });
-                    return false;
-                });
-
-                $("#member-select").change(function(){
-                    var form = $(this).closest("form")[0];
-                    var source = $(this).closest("form").find('.submit_source');
-                    source.val('select');
-                    $("#edit-member-form").submit();
-                });
-            });
-        </script>
         </form>
 
     </div>
-    
-    <tal:block condition="nothing">
-        <metal:block define-macro="form-field">
-            <tal:block define="field_id string:edit-${field/name}">
-                <label tal:define="required_cls python:['required' if field['required'] else '']"
-                    tal:attributes="for field_id; class python:' '.join(['question'] + required_cls);
-                                    title field/help_text"
-                    tal:content="string:${field/label}:"/>
-                <div tal:define="widget_template field/widget/template|string:textinput;
-                    input_classes python:['error'] if field['error'] else [];
-                    is_textarea python: widget_template == 'textarea';
-                    is_select python: widget_template=='select';">
-                    <span tal:condition="field/required"/>
-                    <input tal:condition="python: not (is_textarea or is_select)"
-                        type="text" size="50"
-                        tal:attributes="id field_id;
-                        class python:' '.join(input_classes +
-                        ['text-input', 'large']);
-                        name string:${field/name}:utf8:ustring;
-                        value field/value" />
-                    <textarea tal:condition="is_textarea"
-                        tal:attributes="id field_id;
-                                        name string:${field/name}:utf8:ustring"
-                        tal:content="field/value"></textarea>
-                    <select tal:condition="is_select"
-                        tal:attributes="id field_id; 
-                        name string:${field/name}:utf8:ustring"
-                        >
-                        <tal:def tal:define="choices python:field['widget'].values">
-                            <option 
-                                tal:repeat="ch choices" 
-                                tal:attributes="value python:ch[0]; selected python:ch[0] == field['value']" 
-                                tal:content="python: ch[1]">1</option>
-                        </tal:def>
-                    </select>
-                    <tal:def define="errors python: isinstance(field['error'], list) and field['error'] or [field['error']]">
-                        <tal:rep tal:repeat="error errors">
-                            <p class="error-hint" 
-                                tal:attributes="id string:error-${field_id}"
-                                tal:condition="error"
-                                tal:content="error" />
-                        </tal:rep>
-                    </tal:def>
-                </div>
-            </tal:block>
+    <script src="http://documentcloud.github.com/underscore/underscore-min.js"> </script>
+    <script src="/++resource++eea.ldapadmin-www/extended_assign_members_to_role.js"></script>
+    <script tal:content="string:
 
-        </metal:block>
-    </tal:block>
+    jQuery(document).ready(function(){
+        $$('#search_tabs').tabs();
+
+        var members_editor = new MembersEditor('${context/absolute_url}/@@search_eionet');
+    });"></script>
 </tal:def>

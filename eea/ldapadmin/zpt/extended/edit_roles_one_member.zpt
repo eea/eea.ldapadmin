@@ -1,5 +1,8 @@
 <tal:def define="common options/common | common">
 
+    <link href="/++resource++eea.ldapadmin-www/selectize/css/selectize.default.css" rel="stylesheet"/>
+    <script src="/++resource++eea.ldapadmin-www/selectize/js/standalone/selectize.min.js"></script>
+
     <style>
         .floated_right_box {
             float: right;
@@ -16,9 +19,12 @@
         .padded-top input {
             margin: 0;
         }
-        .member_roles {
-            height:200px;
-            width:250px;
+        #member_roles {
+            height:400px;
+            width:350px;
+        }
+        #member_select {
+            padding: 6px;
         }
         #all_roles {
             margin:6px 0;
@@ -47,9 +53,9 @@
         <input type="hidden" name="role_id" tal:attributes="value options/role_id" />
         <input type="hidden" name="submit_source" class="submit_source" />
 
-        <div class="floated_left_box">
+        <div id="member_select">
             <label>Select a member:</label> <br/>
-            <select name="member" id="member-select">
+            <select name="member" id="member-select" style="width:400px">
                 <option tal:repeat="member options/all_possible_members" 
                     tal:attributes="value python:member[0]; selected python:member[0] == options['selected_member'];" 
                     tal:content="python:member[1]">Member</option>
@@ -57,49 +63,54 @@
             <div tal:condition="python: options.get('selected_member') and options['extended_role_id'] != options['role_id']">
                 <a href="" tal:attributes="href string:${context/absolute_url}/@@edit_roles_of_one_member?role_id=${options/extended_role_id}&member=${options/selected_member}">Edit <span tal:content="options/selected_member" />'s roles in <span tal:content="options/extended_role_id"/></a>
             </div>
+        </div>
+        <div class="floated_left_box">
+            <label>Set the roles for this member:</label> <br/>
+            <textarea id="member_roles" name="member_roles" tal:content="options/selected_member_roles"></textarea>
             <div class="padded-top">
                 <input type="submit" value="Save changes" name="save" class="primary-button" />
             </div>
         </div>
+
         <div class="floated_left_box">
-            <label>Set the roles for this member:</label> <br/>
-            <textarea class="member_roles" name="member_roles" tal:content="options/selected_member_roles"></textarea>
+            <label>Filter possible subroles (<a href="#" id="globs-help" title="You can use *-subpart-* as filter">globs allowed</a>):</label>
+            <br />
+            <input type="text" id="roles_filter" value="" />
+            <button id="roles_filter_btn" value="Apply" >Apply filter (<span id="roles_counter">0</span>)</button>
+            <br />
+            <ul id="all_roles">
+                <li tal:repeat="role options/all_possible_roles">
+                    <a href="" tal:attributes="href string:${context/absolute_url}/@@edit_roles_of_one_member?role_id=${role}" tal:content="role">Role</a>
+                </li>
+            </ul>
         </div>
     </form>
 
-    <div class="floated_left_box">
-        <label>Filter subroles (<a href="#" id="globs-help" title="You can use *-subpart-* as filter">globs allowed</a>):</label>
-        <br />
-        <input type="text" id="roles_filter" value="" />
-        <button id="roles_filter_btn" value="Apply" >Apply filter (<span id="roles_counter">0</span>)</button>
-        <br />
-        <ul id="all_roles">
-            <li tal:repeat="role options/all_possible_roles">
-                <a href="" tal:attributes="href string:${context/absolute_url}/@@edit_roles_of_one_member?role_id=${role}" tal:content="role">Role</a>
-            </li>
-        </ul>
-    </div>
     <script>
-        jQuery(document).ready(function(){
-            var glob_match = function(s, pattern){
-                /* return true if pattern matches string s */
-                if (s.indexOf(pattern) > -1 ) return true;
 
-                // convert globs to regular expression
-                var aFrags = pattern.split('-');
-                var globs = [];
-                $(aFrags).each(function(){
-                    var g;
-                    if (this == "*"){
-                        g = '.+';
-                    } else {
-                        g = this;
-                    }
-                    globs.push(g);
-                });
-                reg = (globs).join("-");
-                return s.match(reg);
-            }
+        var glob_match = function(s, pattern){
+            /* return true if pattern matches string s */
+            if (s.indexOf(pattern) > -1 ) return true;
+
+            // convert globs to regular expression
+            var aFrags = pattern.split('-');
+            var globs = [];
+            $(aFrags).each(function(){
+                var g;
+                if (this == "*"){
+                    g = '.+';
+                } else {
+                    g = this;
+                }
+                globs.push(g);
+            });
+            reg = (globs).join("-");
+            return s.match(reg);
+        }
+
+        jQuery(document).ready(function(){
+
+            $("#member-select").selectize({});
 
             var counter = $("#roles_counter");
             counter.html($("#all_roles li").length.toString());

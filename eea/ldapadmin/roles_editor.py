@@ -1861,3 +1861,13 @@ class ExportExcel(BrowserView):
                            this_role_id)
 
         return out
+
+
+class SearchEionet(BrowserView):
+    def __call__(self):
+        filter = self.request.form.get('filter')
+        agent = self.context._get_ldap_agent(bind=True)
+        encres = json.dumps(agent.search_user(filter))
+        self.request.response.setHeader("Content-Type", 'application/json')
+        self.request.response.setHeader("Content-Length", str(len(encres)))
+        return encres
