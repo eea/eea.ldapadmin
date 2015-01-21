@@ -73,6 +73,7 @@
                             tal:content="python:'\n'.join([x.split('-')[0] for x in options['form_data']['users']])">
                         </textarea>
                         <button id="save_advanced_members"><span class="fa fa-save"></span> Save</button>
+                        <button id="cancel_advanced_members"><span class="fa fa-close"></span> Cancel</button>
                     </div>
 
                     <table id="members_table">

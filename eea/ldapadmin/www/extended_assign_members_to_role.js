@@ -11,12 +11,14 @@ var MembersEditor = function(search_url){
     // Left side: buttons
     this.remove_selected_btn = $("#members_remove_selected");
     this.save_advanced_members_btn = $("#save_advanced_members");
+    this.cancel_advanced_members_btn = $("#cancel_advanced_members");
     this.advanced_edit_btn = $("#members_advanced_edit");
 
     // Left side: handlers
     this.remove_selected_btn.on('click', this.handle_remove_selected_members.bind(this));
     this.advanced_edit_btn.on('click', this.toggle_advanced_edit.bind(this));
     this.save_advanced_members_btn.on('click', this.handle_save_advanced.bind(this));
+    this.cancel_advanced_members_btn.on('click', this.handle_cancel_advanced.bind(this));
 
     // Right side: display, edit areas
     this.source_widget = $("#source_widget");
@@ -101,6 +103,14 @@ MembersEditor.prototype = {
         this.members_table.toggle();
         this.remove_selected_btn.toggle();
         this.advanced_edit_btn.toggle();
+        return false;
+    },
+
+    handle_cancel_advanced: function(){
+        var usernames = this._table_to_usernames(this.members_table);
+        this.members_textarea.html(usernames.join('\n'));
+        this.members_textarea.val(usernames.join('\n'));
+        this.toggle_advanced_edit();
         return false;
     },
 

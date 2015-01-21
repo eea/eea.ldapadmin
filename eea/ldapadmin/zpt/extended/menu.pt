@@ -45,7 +45,7 @@
       </li>
 
       <li tal:define="current_page python: 'roles_statistics' in url">
-        <span class="fa fa-calculator"></span>
+        <span class="fa fa-bar-chart-o"></span>
         <a href="" tal:attributes="href string:${context/absolute_url}/@@roles_statistics?role_id=${options/role_id};
           class python:current_page and 'selected' or ''">
           View statistics for this Branch
