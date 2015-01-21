@@ -1,7 +1,7 @@
 <div tal:define="common options/common">
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
 
-    <h1>Roles and subroles statistics for <tt tal:content="options/role_id" /></h1>
+    <h1>Roles and subroles statistics for <span metal:use-macro="context/@@extended_management_menu/macros/breadcrumb"></span></h1>
 
     <div metal:use-macro="context/@@extended_management_menu/macros/menu" />
 
