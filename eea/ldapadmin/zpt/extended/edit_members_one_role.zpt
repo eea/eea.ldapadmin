@@ -97,7 +97,7 @@
 
             <input type="hidden" name="role_id" tal:attributes="value options/role_id" />
 
-            <div class="floated_left_box" >
+            <div class="floated_left_box" id="target_widget">
 
                 <div id="advanced_edit_form">
                     <textarea name="users:utf8:ustring" tal:content="python:'\n'.join([x.split('-')[0] for x in options['form_data']['users']])"></textarea>
@@ -132,7 +132,7 @@
                 </div>
             </div>
 
-            <div class="floated_left_box">
+            <div class="floated_left_box" id="source_widget">
                 <div id="search_tabs">
                     <ul>
                         <li><a href="#filter-members">Role members</a></li>

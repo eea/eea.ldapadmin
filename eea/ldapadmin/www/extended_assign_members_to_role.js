@@ -3,6 +3,7 @@ var MembersEditor = function(search_url){
     this.SEARCH_URL = search_url;
 
     // Left side: display, edit areas
+    this.target_widget = $("#target_widget");
     this.members_table = $("#members_table");
     this.advanced_edit_form = $("#advanced_edit_form");
     this.members_textarea = $("textarea", this.widget);
@@ -18,10 +19,12 @@ var MembersEditor = function(search_url){
     this.save_advanced_members_btn.on('click', this.handle_save_advanced.bind(this));
 
     // Right side: display, edit areas
+    this.source_widget = $("#source_widget");
     this.members_source_table = $("#members_source_table");
     this.members_search_table = $("#members_search_table");
     this.search_eionet_text = $("#eionet_search", this.widget);
     this.members_filter_text = $("#members_filter", this.widget);
+    this.filter_counter = $("#members_counter");
 
     // Right side: buttons
     this.eionet_filter_btn = $("#eionet_filter_btn");
@@ -33,7 +36,7 @@ var MembersEditor = function(search_url){
     this.add_selected_btn.on('click', this.handle_add_selected_members.bind(this));
     this.members_filter_btn.on('click', this.handle_members_filter.bind(this));
 
-    this.member_to_names = this._extract_members_from_table(this.members_source_table);
+    this.member_to_names = this._extract_members_from_source(this.source_widget);
 
     this.update_filter_counter();
 };
@@ -41,19 +44,17 @@ var MembersEditor = function(search_url){
 MembersEditor.prototype = {
 
     update_filter_counter: function(){
-        var counter = $("#members_counter");
-        counter.html($("#members_source_table tbody tr:visible").length.toString());
+        this.filter_counter.html($("tbody tr:visible", this.source_widget).length.toString());
     },
 
     handle_members_filter: function(){
         var c = 0;
-        var counter = $("#members_counter");
         var filter = $("#members_filter").val().toLowerCase();
 
-        _.each($("#members_source_table tbody tr"), function(el){
+        _.each($("tbody tr", this.members_source_table), function(el){
             if ($(el).html().toLowerCase().search(filter.toLowerCase()) > -1){
                 $(el).show();
-                counter.html((++c).toString());
+                this.filter_counter.html((++c).toString());
             } else {
                 $(el).hide();
             }
@@ -63,7 +64,7 @@ MembersEditor.prototype = {
 
     handle_remove_selected_members: function(){
         var to_remove = [];
-        _.each(this.members_table.find('input[type="checkbox"]:checked'),
+        _.each(this.target_widget.find('input[type="checkbox"]:checked'),
                 function(el){
                     to_remove.push($(el).attr('value'));
                 });
@@ -72,14 +73,14 @@ MembersEditor.prototype = {
         var to_save = _.difference(usernames, to_remove);
         this.members_textarea.html(to_save.join('\n'));
 
-        this._remove_users_from_table(this.members_table, to_remove);
+        this._remove_users_from_table(this.target_widget, to_remove);
 
         return false;
         },
 
     handle_add_selected_members: function(){
         var to_add = [];
-        _.each(this.members_source_table.find('input[type="checkbox"]:checked'),
+        _.each(this.source_widget.find('input[type="checkbox"]:checked:visible'),
                 function(el){
                     to_add.push($(el).attr('value'));
                 });
@@ -89,7 +90,7 @@ MembersEditor.prototype = {
         var to_save = _.union(usernames, to_add);
         this.members_textarea.html(to_save.join('\n'));
 
-        this._add_users_to_table(this.members_table, to_add);
+        this._add_users_to_table(this.target_widget, to_add);
 
         return false;
     },
@@ -104,8 +105,8 @@ MembersEditor.prototype = {
     },
 
     handle_save_advanced: function() {
-        var table = this.members_table;
-        this._clean_members_textarea();
+        var table = this.target_widget;
+        // this._clean_members_textarea();
         var usernames_to_save = this._textarea_to_usernames(this.members_textarea);
         var usernames_in_table = this._table_to_usernames(table);
 
@@ -175,18 +176,16 @@ MembersEditor.prototype = {
 
         $.getJSON(this.SEARCH_URL, {filter:filter}, function(data){
             _.each(data, function(obj, index){
-                console.log(obj.id, obj.full_name);
                 self.member_to_names[obj.id] = obj.full_name;
                 self._add_user_to_table(self.members_search_table, obj.id);
             });
-            //console.log(data);
         });
         return false;
     },
 
-    _extract_members_from_table: function(table){
+    _extract_members_from_source: function(source){
         var res = {};
-        table.find('tbody tr').each(function(){
+        source.find('tbody tr:visible').each(function(){
             var username = $(this).find('td.user_id').html();
             var fullname = $(this).find('td.fullname').html();
             if (username !== null) res[username] = fullname;
