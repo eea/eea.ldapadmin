@@ -1,19 +1,23 @@
 <div metal:define-macro="menu">
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
   <style>
     .selected {
       font-weight:bold;
       font-size:120%;
-      line-height: 260%;
+      line-height: 190%;
     }
   </style>
 
   <ul tal:define="url request/URL">
 
-    <li>
-      <a href="" tal:attributes="href string:${context/absolute_url}/?role_id=${options/role_id}">View this role in the Role Editor</a>
+    <li><span class="fa fa-book"></span>
+      <a href="" tal:attributes="href string:${context/absolute_url}/?role_id=${options/role_id}">
+        View this role in the Role Editor
+      </a>
     </li>
 
     <li tal:define="current_page python:'extended_management' in url">
+      <span class="fa fa-tasks"></span>
       <a href="" tal:attributes="href string:${context/absolute_url}/@@extended_management?role_id=${options/extended_role_id};
         class python: current_page and 'selected' or ''">
         Manage the Extended Management Role
@@ -21,6 +25,7 @@
     </li>
 
     <li tal:define="current_page python:'edit_members_of_one_role' in url">
+      <span class="fa fa-users"></span>
       <a href="" tal:attributes="href string:${context/absolute_url}/@@edit_members_of_one_role?role_id=${options/role_id};
         class python:current_page and 'selected' or ''">
         Edit the members of this Branch
@@ -28,6 +33,7 @@
     </li>
 
     <li tal:define="current_page python: 'edit_roles_of_one_member' in url">
+      <span class="fa fa-user"></span>
       <a href="" tal:attributes="href string:${context/absolute_url}/@@edit_roles_of_one_member?role_id=${options/role_id};
         class python:current_page and 'selected' or ''">
         Edit subroles for members of this Branch Role
@@ -35,6 +41,7 @@
     </li>
 
     <li tal:define="current_page python: 'roles_statistics' in url">
+      <span class="fa fa-calculator"></span>
       <a href="" tal:attributes="href string:${context/absolute_url}/@@roles_statistics?role_id=${options/role_id};
         class python:current_page and 'selected' or ''">
         View statistics for this Branch

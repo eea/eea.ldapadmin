@@ -1,55 +1,10 @@
 <tal:def define="common options/common | common">
-    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
 
     <style>
-        .floated_left_box {
-            float: left;
-            border: 1px solid #CCC;
-            background-color: aliceblue;
-            margin:0 10px;
-            width:400px;
-            padding:10px;
-        }
-        .extra-padding {
-            height:60px;
-            clear:both;
-        }
         .form-container {
             overflow:hidden;
             margin-top: 20px;
         }
-        #edit-users {
-            background-color: White;
-            border: 1px solid #CCC;
-            height: 400px;
-            overflow-x: hidden;
-            overflow-y: scroll;
-            padding: 6px 10px;
-            margin:0;
-        }
-        #all_members {
-            padding: 6px 10px;
-            margin:0;
-        }
-        #edit-users li, #all_members li {
-            list-style-type: none;
-            cursor: pointer;
-        }
-        #edit-users li button {
-            visibility:hidden;
-        }
-        .user_id {
-            display: inline-block;
-            font-family: monospace;
-            width:5.5em;
-        }
-
-        .fullname {
-            color: #444;
-            padding-left:16px;
-            font-weight: bold;
-        }
-
         .mouseover button {
             visibility: visible !important;
         }
