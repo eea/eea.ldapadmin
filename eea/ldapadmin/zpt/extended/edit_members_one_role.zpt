@@ -207,7 +207,8 @@
 
     </div>
     <script src="http://documentcloud.github.com/underscore/underscore-min.js"> </script>
-    <script src="/++resource++eea.ldapadmin-www/extended_assign_members_to_role.js"></script>
+    <script src="/++resource++eea.ldapadmin-www/extended_assign_members_to_role.js"
+        tal:attributes="src string:${context/absolute_url}/++resource++eea.ldapadmin-www/extended_assign_members_to_role.js"></script>
     <script tal:content="string:
 
     jQuery(document).ready(function(){
