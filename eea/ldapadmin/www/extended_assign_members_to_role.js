@@ -1,3 +1,29 @@
+if (!Function.prototype.bind) {
+  Function.prototype.bind = function(oThis) {
+    if (typeof this !== 'function') {
+      // closest thing possible to the ECMAScript 5
+      // internal IsCallable function
+      throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
+    }
+
+    var aArgs   = Array.prototype.slice.call(arguments, 1),
+        fToBind = this,
+        fNOP    = function() {},
+        fBound  = function() {
+          return fToBind.apply(this instanceof fNOP && oThis
+                 ? this
+                 : oThis,
+                 aArgs.concat(Array.prototype.slice.call(arguments)));
+        };
+
+    fNOP.prototype = this.prototype;
+    fBound.prototype = new fNOP();
+
+    return fBound;
+  };
+}
+
+
 var MembersEditor = function(search_url){
     this.widget = $('#current_members');
     this.SEARCH_URL = search_url;
@@ -42,6 +68,7 @@ var MembersEditor = function(search_url){
 
     this.update_filter_counter();
 };
+
 
 MembersEditor.prototype = {
 
@@ -101,8 +128,7 @@ MembersEditor.prototype = {
         this.save_advanced_members_btn.toggle();
         this.advanced_edit_form.toggle();
         this.members_table.toggle();
-        this.remove_selected_btn.toggle();
-        this.advanced_edit_btn.toggle();
+        this.remove_selected_btn.toggle(); this.advanced_edit_btn.toggle();
         return false;
     },
 
