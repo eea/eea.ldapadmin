@@ -1,5 +1,10 @@
-1.4.65 (unreleased)
+1.4.66 (unreleased)
 ------------------------
+
+1.4.65 (2015-01-23)
+------------------------
+* Bug fix: improve pages of extended management of roles
+  [tiberich #21218]
 
 1.4.64 (2015-01-15)
 ------------------------
