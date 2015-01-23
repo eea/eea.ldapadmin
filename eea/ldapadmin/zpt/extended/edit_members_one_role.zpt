@@ -38,6 +38,13 @@
         td .actions { 
             display: none;
         }
+        #current_members table {
+            border-spacing: 0px;
+            margin-bottom: 10px;
+        }
+        #current_members table tbody tr.active {
+            background-color: Lightblue;
+        }
         #current_members table th {
             border-bottom: 1px solid #444;
         }

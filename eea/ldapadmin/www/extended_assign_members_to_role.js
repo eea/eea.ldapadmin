@@ -106,10 +106,13 @@ MembersEditor.prototype = {
     },
 
     handle_mouse_over: function(event){
+        $(event.target).parents('tr').toggleClass('active');
+
         $('.actions', $(event.target).parent()).show();
     },
 
     handle_mouse_out: function(event){
+        $(event.target).parents('tr').toggleClass('active');
         $('.actions', $(event.target).parent()).hide();
     },
 
