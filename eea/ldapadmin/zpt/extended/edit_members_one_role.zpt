@@ -5,12 +5,6 @@
             overflow:hidden;
             margin-top: 20px;
         }
-        .mouseover button {
-            visibility: visible !important;
-        }
-
-
-
 
         .floated_left_box {
             float: left;
@@ -41,7 +35,9 @@
         #advanced_edit_form, #save_advanced_members {
             display: none;
         }
-        td.actions { display: none}
+        td .actions { 
+            display: none;
+        }
         #current_members table th {
             border-bottom: 1px solid #444;
         }
@@ -93,7 +89,7 @@
                                         <td><input type="checkbox" value="" tal:attributes="value user_id"/></td>
                                         <td class="user_id" tal:content="user_id">userid</td>
                                         <td class="fullname" tal:content="fullname" >fullname</td>
-                                        <td class='actions'><button class="btn_delete"><i class="fa fa-trash"></i></button></td>
+                                        <td><button class="actions btn_delete"><i class="fa fa-trash"></i></button></td>
                                     </tr>
                                 </tal:rep>
                             </tbody>
@@ -142,7 +138,7 @@
                                         <td><input type="checkbox" tal:attributes="value user_id"/></td>
                                         <td class="user_id" tal:content="user_id">userid</td>
                                         <td class="fullname" tal:content="fullname" >fullname</td>
-                                        <td class="actions"><button class="btn_add"><i class="fa fa-plus"></i></button></td>
+                                        <td><button class="actions btn_add"><i class="fa fa-plus"></i></button></td>
                                     </tr>
                                 </tal:rep>
                             </tbody>

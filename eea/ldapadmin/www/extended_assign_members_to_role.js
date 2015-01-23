@@ -64,7 +64,22 @@ var MembersEditor = function(search_url){
     this.add_selected_btn.on('click', this.handle_add_selected_members.bind(this));
     this.members_filter_btn.on('click', this.handle_members_filter.bind(this));
 
+    // generic handlers
+    this.widget.on('mouseenter', 'tr', this.handle_mouse_over.bind(this));
+    this.widget.on('mouseleave', 'tr', this.handle_mouse_out.bind(this));
+    //
+    // this.widget.hoverIntent({
+    //     over: this.handle_mouse_over.bind(this),
+    //     out: this.handle_mouse_out.bind(this),
+    //     selector: 'tr'
+    // });
     this.member_to_names = this._extract_members_from_source(this.source_widget);
+
+    this.widget.on('click', '.btn_add', this.handle_add_member.bind(this));
+    this.widget.on('click', '.btn_delete', this.handle_delete_member.bind(this));
+
+    this.$tpl_button_add = $('<button class="actions btn_add"><i class="fa fa-plus"></i></button>');
+    this.$tpl_button_delete = $('<button class="actions btn_delete"><i class="fa fa-trash"></i></button>');
 
     this.update_filter_counter();
 };
@@ -74,6 +89,28 @@ MembersEditor.prototype = {
 
     update_filter_counter: function(){
         this.filter_counter.html($("tbody tr:visible", this.source_widget).length.toString());
+    },
+
+    handle_add_member: function(event){
+        var $btn = $(event.target);
+        var username = $btn.parents('tr').find('.user_id').html().toString();
+        this._add_users_to_table(this.target_widget, [username], this.$tpl_button_delete);
+        return false;
+    },
+
+    handle_delete_member: function(event){
+        var $btn = $(event.target);
+        var username = $btn.parents('tr').find('.user_id').html().toString();
+        this._remove_users_from_table(this.target_widget, [username]);
+        return false;
+    },
+
+    handle_mouse_over: function(event){
+        $('.actions', $(event.target).parent()).show();
+    },
+
+    handle_mouse_out: function(event){
+        $('.actions', $(event.target).parent()).hide();
     },
 
     handle_members_filter: function(){
@@ -119,7 +156,7 @@ MembersEditor.prototype = {
         var to_save = _.union(usernames, to_add);
         this.members_textarea.html(to_save.join('\n'));
 
-        this._add_users_to_table(this.target_widget, to_add);
+        this._add_users_to_table(this.target_widget, to_add, this.$tpl_button_delete);
 
         return false;
     },
@@ -150,16 +187,16 @@ MembersEditor.prototype = {
         var usernames_to_remove = _.difference(usernames_in_table, usernames_to_save);
 
         this._remove_users_from_table(table, usernames_to_remove);
-        this._add_users_to_table(table, usernames_to_add);
+        this._add_users_to_table(table, usernames_to_add, this.$tpl_button_delete);
 
         this.toggle_advanced_edit();
 
         return false;
     },
 
-    _add_users_to_table: function(table, usernames){
+    _add_users_to_table: function(table, usernames, btn){
         _.each(usernames, function(username){
-            this._add_user_to_table(table, username);
+            this._add_user_to_table(table, username, btn);
         }, this);
     },
 
@@ -190,7 +227,7 @@ MembersEditor.prototype = {
         }, this);
     },
 
-    _add_user_to_table: function(table, username){
+    _add_user_to_table: function(table, username, $btn){
         // TODO: flash the row when duplicate userid is added
         var fullname = this.member_to_names[username] || ' - ';
         var user = {user_id: username, fullname: fullname};
@@ -198,7 +235,7 @@ MembersEditor.prototype = {
             .append($('<td><input type="checkbox" value="' + user.user_id + '""/></td>'))
             .append($("<td class='user_id'>").html(user.user_id))
             .append($("<td class='fullname'>").html(user.fullname || '-'))
-            .append($('<td class="actions"><button class="btn_delete"><i class="fa fa-trash"></i></button></td>'));
+            .append($('<td></td>').append($btn.clone()));
         table.find('tbody').append(row);
     },
 
@@ -213,7 +250,11 @@ MembersEditor.prototype = {
         $.getJSON(this.SEARCH_URL, {filter:filter}, function(data){
             _.each(data, function(obj, index){
                 self.member_to_names[obj.id] = obj.full_name;
-                self._add_user_to_table(self.members_search_table, obj.id);
+                self._add_user_to_table(
+                    self.members_search_table,
+                    obj.id,
+                    self.$tpl_button_add
+                );
             });
         });
         return false;
