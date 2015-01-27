@@ -1,5 +1,6 @@
 1.4.66 (unreleased)
 ------------------------
+* Bugfix related to nfp_has_access [dumitval]
 
 1.4.65 (2015-01-23)
 ------------------------
