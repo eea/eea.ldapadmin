@@ -1,3 +1,6 @@
+1.4.68 (unreleased)
+------------------------
+
 1.4.67 (2015-02-13)
 ------------------------
 * Bug fix: show an error message when email is duplicate, on create user page
