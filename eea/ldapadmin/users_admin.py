@@ -481,7 +481,11 @@ class UsersAdmin(SimpleItem, PropertyManager):
                                 logged_in_user(REQUEST),
                                 user_id)
 
-                return REQUEST.RESPONSE.redirect(self.absolute_url())
+                if not errors:
+                    return REQUEST.RESPONSE.redirect(self.absolute_url())
+                else:
+                    msg = u"Please correct the errors below and try again."
+                    _set_session_message(REQUEST, 'error', msg)
 
         self._set_breadcrumbs([('Create User', '#')])
         options = {

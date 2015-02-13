@@ -880,8 +880,12 @@ class CreateUser(BrowserView):
                                  logged_in_user(self.request),
                                  user_id)
 
+                    if not errors:
                         return self.request.RESPONSE.redirect(
                             self.context.absolute_url())
+                    else:
+                        msg = u"Please correct the errors below and try again."
+                        _set_session_message(self.request, 'error', msg)
 
         options = {
             'common': CommonTemplateLogic(self.context),

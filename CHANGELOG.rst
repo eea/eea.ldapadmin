@@ -1,5 +1,7 @@
-1.4.67 (unreleased)
+1.4.67 (2015-02-13)
 ------------------------
+* Bug fix: show an error message when email is duplicate, on create user page
+  [tiberich]
 
 1.4.66 (2015-01-27)
 ------------------------
