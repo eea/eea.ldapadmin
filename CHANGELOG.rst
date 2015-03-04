@@ -1,5 +1,7 @@
-1.4.68 (unreleased)
+1.4.68 (2015-03-04)
 ------------------------
+* Bug fix: send a notification email to helpdesk when an account has been created by buk import
+  [tiberich #21233]
 
 1.4.67 (2015-02-13)
 ------------------------

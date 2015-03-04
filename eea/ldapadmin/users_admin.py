@@ -343,7 +343,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return duplicate_records
 
     security.declarePrivate('_create_user')
-    def _create_user(self, agent, user_info):
+    def _create_user(self, agent, user_info, send_helpdesk_email=False):
         """
         Creates user in ldap using user_info (data already validated)
 
@@ -355,15 +355,17 @@ class UsersAdmin(SimpleItem, PropertyManager):
         agent._update_full_name(user_info)
         agent.create_user(user_id, user_info)
         agent.set_user_password(user_id, None, password)
-        if self.nfp_has_access():
-            self._send_new_user_email(user_id, user_info)
+        if self.nfp_has_access() or send_helpdesk_email:
+            self._send_new_user_email(
+                user_id, user_info,
+                source=(send_helpdesk_email and 'bulk' or 'nfp'))
         # put id and password back on user_info, for further processing
         # (mainly sending of email)
         user_info['id'] = user_id
         user_info['password'] = password
         return user_id
 
-    def _send_new_user_email(self, user_id, user_info):
+    def _send_new_user_email(self, user_id, user_info, source='nfp'):
         """ Sends announcement email to helpdesk """
 
         addr_from = "no-reply@eea.europa.eu"
@@ -381,7 +383,10 @@ class UsersAdmin(SimpleItem, PropertyManager):
             "zpt/users/new_user_email.zpt",
             **options)
 
-        message['Subject'] = "[Account created by NFP]"
+        if source == 'nfp':
+            message['Subject'] = "[Account created by NFP]"
+        else:
+            message['Subject'] = "[New user created by batch import]"
         message.set_payload(body.encode('utf-8'), charset='utf-8')
         _send_email(addr_from, addr_to, message)
 
@@ -992,7 +997,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 for user_info in users_data:
                     user_id = user_info['id']
                     try:
-                        self._create_user(agent, user_info)
+                        self._create_user(agent, user_info,
+                                          send_helpdesk_email=True)
                     except Exception:
                         errors.append("Error creating %s user" % user_id)
                     else:
