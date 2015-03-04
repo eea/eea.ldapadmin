@@ -1,3 +1,6 @@
+1.4.69 (unreleased)
+------------------------
+
 1.4.68 (2015-03-04)
 ------------------------
 * Bug fix: send a notification email to helpdesk when an account has been created by buk import
