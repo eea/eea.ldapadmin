@@ -32,6 +32,13 @@
       />
 
   <browser:page 
+      name="auto_disable_users" 
+      for=".users_admin.UsersAdmin" 
+      permission="eionet.EditUsers" 
+      class=".users_admin.AutomatedUserDisabler"
+      />
+
+  <browser:page 
       name="index.html"
       for=".roles_editor.NoExtendedManagementRoleError"
       permission="zope.Public"

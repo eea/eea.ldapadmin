@@ -10,6 +10,8 @@ from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from copy import deepcopy
 from countries import get_country_options
 from datetime import datetime
+from datetime import timedelta
+from dateutil import parser
 from deform.widget import SelectWidget
 from eea import usersdb
 from eea.ldapadmin import eionet_profile
@@ -23,11 +25,13 @@ from email.mime.text import MIMEText
 from import_export import excel_headers_to_object
 from import_export import generate_excel
 from import_export import set_response_attachment
+from naaya.ldapdump.interfaces import IDumpReader
 from persistent.mapping import PersistentMapping
 from ui_common import CommonTemplateLogic   # load_template,
 from ui_common import SessionMessages, TemplateRenderer
 from ui_common import extend_crumbs, TemplateRendererNoWrap
 from unidecode import unidecode
+from zope.component import getUtility
 from zope.component import getUtility
 from zope.component.interfaces import ComponentLookupError
 from zope.sendmail.interfaces import IMailDelivery
@@ -40,6 +44,7 @@ import logging
 import os
 import random
 import re
+import requests
 import sqlite3
 import string
 import xlrd
@@ -1153,3 +1158,131 @@ class ResetUser(BrowserView):
             'user': user,
         }
         return self.index(**options)
+
+
+class AutomatedUserDisabler(BrowserView):
+    """ A view that will automatically disable users
+    """
+
+    DISABLE_DELTA = timedelta(days=420)
+    ONE_MONTH = timedelta(days=30)
+    SERVICE_URL = "http://ldapmon.eea.europa.eu/export"
+
+    def get_login_statistics(self):
+        data = requests.get(self.SERVICE_URL).json()
+        return data
+
+    def get_ldap_users(self):
+        # mapping user -> has been notified of disabling
+        # use destinationIndicator for this
+
+        agent = self.context._get_ldap_agent(bind=True)
+
+        result = []
+        reader = getUtility(IDumpReader)
+        for dn, attrs in reader.get_dump():
+            uid = agent._user_id(dn)
+            result.append(dict(
+                username=attrs['uid'],
+                email=attrs['mail'],
+                name=attrs['cn'],
+                disabled=attrs.get('employeeType', 'enabled') in ['disabled'],
+                pending_disable=attrs.get('destinationIndicator')
+            ))
+
+        return result
+
+    def predisable_users(self, users):
+        agent = self.context._get_ldap_agent(bind=True)
+
+        for user in users:
+            logging.info("User will be disabled the next check %s",
+                         user['username'])
+            self.send_predisable_notification_email(**attrs)
+            timestamp = datetime.now().isoformat()
+            result = agent.conn.modify_s(
+                agent._user_dn(user['username']),
+                [
+                    (ldap.MOD_REPLACE, 'destinationIndicator', timestamp),
+                ]
+            )
+            assert result[:2] == (ldap.RES_MODIFY, [])
+
+    def disable_users(self, users):
+        agent = self.context._get_ldap_agent(bind=True)
+
+        for user in users:
+            agent.disable_user(user['username'])
+            self.send_disable_notification_email(user)
+
+    def __call__(self):
+        # call up the login service report
+        # make a list of all users from ldap that are not disabled
+        #       this list should have a "has been notified" value
+        # construct a list of users that should be disabled
+        #       also have a list of users that should be "predisabled"
+        # predisable users
+        # disable users
+        # send emails that they are disabled
+        # send emails to helpdesk that they have been disabled
+
+        users_stats = self.get_login_statistics()
+        all_ldap_users = self.get_ldap_users()
+
+        now = datetime.now()
+        users_to_disable = []
+        users_to_predisable = []
+
+        for user in all_ldap_users:
+            last_login = users_stats.get(user['username'])
+            if last_login:
+                last_login = parser.parse(last_login)
+                if last_login + self.DISABLE_DELTA < now:
+                    if user['pending_disable']:
+                        ts = parser.parse(user['pending_disable'])
+                        if last_login + DISABLE_DELTA + ONE_MONTH < now:
+                            users_to_disable.append(user)
+                    else:
+                        users_to_predisable.append(user)
+
+        self.predisable_users(users_to_predisable)
+        self.disable_users(users_to_disable)
+
+    def send_disable_notification_email(self, user):
+        addr_from = "no-reply@eea.europa.eu"
+        addr_to = user['email']
+
+        message = MIMEText('')
+        message['From'] = addr_from
+        message['To'] = addr_to
+
+        options = deepcopy(user_info)
+        options['user_id'] = user['username']
+
+        body = self._render_template.render(
+            "zpt/users/user_auto_disabled.zpt",
+            **options)
+
+        message['Subject'] = "[You have been automatically disabled]"
+        message.set_payload(body.encode('utf-8'), charset='utf-8')
+        _send_email(addr_from, addr_to, message)
+
+    def send_predisable_notification_email(self, **kw):
+        addr_from = "no-reply@eea.europa.eu"
+        addr_to = user['email']
+
+        message = MIMEText('')
+        message['From'] = addr_from
+        message['To'] = addr_to
+
+        options = deepcopy(user_info)
+        options['user_id'] = user['username']
+
+        body = self._render_template.render(
+            "zpt/users/user_auto_predisabled.zpt",
+            **options)
+
+        message['Subject'] = "[You will be automatically disabled]"
+        message.set_payload(body.encode('utf-8'), charset='utf-8')
+        _send_email(addr_from, addr_to, message)
+

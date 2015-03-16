@@ -872,6 +872,7 @@ class CreateUser(BrowserView):
                             self.send_confirmation_email(user_info)
                             self.send_password_reset_email(user_info)
 
+                        #self._send_new_account_email_to_nfps(user_id)
                         when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         msg = "User %s created (%s)" % (user_id, when)
                         _set_session_message(self.request, 'info', msg)
