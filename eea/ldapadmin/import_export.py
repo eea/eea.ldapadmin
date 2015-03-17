@@ -41,7 +41,8 @@ def excel_headers_to_object(properties):
         'phone': properties.get('telephone number'),
         'mobile': properties.get('mobile telephone number'),
         'fax': properties.get('fax number'),
-        'organisation': properties.get('organisation')
+        'organisation': properties.get('organisation'),
+        'destinationIndicator': properties.get('reason to create')
     }
 
 

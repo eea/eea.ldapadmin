@@ -67,10 +67,6 @@ user_info_edit_schema['postal_address'].widget = deform.widget.TextAreaWidget()
 
 CONFIG = getConfiguration()
 FORUM_URL = getattr(CONFIG, 'environment', {}).get('FORUM_URL', '')
-TEMPLATE_COLUMNS = ["User ID", "Password", "First Name*", "Last Name*",
-                    "E-mail*", "Job Title", "URL", "Postal Address",
-                    "Telephone Number", "Mobile Telephone Number",
-                    "Fax Number", "Organisation"]
 
 password_letters = '23456789ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
 
@@ -895,138 +891,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template('zpt/users/bulk_check_email.zpt',
                                      **options)
 
-    security.declareProtected(eionet_edit_users, 'bulk_create_user')
-    def bulk_create_user(self, REQUEST=None):
-        """ upload view """
-        return self._render_template('zpt/users/bulk_create.zpt')
-
-    security.declareProtected(eionet_edit_users, 'download_template')
-    def download_template(self, REQUEST):
-        """ Force download of excel template """
-
-        ret = generate_excel(TEMPLATE_COLUMNS, [[]])
-        content_type = 'application/vnd.ms-excel'
-        filename = 'create_users_template.xls'
-
-        set_response_attachment(
-            REQUEST.RESPONSE, filename, content_type, len(ret))
-
-        return ret
-
-    security.declareProtected(eionet_edit_users, 'bulk_create_user_action')
-    def bulk_create_user_action(self, data=None, REQUEST=None):
-        """ view """
-        errors = []
-        file_errors = []
-        successfully_imported = []
-
-        try:
-            wb = xlrd.open_workbook(file_contents=data.read())
-            ws = wb.sheets()[0]
-            header = ws.row_values(0)
-            assert len(header) == len(TEMPLATE_COLUMNS)
-            rows = []
-            for i in range(ws.nrows)[1:]:
-                rows.append(ws.row_values(i))
-
-            users_data = []
-            user_form = deform.Form(user_info_add_schema)
-            agent = self._get_ldap_agent(bind=True)
-
-            id_list = []
-            for record_number, row in enumerate(rows):
-                row = [x.strip() for x in row]
-                properties = {}
-                for column, value in zip(header, row):
-                    properties[column.lower()] = value
-                row_data = excel_headers_to_object(properties)
-                if not row_data['password']:
-                    row_data['password'] = generate_password()
-                if not row_data['id']:
-                    row_data['id'] = generate_user_id(row_data['first_name'],
-                                                      row_data['last_name'],
-                                                      agent, id_list)
-                id_list.append(row_data['id'])
-                row_data['url'] = process_url(row_data['url'])
-                try:
-                    user_info = user_form.validate(row_data.items())
-                    user_info['password'] = row_data['password']
-                except deform.ValidationFailure, e:
-                    for field_error in e.error.children:
-                        errors.append('%s at row %d: %s' %
-                                      (field_error.node.name, record_number+1,
-                                       field_error.msg))
-                else:
-                    users_data.append(user_info)
-
-        except xlrd.XLRDError:
-            file_errors.append('Invalid Excel file')
-
-        # cycled every object and stored them in users_data
-        if not file_errors:
-            emails = [x['email'] for x in users_data]
-            usernames = [x['id'] for x in users_data]
-            if len(emails) != len(set(emails)):
-                for email in set(emails):
-                    occourences = emails.count(email)
-                    if occourences > 1:
-                        errors.append('Duplicate email: %s appears %d times'
-                                      % (email, occourences))
-                        users_data = filter(lambda x: x['email'] != email,
-                                            users_data)
-            if len(usernames) != len(set(usernames)):
-                for username in set(usernames):
-                    occourences = usernames.count(username)
-                    if occourences > 1:
-                        errors.append('Duplicate user ID: %s appears %d times'
-                                      % (username, occourences))
-                        users_data = filter(lambda x: x['id'] != username,
-                                            users_data)
-            existing_emails = set(agent.existing_emails(list(set(emails))))
-            existing_users = set(agent.existing_usernames(
-                list(set(usernames))))
-            if existing_emails:
-                errors.append("The following emails are already in database"
-                              + ": " + ', '.join(existing_emails))
-                for email in existing_emails:
-                    users_data = filter(lambda x: x['email'] != email,
-                                        users_data)
-            if existing_users:
-                errors.append("The following user IDs are already registered"
-                              + ": " + ', '.join(existing_users))
-                for username in existing_users:
-                    users_data = filter(lambda x: x['id'] != username,
-                                        users_data)
-            if users_data:
-                # do the job for the users with no errors
-                for user_info in users_data:
-                    user_id = user_info['id']
-                    try:
-                        self._create_user(agent, user_info,
-                                          send_helpdesk_email=True)
-                    except Exception:
-                        errors.append("Error creating %s user" % user_id)
-                    else:
-                        self.send_confirmation_email(user_info)
-                        self.send_password_reset_email(user_info)
-                        successfully_imported.append(user_id)
-
-        errors.extend(file_errors)
-        if errors:
-            for err in errors:
-                _set_session_message(REQUEST, 'error', err)
-        if successfully_imported:
-            _set_session_message(REQUEST, 'info',
-                                 'User(s) %s successfully created.' %
-                                 ', '.join(successfully_imported))
-            logged_in = logged_in_user(REQUEST)
-            for user_id in successfully_imported:
-                log.info("%s CREATED USER %s", logged_in, user_id)
-        else:
-            _set_session_message(REQUEST, 'error', 'No user account created')
-        self._set_breadcrumbs([("Create Accounts from File", '#')])
-        return self._render_template('zpt/users/bulk_create.zpt')
-
     security.declareProtected(eionet_edit_users, 'eionet_profile')
     def eionet_profile(self, REQUEST):
         """ Renders eionet full profile page """
@@ -1129,6 +993,168 @@ def _send_email(addr_from, addr_to, message):
     except ComponentLookupError:
         mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
         mailer.send(addr_from, [addr_to], message)
+
+
+class BulkUserImporter(BrowserView):
+    """ A view to bulk import users from an xls file
+    """
+    buttons = ('download_template', 'bulk_create')
+    TEMPLATE_COLUMNS = ["User ID", "Password", "First Name*", "Last Name*",
+                        "E-mail*", "Job Title", "URL", "Postal Address",
+                        "Telephone Number", "Mobile Telephone Number",
+                        "Fax Number", "Organisation", "Reason to create"]
+
+    def __call__(self):
+        """ upload view """
+        if not self.request.form:
+            return self.index()
+        else:
+            for name in self.buttons:
+                if name in self.request.form:
+                    return getattr(self, name)()
+
+    def index(self):
+        return self.context._render_template('zpt/users/bulk_create.zpt')
+
+    def download_template(self):
+        """ Force download of excel template """
+
+        ret = generate_excel(self.TEMPLATE_COLUMNS, [[]])
+        content_type = 'application/vnd.ms-excel'
+        filename = 'create_users_template.xls'
+
+        set_response_attachment(
+            self.request.RESPONSE, filename, content_type, len(ret))
+
+        return ret
+
+    def read_xls(self, data):
+        wb = xlrd.open_workbook(file_contents=data.read())
+        ws = wb.sheets()[0]
+        header = ws.row_values(0)
+        assert len(header) == len(self.TEMPLATE_COLUMNS)
+        rows = []
+        for i in range(ws.nrows)[1:]:
+            rows.append(ws.row_values(i))
+
+        result = []
+        for record_number, row in enumerate(rows):
+            row = [x.strip() for x in row]
+            properties = {}
+            for column, value in zip(header, row):
+                properties[column.lower()] = value
+
+            row_data = self.excel_headers_to_object(properties)
+            if not row_data['password']:
+                row_data['password'] = generate_password()
+            if not row_data['id']:
+                row_data['id'] = generate_user_id(row_data['first_name'],
+                                                    row_data['last_name'],
+                                                    agent, id_list)
+            id_list.append(row_data['id'])
+            row_data['url'] = process_url(row_data['url'])
+            result.append(row_data)
+
+        return result
+
+    def bulk_create(self):
+        """ view """
+        data = self.request.form.get('data').read()
+
+        try:
+            rows = self.read_xls(data)
+        except xlrd.XLRDError:
+            _set_session_message(REQUEST, 'error', 'Invalid Excel file')
+            return self.index()
+
+        agent = self._get_ldap_agent(bind=True)
+
+        users_data = []
+        errors = []
+        successfully_imported = []
+
+        user_form = deform.Form(user_info_add_schema)
+
+        id_list = []
+        for record_number, row_data in enumerate(rows):
+            try:
+                user_info = user_form.validate(row_data.items())
+                user_info['password'] = row_data['password']
+            except deform.ValidationFailure, e:
+                for field_error in e.error.children:
+                    errors.append('%s at row %d: %s' %
+                                    (field_error.node.name, record_number+1,
+                                    field_error.msg))
+            else:
+                users_data.append(user_info)
+
+        emails = [x['email'] for x in users_data]
+        usernames = [x['id'] for x in users_data]
+
+        if len(emails) != len(set(emails)):
+            for email in set(emails):
+                count = emails.count(email)
+                if count > 1:
+                    errors.append('Duplicate email: %s appears %d times'
+                                    % (email, count))
+                    users_data = filter(lambda x: x['email'] != email,
+                                        users_data)
+
+        if len(usernames) != len(set(usernames)):
+            for username in set(usernames):
+                count = usernames.count(username)
+                if count > 1:
+                    errors.append('Duplicate user ID: %s appears %d times'
+                                    % (username, count))
+                    users_data = filter(lambda x: x['id'] != username,
+                                        users_data)
+
+        existing_emails = set(agent.existing_emails(list(set(emails))))
+        existing_users = set(agent.existing_usernames(
+            list(set(usernames))))
+        if existing_emails:
+            errors.append("The following emails are already in database"
+                            + ": " + ', '.join(existing_emails))
+            for email in existing_emails:
+                users_data = filter(lambda x: x['email'] != email,
+                                    users_data)
+        if existing_users:
+            errors.append("The following user IDs are already registered"
+                            + ": " + ', '.join(existing_users))
+            for username in existing_users:
+                users_data = filter(lambda x: x['id'] != username,
+                                    users_data)
+        if users_data:
+            # do the job for the users with no errors
+            for user_info in users_data:
+                user_id = user_info['id']
+                try:
+                    self._create_user(agent, user_info,
+                                        send_helpdesk_email=True)
+                except Exception:
+                    errors.append("Error creating %s user" % user_id)
+                else:
+                    self.send_confirmation_email(user_info)
+                    self.send_password_reset_email(user_info)
+                    successfully_imported.append(user_id)
+
+        errors.extend(file_errors)
+        if errors:
+            for err in errors:
+                _set_session_message(REQUEST, 'error', err)
+
+        if successfully_imported:
+            _set_session_message(REQUEST, 'info',
+                                 'User(s) %s successfully created.' %
+                                 ', '.join(successfully_imported))
+            logged_in = logged_in_user(REQUEST)
+            for user_id in successfully_imported:
+                log.info("%s CREATED USER %s", logged_in, user_id)
+        else:
+            _set_session_message(REQUEST, 'error', 'No user account created')
+
+        self._set_breadcrumbs([("Create Accounts from File", '#')])
+        return self._render_template('zpt/users/bulk_create.zpt')
 
 
 class ResetUser(BrowserView):

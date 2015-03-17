@@ -39,6 +39,13 @@
       />
 
   <browser:page 
+      name="bulk_create_user"
+      for=".users_admin.UsersAdmin"
+      permission="eionet.EditUsers"
+      class=".users_admin.BulkUserImporter"
+      />
+
+  <browser:page 
       name="index.html"
       for=".roles_editor.NoExtendedManagementRoleError"
       permission="zope.Public"
