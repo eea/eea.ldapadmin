@@ -1167,27 +1167,27 @@ class AutomatedUserDisabler(BrowserView):
     DISABLE_DELTA = timedelta(days=420)
     ONE_MONTH = timedelta(days=30)
     SERVICE_URL = "http://ldapmon.eea.europa.eu/export"
+    LDAP_PREDISABLE_FIELDNAME = "employeeNumber"
 
     def get_login_statistics(self):
         data = requests.get(self.SERVICE_URL).json()
         return data
 
     def get_ldap_users(self):
-        # mapping user -> has been notified of disabling
-        # use destinationIndicator for this
-
         agent = self.context._get_ldap_agent(bind=True)
 
         result = []
         reader = getUtility(IDumpReader)
         for dn, attrs in reader.get_dump():
-            uid = agent._user_id(dn)
+            if not dn.startswith('uid='):
+                continue
             result.append(dict(
-                username=attrs['uid'],
-                email=attrs['mail'],
-                name=attrs['cn'],
                 disabled=attrs.get('employeeType', 'enabled') in ['disabled'],
-                pending_disable=attrs.get('destinationIndicator')
+                dn=dn,
+                email=attrs['mail'],
+                full_name=attrs['cn'],
+                pending_disable=attrs.get(self.LDAP_PREDISABLE_FIELDNAME),
+                username=attrs['uid'],
             ))
 
         return result
@@ -1196,16 +1196,18 @@ class AutomatedUserDisabler(BrowserView):
         agent = self.context._get_ldap_agent(bind=True)
 
         for user in users:
-            logging.info("User will be disabled the next check %s",
+            log.info("User will be disabled the next check %s",
                          user['username'])
-            self.send_predisable_notification_email(**attrs)
+            self.send_predisable_notification_email(user)
             timestamp = datetime.now().isoformat()
-            result = agent.conn.modify_s(
-                agent._user_dn(user['username']),
-                [
-                    (ldap.MOD_REPLACE, 'destinationIndicator', timestamp),
-                ]
-            )
+            try:
+                result = agent.conn.modify_s(
+                    agent._user_dn(user['username']),
+                    [(ldap.MOD_REPLACE, self.LDAP_PREDISABLE_FIELDNAME, timestamp),]
+                )
+            except ldap.NO_SUCH_OBJECT:
+                log.info("Could not predisable user: %s", user['dn'])
+                continue
             assert result[:2] == (ldap.RES_MODIFY, [])
 
     def disable_users(self, users):
@@ -1234,9 +1236,12 @@ class AutomatedUserDisabler(BrowserView):
         users_to_predisable = []
 
         for user in all_ldap_users:
+            if user['disabled']:
+                continue
             last_login = users_stats.get(user['username'])
             if last_login:
                 last_login = parser.parse(last_login)
+                user['last_login'] = last_login
                 if last_login + self.DISABLE_DELTA < now:
                     if user['pending_disable']:
                         ts = parser.parse(user['pending_disable'])
@@ -1256,18 +1261,18 @@ class AutomatedUserDisabler(BrowserView):
         message['From'] = addr_from
         message['To'] = addr_to
 
-        options = deepcopy(user_info)
-        options['user_id'] = user['username']
+        options = deepcopy(user)
+        options['site_title'] = self.context.unrestrictedTraverse('/').title
 
-        body = self._render_template.render(
-            "zpt/users/user_auto_disabled.zpt",
+        body = self.context._render_template.render(
+            "zpt/users/email_auto_disabled.zpt",
             **options)
 
         message['Subject'] = "[You have been automatically disabled]"
         message.set_payload(body.encode('utf-8'), charset='utf-8')
         _send_email(addr_from, addr_to, message)
 
-    def send_predisable_notification_email(self, **kw):
+    def send_predisable_notification_email(self, user):
         addr_from = "no-reply@eea.europa.eu"
         addr_to = user['email']
 
@@ -1275,14 +1280,13 @@ class AutomatedUserDisabler(BrowserView):
         message['From'] = addr_from
         message['To'] = addr_to
 
-        options = deepcopy(user_info)
-        options['user_id'] = user['username']
+        options = deepcopy(user)
+        options['site_title'] = self.context.unrestrictedTraverse('/').title
 
-        body = self._render_template.render(
-            "zpt/users/user_auto_predisabled.zpt",
+        body = self.context._render_template.render(
+            "zpt/users/email_auto_predisabled.zpt",
             **options)
 
         message['Subject'] = "[You will be automatically disabled]"
         message.set_payload(body.encode('utf-8'), charset='utf-8')
         _send_email(addr_from, addr_to, message)
-
