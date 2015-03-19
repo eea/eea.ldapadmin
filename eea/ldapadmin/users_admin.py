@@ -1014,6 +1014,7 @@ class BulkUserImporter(BrowserView):
                     return getattr(self, name)()
 
     def index(self):
+        self.context._set_breadcrumbs([("Create Accounts from File", '#')])
         return self.context._render_template('zpt/users/bulk_create.zpt')
 
     def download_template(self):
@@ -1029,28 +1030,31 @@ class BulkUserImporter(BrowserView):
         return ret
 
     def read_xls(self, data):
-        wb = xlrd.open_workbook(file_contents=data.read())
+        agent = self.context._get_ldap_agent(bind=True)
+        wb = xlrd.open_workbook(file_contents=data)
         ws = wb.sheets()[0]
         header = ws.row_values(0)
-        assert len(header) == len(self.TEMPLATE_COLUMNS)
+        if not (len(header) == len(self.TEMPLATE_COLUMNS)):
+            raise ValueError("wrong number of columns")
         rows = []
         for i in range(ws.nrows)[1:]:
             rows.append(ws.row_values(i))
 
         result = []
+        id_list = []
         for record_number, row in enumerate(rows):
             row = [x.strip() for x in row]
             properties = {}
             for column, value in zip(header, row):
                 properties[column.lower()] = value
 
-            row_data = self.excel_headers_to_object(properties)
+            row_data = excel_headers_to_object(properties)
             if not row_data['password']:
                 row_data['password'] = generate_password()
             if not row_data['id']:
                 row_data['id'] = generate_user_id(row_data['first_name'],
-                                                    row_data['last_name'],
-                                                    agent, id_list)
+                                                  row_data['last_name'],
+                                                  agent, id_list)
             id_list.append(row_data['id'])
             row_data['url'] = process_url(row_data['url'])
             result.append(row_data)
@@ -1063,11 +1067,13 @@ class BulkUserImporter(BrowserView):
 
         try:
             rows = self.read_xls(data)
-        except xlrd.XLRDError:
-            _set_session_message(REQUEST, 'error', 'Invalid Excel file')
+        except Exception, e:
+            _set_session_message(self.request, 'error',
+                                 'Invalid Excel file: %s' % e)
+            raise
             return self.index()
 
-        agent = self._get_ldap_agent(bind=True)
+        agent = self.context._get_ldap_agent(bind=True)
 
         users_data = []
         errors = []
@@ -1075,7 +1081,6 @@ class BulkUserImporter(BrowserView):
 
         user_form = deform.Form(user_info_add_schema)
 
-        id_list = []
         for record_number, row_data in enumerate(rows):
             try:
                 user_info = user_form.validate(row_data.items())
@@ -1112,25 +1117,28 @@ class BulkUserImporter(BrowserView):
         existing_emails = set(agent.existing_emails(list(set(emails))))
         existing_users = set(agent.existing_usernames(
             list(set(usernames))))
+
         if existing_emails:
-            errors.append("The following emails are already in database"
-                            + ": " + ', '.join(existing_emails))
             for email in existing_emails:
-                users_data = filter(lambda x: x['email'] != email,
-                                    users_data)
+                errors.append("The following email is already in database: %s" %
+                              email)
+            for email in existing_emails:
+                users_data = filter(lambda x: x['email'] != email, users_data)
+
         if existing_users:
-            errors.append("The following user IDs are already registered"
-                            + ": " + ', '.join(existing_users))
+            for user_id in existing_users:
+                errors.append("The following user ID is already registered: %s"
+                              % user_id)
             for username in existing_users:
-                users_data = filter(lambda x: x['id'] != username,
-                                    users_data)
+                users_data = filter(lambda x: x['id'] != username, users_data)
+
         if users_data:
             # do the job for the users with no errors
             for user_info in users_data:
                 user_id = user_info['id']
                 try:
-                    self._create_user(agent, user_info,
-                                        send_helpdesk_email=True)
+                    self.context._create_user(agent, user_info,
+                                              send_helpdesk_email=True)
                 except Exception:
                     errors.append("Error creating %s user" % user_id)
                 else:
@@ -1138,23 +1146,21 @@ class BulkUserImporter(BrowserView):
                     self.send_password_reset_email(user_info)
                     successfully_imported.append(user_id)
 
-        errors.extend(file_errors)
         if errors:
             for err in errors:
-                _set_session_message(REQUEST, 'error', err)
+                _set_session_message(self.request, 'error', err)
 
         if successfully_imported:
-            _set_session_message(REQUEST, 'info',
+            _set_session_message(self.request, 'info',
                                  'User(s) %s successfully created.' %
                                  ', '.join(successfully_imported))
-            logged_in = logged_in_user(REQUEST)
+            logged_in = logged_in_user(self.request)
             for user_id in successfully_imported:
                 log.info("%s CREATED USER %s", logged_in, user_id)
         else:
-            _set_session_message(REQUEST, 'error', 'No user account created')
+            _set_session_message(self.request, 'error', 'No user account created')
 
-        self._set_breadcrumbs([("Create Accounts from File", '#')])
-        return self._render_template('zpt/users/bulk_create.zpt')
+        return self.context._render_template('zpt/users/bulk_create.zpt')
 
 
 class ResetUser(BrowserView):
