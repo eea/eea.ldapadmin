@@ -1,5 +1,8 @@
 1.4.69 (unreleased)
 ------------------------
+* Refactor: refactored the bulk user create form. Better readability and debugging. Improved
+  error reporting
+  [tiberich #23187]
 
 1.4.68 (2015-03-04)
 ------------------------
