@@ -1,3 +1,6 @@
+1.4.70 (unreleased)
+------------------------
+
 1.4.69 (2015-03-23)
 ------------------------
 * Refactor: refactored the bulk user create form. Better readability and debugging. Improved
