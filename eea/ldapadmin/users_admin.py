@@ -32,7 +32,6 @@ from ui_common import SessionMessages, TemplateRenderer
 from ui_common import extend_crumbs, TemplateRendererNoWrap
 from unidecode import unidecode
 from zope.component import getUtility
-from zope.component import getUtility
 from zope.component.interfaces import ComponentLookupError
 from zope.sendmail.interfaces import IMailDelivery
 import colander
@@ -76,6 +75,8 @@ def generate_password():
 
 
 def generate_user_id(first_name, last_name, agent, id_list):
+    first_name = unidecode(first_name)
+    last_name = unidecode(last_name)
     min_first_length = min(first_name, 3)
     uid1 = last_name[:8-min_first_length]
     uid2 = first_name[:8-len(uid1)]
@@ -1064,13 +1065,13 @@ class BulkUserImporter(BrowserView):
     def bulk_create(self):
         """ view """
         data = self.request.form.get('data').read()
+        msgr = lambda level, msg: _set_session_message(self.request, level, msg)
 
         try:
             rows = self.read_xls(data)
         except Exception, e:
-            _set_session_message(self.request, 'error',
-                                 'Invalid Excel file: %s' % e)
-            raise
+            msgr('error', 'Invalid Excel file: %s' % e)
+            log.exception("Exception while parsing bulk import users file")
             return self.index()
 
         agent = self.context._get_ldap_agent(bind=True)
@@ -1132,34 +1133,45 @@ class BulkUserImporter(BrowserView):
             for username in existing_users:
                 users_data = filter(lambda x: x['id'] != username, users_data)
 
-        if users_data:
-            # do the job for the users with no errors
-            for user_info in users_data:
-                user_id = user_info['id']
+        for user_info in users_data:
+            user_id = user_info['id']
+            try:
+                self.context._create_user(agent, user_info,
+                                            send_helpdesk_email=True)
+            except Exception:
+                errors.append("Error creating %s user" % user_id)
+            else:
                 try:
-                    self.context._create_user(agent, user_info,
-                                              send_helpdesk_email=True)
-                except Exception:
-                    errors.append("Error creating %s user" % user_id)
-                else:
-                    self.send_confirmation_email(user_info)
-                    self.send_password_reset_email(user_info)
-                    successfully_imported.append(user_id)
+                    self.context.send_confirmation_email(user_info)
+                except Exception, e:
+                    msgr('error', "Error sending confirmation email to %s"
+                         % user_info['email'])
+                try:
+                    self.context.send_password_reset_email(user_info)
+                except Exception, e:
+                    msgr('error', "Error: %s sending password reset email to %s"
+                         % (e, user_info['email']))
+
+                msg = u"%s %s (%s)" % \
+                    (user_info['first_name'], user_info['last_name'], user_id)
+                successfully_imported.append(msg)
 
         if errors:
             for err in errors:
-                _set_session_message(self.request, 'error', err)
+                msgr('error', err)
 
         if successfully_imported:
-            _set_session_message(self.request, 'info',
-                                 'User(s) %s successfully created.' %
-                                 ', '.join(successfully_imported))
+            msgr('info',
+                 'User(s) %s successfully created.' %
+                 ', '.join(successfully_imported))
             logged_in = logged_in_user(self.request)
             for user_id in successfully_imported:
                 log.info("%s CREATED USER %s", logged_in, user_id)
         else:
             _set_session_message(self.request, 'error', 'No user account created')
 
+        if 'Location' in self.request.response.headers: #pw request redirect
+            del self.request.response.headers['Location']
         return self.context._render_template('zpt/users/bulk_create.zpt')
 
 
@@ -1206,7 +1218,7 @@ class AutomatedUserDisabler(BrowserView):
         return data
 
     def get_ldap_users(self):
-        agent = self.context._get_ldap_agent(bind=True)
+        #agent = self.context._get_ldap_agent(bind=True)
 
         result = []
         reader = getUtility(IDumpReader)
