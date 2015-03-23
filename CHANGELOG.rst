@@ -1,5 +1,7 @@
-1.4.70 (unreleased)
+1.4.70 (2015-03-23)
 ------------------------
+* Bug fix: added python-dateutil as dependency for autodisable users view
+  [tiberich #20559]
 
 1.4.69 (2015-03-23)
 ------------------------
