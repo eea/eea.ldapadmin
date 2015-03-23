@@ -1,8 +1,10 @@
-1.4.69 (unreleased)
+1.4.69 (2015-03-23)
 ------------------------
 * Refactor: refactored the bulk user create form. Better readability and debugging. Improved
   error reporting
   [tiberich #23187]
+* Feature WIP: added a view page to automatically disable inactive users
+  [tiberich #20559]
 
 1.4.68 (2015-03-04)
 ------------------------
