@@ -1,3 +1,6 @@
+1.4.72 (unreleased)
+------------------------
+
 1.4.71 (2015-03-24)
 ------------------------
 * Bug fix: better handling of errors in bulk import users; also report created users
