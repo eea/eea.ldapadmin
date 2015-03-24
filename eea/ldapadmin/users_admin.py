@@ -190,6 +190,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
     icon = '++resource++eea.ldapadmin-www/eionet_users_admin.gif'
     similarity_level = 0.939999
     session_messages = SESSION_MESSAGES
+    title = "LDAP Users Administration"
 
     manage_options = (
         {'label': 'Configure', 'action': 'manage_edit'},
@@ -266,10 +267,16 @@ class UsersAdmin(SimpleItem, PropertyManager):
         })
 
         if search_name:
-            agent = self._get_ldap_agent()
+            agent = self._get_ldap_agent(bind=True)
             results = sorted(agent.search_user(search_name, lookup),
                              key=lambda x: x['full_name'])
             options['search_results'] = results
+
+        for row in options.get('search_results', []):
+            if row.get('status') in ['disabled'] or \
+                    'disabled@' in row.get('email', ''):
+                row['email'] = "disabled - %s" % \
+                    agent.get_email_for_disabled_user_dn(row['dn'])
         return self._render_template('zpt/users_index.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'get_statistics')
@@ -531,7 +538,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         """
         user_id = REQUEST.form['id']
-        agent = self._get_ldap_agent()
+        agent = self._get_ldap_agent(bind=True)
         errors = _session_pop(REQUEST, SESSION_FORM_ERRORS, {})
         user = agent.user_info(user_id)
         if not (self.checkPermissionEditUsers() or
@@ -565,6 +572,10 @@ class UsersAdmin(SimpleItem, PropertyManager):
             choices.append((org['id'], label))
         widget = SelectWidget(values=choices)
         schema['organisation'].widget = widget
+        if 'disabled@' in form_data.get('email', ''):
+            user_dn = agent._user_dn(user_id)
+            form_data['email'] = "disabled - %s" % \
+                agent.get_email_for_disabled_user_dn(user_dn)
 
         options = {'user': user,
                    'form_data': form_data,
@@ -613,7 +624,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
             when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             _set_session_message(
-                REQUEST, 'message', "Profile saved (%s)" % when)
+                REQUEST, 'info', "Profile saved (%s)" % when)
 
             log.info("%s EDITED USER %s as member of %s",
                      logged_in_user(REQUEST), user_id, new_org_id)
@@ -702,8 +713,9 @@ class UsersAdmin(SimpleItem, PropertyManager):
         with agent.new_action():
             agent.disable_user(id)
 
+        when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         _set_session_message(
-            REQUEST, 'info', 'User "%s" has been disabled.' % id)
+            REQUEST, 'info', 'User "%s" has been disabled. (%s)' % (id, when))
         log.info("%s DISABLED USER %s", logged_in_user(REQUEST), id)
         return REQUEST.RESPONSE.redirect(self.absolute_url() + '/')
 
@@ -752,8 +764,9 @@ class UsersAdmin(SimpleItem, PropertyManager):
             except AssertionError:
                 mailer.send(addr_from, [addr_to], message)
 
+        when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         _set_session_message(REQUEST, 'info',
-                             'Account enabled for "%s".' % id)
+                             'Account enabled for "%s (%s)".' % (id, when))
 
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/')
 
