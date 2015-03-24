@@ -1089,8 +1089,8 @@ class BulkUserImporter(BrowserView):
             except deform.ValidationFailure, e:
                 for field_error in e.error.children:
                     errors.append('%s at row %d: %s' %
-                                    (field_error.node.name, record_number+1,
-                                    field_error.msg))
+                                  (field_error.node.name, record_number+1,
+                                   field_error.msg))
             else:
                 users_data.append(user_info)
 
@@ -1168,10 +1168,11 @@ class BulkUserImporter(BrowserView):
             for user_id in successfully_imported:
                 log.info("%s CREATED USER %s", logged_in, user_id)
         else:
-            _set_session_message(self.request, 'error', 'No user account created')
+            msgr('error', 'No user account created')
 
-        if 'Location' in self.request.response.headers: #pw request redirect
-            del self.request.response.headers['Location']
+        if 'location' in self.request.response.headers: #pw-reset request redirect
+            del self.request.response.headers['location']
+            self.request.response.headers['status'] = '200 OK'
         return self.context._render_template('zpt/users/bulk_create.zpt')
 
 
