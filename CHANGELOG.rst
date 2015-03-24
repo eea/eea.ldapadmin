@@ -1,5 +1,11 @@
-1.4.72 (unreleased)
+1.4.72 (2015-03-24)
 ------------------------
+* Bug fix: fix info message display for edit user form
+  [tiberich #23187]
+* Change: show a timestamp in info message when disabling/enabling user
+  [tiberich #23187]
+* Feature: show the original email for a disabled user in edit user page and user search
+  [tiberich #23187]
 
 1.4.71 (2015-03-24)
 ------------------------
