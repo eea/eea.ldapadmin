@@ -1,3 +1,6 @@
+1.4.73 (unreleased)
+------------------------
+
 1.4.72 (2015-03-24)
 ------------------------
 * Bug fix: fix info message display for edit user form
