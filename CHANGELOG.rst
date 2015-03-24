@@ -1,5 +1,7 @@
-1.4.71 (unreleased)
+1.4.71 (2015-03-24)
 ------------------------
+* Bug fix: better handling of errors in bulk import users; also report created users
+  [tiberich #23187]
 
 1.4.70 (2015-03-23)
 ------------------------
