@@ -86,7 +86,7 @@
         </div>
 
         <div class="item_list" tal:condition="options/duplicates">
-            <p>These are <strong>duplicate addresses</strong>.</p>
+            <p>These are <strong>duplicate addresses</strong>, they have been entered multiple times.</p>
             <textarea id="id_taken" class="error"  name="taken"
                 tal:content="python:' '.join(options['duplicates'])"></textarea>
         </div>
