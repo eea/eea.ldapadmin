@@ -1,5 +1,11 @@
 1.4.73 (unreleased)
 ------------------------
+* Bug fix: use bind=True for get_ldap_agent; This way the LDAP queries will be sent
+  with credentials, and it will get full results for users, instead of restricted results
+  [tiberich #24362]
+* Bug fix: improve bulk email check form: show emails that are duplicated; convert emails to
+  lower case, to detect duplicates
+  [tiberich #23187]
 
 1.4.72 (2015-03-24)
 ------------------------
