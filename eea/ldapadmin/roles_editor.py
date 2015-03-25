@@ -298,7 +298,7 @@ class RolesEditor(Folder):
         self._config.update(ldap_config.read_form(REQUEST.form, edit=True))
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/manage_edit')
 
-    def _get_ldap_agent(self, bind=False):
+    def _get_ldap_agent(self, bind=True):
         agent = ldap_config.ldap_agent_with_config(self._config, bind)
         agent._author = logged_in_user(self.REQUEST)
         return agent

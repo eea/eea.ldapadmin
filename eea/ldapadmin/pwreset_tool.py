@@ -113,7 +113,7 @@ class PasswordResetTool(SimpleItem):
         self._config.update(new_config)
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/manage_edit')
 
-    def _get_ldap_agent(self, bind=False):
+    def _get_ldap_agent(self, bind=True):
         return ldap_config.ldap_agent_with_config(self._config, bind)
 
     def _predefined_filters(self):

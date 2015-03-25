@@ -318,7 +318,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         self._config.update(ldap_config.read_form(REQUEST.form, edit=True))
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/manage_edit')
 
-    def _get_ldap_agent(self, bind=False, secondary=False):
+    def _get_ldap_agent(self, bind=True, secondary=False):
         agent = ldap_config.ldap_agent_with_config(self._config, bind)
         try:
             agent._author = logged_in_user(self.REQUEST)

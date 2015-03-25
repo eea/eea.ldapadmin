@@ -221,7 +221,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         stack.insert(0, (id, self.absolute_url() + "/edit_user?id=" + id))
         return stack
 
-    def _get_ldap_agent(self, bind=False):
+    def _get_ldap_agent(self, bind=True):
         agent = ldap_config.ldap_agent_with_config(self._config, bind)
         agent._author = logged_in_user(self.REQUEST)
         return agent
