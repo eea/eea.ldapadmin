@@ -1,4 +1,7 @@
-1.4.73 (unreleased)
+1.4.74 (unreleased)
+------------------------
+
+1.4.73 (2015-03-30)
 ------------------------
 * Bug fix: use bind=True for get_ldap_agent; This way the LDAP queries will be sent
   with credentials, and it will get full results for users, instead of restricted results
