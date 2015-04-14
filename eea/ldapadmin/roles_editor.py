@@ -485,7 +485,7 @@ class RolesEditor(Folder):
                                    "attachment; filename=\"%s\"" % filename)
         return codecs.BOM_UTF8 + output_file.getvalue()
 
-    security.declareProtected(view_management_screens, 'import_xls')
+    security.declareProtected(eionet_edit_roles, 'import_xls')
 
     def import_xls(self, REQUEST):
         """ Import an excel file """
