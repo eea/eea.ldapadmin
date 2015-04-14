@@ -2,10 +2,10 @@
 
 <tal:block content="structure common/message_boxes"/>
 
-<p tal:condition="not:common/is_manager" >If you have lost the password to your <span tal:replace="common/network_name" />
+<p tal:condition="not:common/can_edit_users" >If you have lost the password to your <span tal:replace="common/network_name" />
 account, you can reset it here. Simply enter your e-mail address below and click "Reset password". You will receive an e-mail message with a private link.</p>
 
-<p tal:condition="common/is_manager" >To reset the password to the <span tal:replace="common/network_name" />
+<p tal:condition="common/can_edit_users" >To reset the password to the <span tal:replace="common/network_name" />
 account of a user, enter the email address registered with that account and click "Reset password". An email with a link to reset the password will be sent to the user.</p>
 
 <form name="identify" method="post"

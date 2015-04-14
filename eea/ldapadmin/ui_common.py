@@ -1,6 +1,7 @@
 from Acquisition import Implicit
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
-from Products.PageTemplates.PageTemplateFile import PageTemplateFile as Z2Template
+from Products.PageTemplates.PageTemplateFile import PageTemplateFile as \
+    Z2Template
 from constants import NETWORK_NAME
 from eea.ldapadmin import roles_leaders
 from logic_common import _get_user_id, _is_authenticated
@@ -219,7 +220,7 @@ class CommonTemplateLogic(object):
         return NETWORK_NAME == 'Eionet'
 
     @property
-    def is_manager(self):
+    def can_edit_users(self):
         return ('Manager' in
                 self.context.REQUEST.AUTHENTICATED_USER.getRoles())
 
@@ -241,7 +242,7 @@ class NaayaViewPageTemplateFile(ViewPageTemplateFile):
         renderer = TemplateRenderer()
         try:
             renderer = renderer.__of__(__instance.context)
-        except TypeError:   #this happens in case instance is a browser view
+        except TypeError:  # this happens in case instance is a browser view
             renderer = renderer.__of__(__instance.aq_chain[1])
         result = renderer.wrap(s)
         return result
