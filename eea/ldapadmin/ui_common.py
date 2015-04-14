@@ -221,8 +221,7 @@ class CommonTemplateLogic(object):
 
     @property
     def can_edit_users(self):
-        return ('Manager' in
-                self.context.REQUEST.AUTHENTICATED_USER.getRoles())
+        return self.context.can_edit_users()
 
 
 def network_name(self):

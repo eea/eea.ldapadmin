@@ -241,7 +241,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/manage_edit')
 
     security.declareProtected(view, 'can_edit_users')
-    def can_edit_users(self, user):
+    def can_edit_users(self):
+        user = self.REQUEST.AUTHENTICATED_USER
         return bool(user.has_permission(eionet_edit_users, self))
 
     security.declarePublic('checkPermissionEditUsers')
@@ -255,7 +256,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         if not self.checkPermissionEditUsers() and not self.nfp_has_access():
             raise Unauthorized
         options = {
-            'can_edit': self.can_edit_users(REQUEST.AUTHENTICATED_USER),
+            'can_edit': self.can_edit_users(),
             'search_fields': usersdb.db_agent.ACCEPTED_SEARCH_FIELDS,
         }
 
