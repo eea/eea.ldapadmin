@@ -363,12 +363,11 @@ class RolesEditor(Folder):
         # locations is a dict like:
         # {
         # 'eionet-nrc': [[('Viewer',
-        #           {'is_site': True,
-        #            'ob': <GroupwareSite at /nfp-eionet>,
-        #            'path': ''})],
-        #         [('Contributor',
-        #           {'is_site': True,
-        #            'ob': <GroupwareSite at /eea-west-balkans-cooperation-interest-group>,
+        #  {'is_site': True,
+        #   'ob': <GroupwareSite at /nfp-eionet>, 'path': ''})],
+        #  [('Contributor',
+        #   {'is_site': True,
+        #    'ob': <GroupwareSite at /eea-west-balkans-cooperation>,
         #            'path': ''})],
         # }
 
@@ -415,12 +414,14 @@ class RolesEditor(Folder):
         agent = self._get_ldap_agent()
         roles = []
         for role_cn, role_info in agent.all_roles():
-            if not any(role_info['owner'] + role_info['permittedPerson'] + role_info['permittedSender']):
+            if not any(role_info['owner'] + role_info['permittedPerson'] +
+                       role_info['permittedSender']):
                 roles.append((role_cn, role_info))
         options = {
             'problematic_roles': roles
         }
-        return self._render_template("zpt/table_problematic_roles.zpt", **options)
+        return self._render_template("zpt/table_problematic_roles.zpt",
+                                     **options)
 
     def _filter_results(self, pattern, title=None):
         search_url = self.absolute_url() + '/filter'
@@ -579,7 +580,8 @@ class RolesEditor(Folder):
                 roles[role_destination] = role_source
             problems['prefill'] = self._prefill_roles(roles)
 
-        return self._render_template('zpt/roles_import_xls.zpt', **{'problems': problems})
+        return self._render_template('zpt/roles_import_xls.zpt',
+                                     **{'problems': problems})
 
     def _merge_roles(self, roles):
         agent = self._get_ldap_agent(bind=True)
@@ -811,7 +813,8 @@ class RolesEditor(Folder):
         agent = self._get_ldap_agent(bind=True)
         # first remove users from role
         with agent.new_action():
-            for user_id in agent.members_in_role_and_subroles(role_id)['users']:
+            for user_id in agent.members_in_role_and_subroles(role_id)[
+                    'users']:
                 self._remove_user_from_role(user_id, role_id, logged_in)
             agent.delete_role(role_id)
         parent_role_id = '-'.join(role_id.split('-')[:-1])
@@ -1058,8 +1061,8 @@ class RolesEditor(Folder):
                                 owner, e.args)
                         else:
                             t, msg = 'info',\
-                                'Successfully removed owner %r from roles %r' % (
-                                    owner, updated)
+                                'Successfully removed owner %r from roles %r'\
+                                % (owner, updated)
                             log.info("%s REMOVED OWNER %r FOR ROLES %r",
                                      logged_in_user(REQUEST), owner, updated)
                         _set_session_message(REQUEST, t, msg)
@@ -1070,10 +1073,11 @@ class RolesEditor(Folder):
                         active_users = [user for user in found_users
                                         if user.get('status') != 'disabled']
                         results = dict((x['id'], x) for x in active_users)
-                        options.update({'search_name': search_name,
-                                        'results': results,
-                                        'inactive_users': len(found_users) != len(
-                                            active_users)})
+                        options.update(
+                            {'search_name': search_name,
+                             'results': results,
+                             'inactive_users': len(found_users) != len(
+                                 active_users)})
                     else:
                         options.update({'empty_search': True})
                 elif action == 'add-owners':
@@ -1154,8 +1158,9 @@ class RolesEditor(Folder):
                         else:
                             t, msg = 'info',\
                                 'Successfully removed sender %r' % existing
-                            log.info("%s REMOVED PERMITTEDSENDER %r FOR ROLE %s",
-                                     logged_in_user(REQUEST), existing, role_id)
+                            log.info(
+                                "%s REMOVED PERMITTEDSENDER %r FOR ROLE %s",
+                                logged_in_user(REQUEST), existing, role_id)
                         _set_session_message(REQUEST, t, msg)
 
                 for sender in senders:
@@ -1199,14 +1204,16 @@ class RolesEditor(Folder):
                         else:
                             t, msg = 'info',\
                                 'Successfully removed sender %r' % sender
-                            log.info("%s REMOVED PERMITTEDPERSON %r FOR ROLE %s",
-                                     logged_in_user(REQUEST), sender, role_id)
+                            log.info(
+                                "%s REMOVED PERMITTEDPERSON %r FOR ROLE %s",
+                                logged_in_user(REQUEST), sender, role_id)
                         _set_session_message(REQUEST, t, msg)
                 elif action == 'search':
                     search_name = REQUEST.form.get('name')
                     extra_opts = {'search_name': search_name,
-                                  'results': dict((x['id'], x) for x in
-                                                  agent.search_user(search_name))}
+                                  'results': dict(
+                                      (x['id'], x) for x in
+                                      agent.search_user(search_name))}
                     return self.edit_senders(REQUEST, extra_opts=extra_opts)
                 elif action == 'add-persons':
                     for sender in user_id_list:
@@ -1623,7 +1630,6 @@ class EditMembersOfOneRole(BrowserView):
         members = sorted(
             ["%s - %s" % (userid, agent.user_info(userid)['full_name'])
              for userid in members])
-
 
         schema = ExtendedManagementUsersSchema()
 
