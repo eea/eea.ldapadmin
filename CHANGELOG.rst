@@ -1,3 +1,6 @@
+1.4.76 (unreleased)
+------------------------
+
 1.4.75 (2015-04-15)
 ------------------------
 * Bug fix: add the can_edit_users method to PasswordReset tool, it is used
