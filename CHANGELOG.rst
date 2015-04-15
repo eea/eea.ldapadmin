@@ -1,5 +1,8 @@
-1.4.75 (unreleased)
+1.4.75 (2015-04-15)
 ------------------------
+* Bug fix: add the can_edit_users method to PasswordReset tool, it is used
+  by its index template
+  [tiberich]
 
 1.4.74 (2015-04-14)
 ------------------------

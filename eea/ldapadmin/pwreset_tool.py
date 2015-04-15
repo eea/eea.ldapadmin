@@ -13,11 +13,15 @@ from zope.component import getUtility
 from zope.component.interfaces import ComponentLookupError
 from zope.sendmail.interfaces import IMailDelivery
 
-import ldap_config
-import query
-from ui_common import load_template, SessionMessages, TemplateRenderer
-from ui_common import CommonTemplateLogic
-from constants import NETWORK_NAME
+from eea.ldapadmin import ldap_config
+from eea.ldapadmin import query
+from eea.ldapadmin.ui_common import load_template
+from eea.ldapadmin.ui_common import SessionMessages
+from eea.ldapadmin.ui_common import TemplateRenderer
+from eea.ldapadmin.ui_common import CommonTemplateLogic
+from eea.ldapadmin.constants import NETWORK_NAME
+
+from eea.ldapadmin.users_admin import eionet_edit_users
 
 log = logging.getLogger(__name__)
 
@@ -267,5 +271,10 @@ class PasswordResetTool(SimpleItem):
                         '/messages_html?msg=password-reset')
 
         REQUEST.RESPONSE.redirect(location)
+
+    security.declareProtected(view, 'can_edit_users')
+    def can_edit_users(self):
+        user = self.REQUEST.AUTHENTICATED_USER
+        return bool(user.has_permission(eionet_edit_users, self))
 
 InitializeClass(PasswordResetTool)
