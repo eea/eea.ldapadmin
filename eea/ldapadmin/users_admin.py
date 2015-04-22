@@ -75,8 +75,8 @@ def generate_password():
 
 
 def generate_user_id(first_name, last_name, agent, id_list):
-    first_name = unidecode(first_name)
-    last_name = unidecode(last_name)
+    first_name = unidecode(first_name).replace('-', '').replace("'", "")
+    last_name = unidecode(last_name).replace('-', '').replace("'", "")
     min_first_length = min(first_name, 3)
     uid1 = last_name[:8-min_first_length]
     uid2 = first_name[:8-len(uid1)]
