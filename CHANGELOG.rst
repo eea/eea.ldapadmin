@@ -1,4 +1,7 @@
-1.4.76 (unreleased)
+1.4.77 (unreleased)
+------------------------
+
+1.4.76 (2015-04-22)
 ------------------------
 * bugfix in UID generation [dumitval]
 
