@@ -227,6 +227,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return agent
 
     security.declareProtected(view_management_screens, 'get_config')
+
     def get_config(self):
         return dict(self._config)
 
@@ -235,17 +236,20 @@ class UsersAdmin(SimpleItem, PropertyManager):
     manage_edit.ldap_config_edit_macro = ldap_config.edit_macro
 
     security.declareProtected(view_management_screens, 'manage_edit_save')
+
     def manage_edit_save(self, REQUEST):
         """ save changes to configuration """
         self._config.update(ldap_config.read_form(REQUEST.form, edit=True))
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/manage_edit')
 
     security.declareProtected(view, 'can_edit_users')
+
     def can_edit_users(self):
         user = self.REQUEST.AUTHENTICATED_USER
         return bool(user.has_permission(eionet_edit_users, self))
 
     security.declarePublic('checkPermissionEditUsers')
+
     def checkPermissionEditUsers(self):
         """ """
         user = self.REQUEST.AUTHENTICATED_USER
@@ -281,6 +285,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template('zpt/users_index.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'get_statistics')
+
     def get_statistics(self, REQUEST):
         """ view a simple table of how many users have been registered,
         for each year
@@ -333,6 +338,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template('zpt/statistics.zpt', **options)
 
     security.declarePrivate('_find_duplicates')
+
     def _find_duplicates(self, fname, lname, email):
         """ find similar users """
         duplicate_records = []
@@ -353,6 +359,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return duplicate_records
 
     security.declarePrivate('_create_user')
+
     def _create_user(self, agent, user_info, send_helpdesk_email=False):
         """
         Creates user in ldap using user_info (data already validated)
@@ -483,7 +490,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
                         if new_org_id_valid:
                             self._add_to_org(agent, new_org_id, user_id)
 
-                        send_confirmation = 'send_confirmation' in form_data.keys()
+                        send_confirmation = 'send_confirmation' in \
+                            form_data.keys()
                         if send_confirmation:
                             self.send_confirmation_email(user_info)
                             self.send_password_reset_email(user_info)
@@ -493,8 +501,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
                         _set_session_message(REQUEST, 'info', msg)
 
                         log.info("%s CREATED USER %s",
-                                logged_in_user(REQUEST),
-                                user_id)
+                                 logged_in_user(REQUEST),
+                                 user_id)
 
                 if not errors:
                     return REQUEST.RESPONSE.redirect(self.absolute_url())
@@ -588,6 +596,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template('zpt/users/edit.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'edit_user_action')
+
     def edit_user_action(self, REQUEST):
         """ view """
         user_id = REQUEST.form['id']
@@ -613,7 +622,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
             # make a check if user is changing the organisation
             user_orgs = [agent._org_id(org)
-                for org in list(agent.user_organisations(user_id))]
+                         for org in list(agent.user_organisations(user_id))]
 
             with agent.new_action():
                 if not (new_org_id in user_orgs):
@@ -666,6 +675,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                     raise
 
     security.declareProtected(eionet_edit_users, 'delete_user')
+
     def delete_user(self, REQUEST):
         """
         View that asks for confirmation of user deletion
@@ -679,6 +689,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template('zpt/users/delete.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'delete_user_action')
+
     def delete_user_action(self, REQUEST):
         """ Performing the delete action """
         id = REQUEST.form['id']
@@ -694,6 +705,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/')
 
     security.declareProtected(eionet_edit_users, 'disable_user')
+
     def disable_user(self, REQUEST):
         """
         View that asks for confirmation of user disable
@@ -707,6 +719,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template('zpt/users/disable.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'disable_user_action')
+
     def disable_user_action(self, REQUEST):
         """ Performing the disable user action """
         id = REQUEST.form['id']
@@ -721,6 +734,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return REQUEST.RESPONSE.redirect(self.absolute_url() + '/')
 
     security.declareProtected(eionet_edit_users, 'enable_user')
+
     def enable_user(self, REQUEST):
         """
         View that asks for confirmation of user enable
@@ -734,6 +748,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template('zpt/users/enable.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'enable_user_action')
+
     def enable_user_action(self, REQUEST):
         """ Performing the enable user action """
         id = REQUEST.form['id']
@@ -772,6 +787,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/')
 
     security.declareProtected(eionet_edit_users, 'change_password')
+
     def change_password(self, REQUEST):
         """ View for changing user password """
         id = REQUEST.form['id']
@@ -784,6 +800,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                                      **options)
 
     security.declareProtected(eionet_edit_users, 'change_password_action')
+
     def change_password_action(self, REQUEST):
         """ Performing the delete action """
         id = REQUEST.form['id']
@@ -814,6 +831,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/')
 
     security.declareProtected(eionet_edit_users, 'bulk_check_username')
+
     def bulk_check_username(self, REQUEST):
         """ Bulk verify usernames for conformance """
         usernames = []
@@ -848,6 +866,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                                      **options)
 
     security.declareProtected(eionet_edit_users, 'bulk_get_emails')
+
     def bulk_get_emails(self, REQUEST):
         """
         Return all email addresses
@@ -872,6 +891,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return json.dumps(bulk_emails)
 
     security.declareProtected(eionet_edit_users, 'bulk_check_email')
+
     def bulk_check_email(self, REQUEST):
         """ Bulk verify emails for conformance """
 
@@ -918,6 +938,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                                      **options)
 
     security.declareProtected(eionet_edit_users, 'eionet_profile')
+
     def eionet_profile(self, REQUEST):
         """ Renders eionet full profile page """
         uid = REQUEST.form['id']
@@ -928,6 +949,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template('zpt/users/eionet_profile.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'eionet_profile')
+
     def get_endpoint(self, REQUEST):
         """ Returns call for a service """
         title = REQUEST.form['service']
@@ -1090,7 +1112,8 @@ class BulkUserImporter(BrowserView):
     def bulk_create(self):
         """ view """
         data = self.request.form.get('data').read()
-        msgr = lambda level, msg: _set_session_message(self.request, level, msg)
+        msgr = lambda level, msg: _set_session_message(self.request, level,
+                                                       msg)
 
         try:
             rows = self.read_xls(data)
@@ -1127,7 +1150,7 @@ class BulkUserImporter(BrowserView):
                 count = emails.count(email)
                 if count > 1:
                     errors.append('Duplicate email: %s appears %d times'
-                                    % (email, count))
+                                  % (email, count))
                     users_data = filter(lambda x: x['email'] != email,
                                         users_data)
 
@@ -1136,7 +1159,7 @@ class BulkUserImporter(BrowserView):
                 count = usernames.count(username)
                 if count > 1:
                     errors.append('Duplicate user ID: %s appears %d times'
-                                    % (username, count))
+                                  % (username, count))
                     users_data = filter(lambda x: x['id'] != username,
                                         users_data)
 
@@ -1146,8 +1169,8 @@ class BulkUserImporter(BrowserView):
 
         if existing_emails:
             for email in existing_emails:
-                errors.append("The following email is already in database: %s" %
-                              email)
+                errors.append("The following email is already in database: %s"
+                              % email)
             for email in existing_emails:
                 users_data = filter(lambda x: x['email'] != email, users_data)
 
@@ -1162,7 +1185,7 @@ class BulkUserImporter(BrowserView):
             user_id = user_info['id']
             try:
                 self.context._create_user(agent, user_info,
-                                            send_helpdesk_email=True)
+                                          send_helpdesk_email=True)
             except Exception:
                 errors.append("Error creating %s user" % user_id)
             else:
@@ -1174,7 +1197,8 @@ class BulkUserImporter(BrowserView):
                 try:
                     self.context.send_password_reset_email(user_info)
                 except Exception, e:
-                    msgr('error', "Error: %s sending password reset email to %s"
+                    msgr('error',
+                         "Error: %s sending password reset email to %s"
                          % (e, user_info['email']))
 
                 msg = u"%s %s (%s)" % \
@@ -1195,7 +1219,7 @@ class BulkUserImporter(BrowserView):
         else:
             msgr('error', 'No user account created')
 
-        if 'location' in self.request.response.headers: #pw-reset request redirect
+        if 'location' in self.request.response.headers:
             del self.request.response.headers['location']
             self.request.response.headers['status'] = '200 OK'
         return self.context._render_template('zpt/users/bulk_create.zpt')
@@ -1217,7 +1241,8 @@ class ResetUser(BrowserView):
             _set_session_message(
                 self.request, 'info',
                 'Roles for user "%s" have been reseted (deleted).' % user_id)
-            log.info("%s RESETED USER %s", logged_in_user(self.request), user_id)
+            log.info("%s RESETED USER %s", logged_in_user(self.request),
+                     user_id)
             url = self.context.absolute_url() + '/edit_user?id=' + user_id
             return self.request.RESPONSE.redirect(url)
 
@@ -1244,7 +1269,7 @@ class AutomatedUserDisabler(BrowserView):
         return data
 
     def get_ldap_users(self):
-        #agent = self.context._get_ldap_agent(bind=True)
+        # agent = self.context._get_ldap_agent(bind=True)
 
         result = []
         reader = getUtility(IDumpReader)
@@ -1267,13 +1292,14 @@ class AutomatedUserDisabler(BrowserView):
 
         for user in users:
             log.info("User will be disabled the next check %s",
-                         user['username'])
+                     user['username'])
             self.send_predisable_notification_email(user)
             timestamp = datetime.now().isoformat()
             try:
                 result = agent.conn.modify_s(
                     agent._user_dn(user['username']),
-                    [(ldap.MOD_REPLACE, self.LDAP_PREDISABLE_FIELDNAME, timestamp),]
+                    [(ldap.MOD_REPLACE, self.LDAP_PREDISABLE_FIELDNAME,
+                      timestamp), ]
                 )
             except ldap.NO_SUCH_OBJECT:
                 log.info("Could not predisable user: %s", user['dn'])
