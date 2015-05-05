@@ -7,9 +7,7 @@
       initialize="eea.ldapadmin.initialize"
       />
 
-  <permission id="eionet.EditUsers" title="Eionet edit users" />
-  <permission id="eionet.EditRoles" title="Eionet edit roles" />
-
+  <include file="permissions.zcml" />
   <include file="extended_management.zcml" />
 
   <browser:resourceDirectory

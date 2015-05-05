@@ -2,8 +2,6 @@
            xmlns:browser="http://namespaces.zope.org/browser"
            xmlns:five="http://namespaces.zope.org/five">
 
-  <permission id="eionet.ExtendedEditRoles" title="Eionet edit extended roles" />
-
   <browser:page 
       name="extended_management"
       for=".roles_editor.RolesEditor"

@@ -42,6 +42,7 @@ except ImportError:
 log = logging.getLogger('roles_editor')
 
 eionet_edit_roles = 'Eionet edit roles'
+eionet_edit_extended_roles = 'Eionet edit extended roles'
 
 manage_add_roles_editor_html = PageTemplateFile('zpt/roles_manage_add',
                                                 globals())
@@ -632,7 +633,10 @@ class RolesEditor(Folder):
     security.declareProtected(view, 'can_edit_roles')
 
     def can_edit_roles(self, user):
-        return bool(user.has_permission(eionet_edit_roles, self))
+        for role in [eionet_edit_roles, eionet_edit_extended_roles]:
+            if bool(user.has_permission(role, self)):
+                return True
+        return False
 
     security.declareProtected(view, 'can_edit_members')
 

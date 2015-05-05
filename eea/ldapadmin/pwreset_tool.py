@@ -148,6 +148,7 @@ class PasswordResetTool(SimpleItem):
             'network_name': NETWORK_NAME,
             'expiration_time': expiration_time.strftime("%Y-%m-%d %H:%M:%S")
         }
+        print options['token_url']
         message = MIMEText(email_template(**options).encode('utf-8'),
                            _charset='utf-8')
         message['From'] = addr_from
