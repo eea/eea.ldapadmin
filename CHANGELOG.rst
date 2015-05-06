@@ -1,4 +1,7 @@
-1.4.77 (unreleased)
+1.4.78 (unreleased)
+------------------------
+
+1.4.77 (2015-05-06)
 ------------------------
 * changed permission for search_users [dumitval]
 
