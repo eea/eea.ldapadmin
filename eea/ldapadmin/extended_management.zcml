@@ -54,7 +54,7 @@
   <browser:page 
       name="search_eionet"
       for=".roles_editor.RolesEditor"
-      permission="eionet.EditRoles"
+      permission="zope2.View"
       class=".roles_editor.SearchEionet"
       />
 
