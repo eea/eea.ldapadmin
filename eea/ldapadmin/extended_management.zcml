@@ -47,7 +47,7 @@
   <browser:page 
       name="export2xls"
       for=".roles_editor.RolesEditor"
-      permission="eionet.EditRoles"
+      permission="eionet.ExtendedEditRoles"
       class=".roles_editor.ExportExcel"
       />
 
