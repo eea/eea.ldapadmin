@@ -633,10 +633,7 @@ class RolesEditor(Folder):
     security.declareProtected(view, 'can_edit_roles')
 
     def can_edit_roles(self, user):
-        for role in [eionet_edit_roles, eionet_edit_extended_roles]:
-            if bool(user.has_permission(role, self)):
-                return True
-        return False
+        return bool(user.has_permission(eionet_edit_roles, self))
 
     security.declareProtected(view, 'can_edit_members')
 
