@@ -1,3 +1,4 @@
+from Products.Five.browser import BrowserView
 from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
 from AccessControl.unauthorized import Unauthorized
@@ -1144,3 +1145,15 @@ def validate_org_info(org_id, org_info):
         errors['country'] = [VALIDATION_ERRORS['country']]
 
     return errors
+
+
+class OrganisationChangelog(BrowserView):
+    """ Changelog for an organisation
+
+    Context is an instance of OrganisationsEditor
+    """
+
+    def entries(self):
+        return []
+        org_id = self.request.form.get('org_id')
+        return self.context._get_ldap_agent(bind=True).org_info(org_id)

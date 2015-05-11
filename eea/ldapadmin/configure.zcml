@@ -9,6 +9,7 @@
 
   <include file="permissions.zcml" />
   <include file="extended_management.zcml" />
+  <include package=".views" />
 
   <browser:resourceDirectory
       name="eea.ldapadmin-www"
@@ -48,6 +49,14 @@
       for=".roles_editor.NoExtendedManagementRoleError"
       permission="zope.Public"
       class=".roles_editor.NoExceptionManagementView"
+      />
+
+  <browser:page 
+      name="org_changelog"
+      for="*"
+      permission="zope2.View"
+      class=".orgs_editor.OrganisationChangelog"
+      template="views/templates/org_changelog.pt"
       />
 
 </configure>

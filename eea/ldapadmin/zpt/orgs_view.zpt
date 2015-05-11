@@ -1,91 +1,96 @@
-<div id="operations" class="right_portlet" tal:define="org_info options/organisation">
-  <h2>Operations</h2>
-  <ul>
-    <li tal:condition="common/can_edit_organisation">
-      <a tal:attributes="href string:${common/base_url}/edit_organisation_html?id=${org_info/id}"
-         >Edit</a>
-    </li>
-    <li tal:condition="common/checkPermissionEditOrganisations">
-      <a tal:attributes="href string:${common/base_url}/rename_organisation_html?id=${org_info/id}"
-         >Change id of <tal:block content="org_info/id"/></a>
-    </li>
-    <li tal:condition="common/can_edit_organisation">
-      <a tal:attributes="href string:${common/base_url}/delete_organisation_html?id=${org_info/id}"
-         >Delete</a>
-    </li>
-    <li>
-      <a tal:attributes="href string:${common/base_url}/members_html?id=${org_info/id}"
-         >Members</a>
-    </li>
-    <li>
-      <a tal:attributes="href string:${common/base_url}/export_org?id=${org_info/id}"
-         >Export</a>
-    </li>
-  </ul>
+<div tal:define="org_editor options/context">
+    <div id="operations" class="right_portlet" tal:define="org_info options/organisation; ">
+        <h2>Operations</h2>
+        <ul>
+            <li tal:condition="common/can_edit_organisation">
+                <a tal:attributes="href string:${common/base_url}/edit_organisation_html?id=${org_info/id}"
+                    >Edit</a>
+            </li>
+            <li tal:condition="common/checkPermissionEditOrganisations">
+                <a tal:attributes="href string:${common/base_url}/rename_organisation_html?id=${org_info/id}"
+                    >Change id of <tal:block content="org_info/id"/></a>
+            </li>
+            <li tal:condition="common/can_edit_organisation">
+                <a tal:attributes="href string:${common/base_url}/delete_organisation_html?id=${org_info/id}"
+                    >Delete</a>
+            </li>
+            <li>
+                <a tal:attributes="href string:${common/base_url}/members_html?id=${org_info/id}"
+                    >Members</a>
+            </li>
+            <li>
+                <a tal:attributes="href string:${common/base_url}/export_org?id=${org_info/id}"
+                    >Export</a>
+            </li>
+        </ul>
+    </div>
+
+    <h1>
+        <tal:block content="options/organisation/name"/>
+        (<tt tal:content="options/organisation/id"/>)
+    </h1>
+
+    <tal:block content="structure common/message_boxes"/>
+
+    <table tal:define="org_info options/organisation">
+
+        <tr>
+            <td>Name:</td>
+            <td tal:content="org_info/name"></td>
+        </tr>
+
+        <tr>
+            <td>URL:</td>
+            <td tal:content="org_info/url"></td>
+        </tr>
+
+        <tr>
+            <td>Email:</td>
+            <td tal:content="org_info/email"></td>
+        </tr>
+
+        <tr>
+            <td>Phone:</td>
+            <td tal:content="org_info/phone"></td>
+        </tr>
+
+        <tr>
+            <td>Fax:</td>
+            <td tal:content="org_info/fax"></td>
+        </tr>
+
+        <tr>
+            <td>Street:</td>
+            <td tal:content="org_info/street"></td>
+        </tr>
+
+        <tr>
+            <td>PO box:</td>
+            <td tal:content="org_info/po_box"></td>
+        </tr>
+
+        <tr>
+            <td>Postal code:</td>
+            <td tal:content="org_info/postal_code"></td>
+        </tr>
+
+        <tr>
+            <td>Locality:</td>
+            <td tal:content="org_info/locality"></td>
+        </tr>
+
+        <tr>
+            <td>Country:</td>
+            <td tal:content="options/country"></td>
+        </tr>
+
+        <tr>
+            <td>Full address:</td>
+            <td tal:content="org_info/postal_address"></td>
+        </tr>
+
+    </table>
+
+    <div tal:content="structure python:browserview(options['context'], name='org_changelog')()" />
+
 </div>
-
-<h1>
-  <tal:block content="options/organisation/name"/>
-  (<tt tal:content="options/organisation/id"/>)
-</h1>
-
-<tal:block content="structure common/message_boxes"/>
-
-<table tal:define="org_info options/organisation">
-
-  <tr>
-    <td>Name:</td>
-    <td tal:content="org_info/name"></td>
-  </tr>
-
-  <tr>
-    <td>URL:</td>
-    <td tal:content="org_info/url"></td>
-  </tr>
-
-  <tr>
-    <td>Email:</td>
-    <td tal:content="org_info/email"></td>
-  </tr>
-
-  <tr>
-    <td>Phone:</td>
-    <td tal:content="org_info/phone"></td>
-  </tr>
-
-  <tr>
-    <td>Fax:</td>
-    <td tal:content="org_info/fax"></td>
-  </tr>
-
-  <tr>
-    <td>Street:</td>
-    <td tal:content="org_info/street"></td>
-  </tr>
-
-  <tr>
-    <td>PO box:</td>
-    <td tal:content="org_info/po_box"></td>
-  </tr>
-
-  <tr>
-    <td>Postal code:</td>
-    <td tal:content="org_info/postal_code"></td>
-  </tr>
-
-  <tr>
-    <td>Locality:</td>
-    <td tal:content="org_info/locality"></td>
-  </tr>
-
-  <tr>
-    <td>Country:</td>
-    <td tal:content="options/country"></td>
-  </tr>
-
-  <tr>
-    <td>Full address:</td>
-    <td tal:content="org_info/postal_address"></td>
-  </tr>
-
-</table>

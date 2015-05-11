@@ -8,6 +8,7 @@ from logic_common import _get_user_id, _is_authenticated
 from persistent.list import PersistentList
 from persistent.mapping import PersistentMapping
 from zope.pagetemplate.pagetemplatefile import PageTemplateFile as Z3Template
+from zope.component import getMultiAdapter
 
 
 def get_role_name(agent, role_id):
@@ -93,7 +94,11 @@ class TemplateRenderer(Implicit):
         template = load_template(name)
         namespace = template.pt_getContext((), options)
         namespace['common'] = self.common_factory(context)
+        namespace['browserview'] = self.browserview
         return template.pt_render(namespace)
+
+    def browserview(self, context, name):
+        return getMultiAdapter((context, self.aq_parent.REQUEST), name=name)
 
     def wrap(self, body_html):
         context = self.aq_parent

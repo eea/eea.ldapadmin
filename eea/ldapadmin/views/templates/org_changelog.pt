@@ -1,0 +1,33 @@
+<div>
+  <h2>Organisation changelog</h2>
+  <table class="datatable account-history" tal:define="entries view/entries">
+    <tr>
+      <th>Timestamp</th>
+      <th>Action</th>
+      <th>Author</th>
+      <th>Details</th>
+    </tr>
+    <tr tal:repeat="entry entries">
+      <tal:def define="view nocall:entry/view">
+        <td tal:define="action_id entry/action_id | nothing; index repeat/entry/index;
+          show_link_with_previous python:index and action_id and (action_id == entries[index-1]['action_id'])">
+          <span class="actionid" tal:condition="show_link_with_previous">&#8627;</span>
+          <span class="actionid" tal:condition="not: show_link_with_previous">&#8227;</span>
+          <span tal:content="python:entry['timestamp']" />
+        </td>
+        <td tal:content="view/action_title" />
+        <td>
+          <a href="" 
+            tal:content="python: view.author(entry)" 
+            tal:attributes="href string:?uid=${entry/author}">Author</a>
+        </td>
+        <td tal:content="structure python: view.details(entry)" ></td>
+      </tal:def>
+    </tr>
+  </table>
+
+  <p>NOTE: the changelog may not be complete, older modifications to the
+    organisation prior to implementation of the CHANGELOG will not be shown
+    here</p>
+
+</div>

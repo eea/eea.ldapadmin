@@ -1,0 +1,13 @@
+<configure xmlns="http://namespaces.zope.org/zope"
+           xmlns:browser="http://namespaces.zope.org/browser"
+           xmlns:five="http://namespaces.zope.org/five">
+    <!-- <browser:page -->
+    <!--     name="details_UNSET_AS_ALTERNATE_ROLE_LEADER" -->
+    <!--     for="*" -->
+    <!--     permission="zope.Public" -->
+    <!--     class=".changelog.UnsetAsAlternateRoleLeader" -->
+    <!--     template="templates/unset_as_alternate_role_leader.pt" -->
+    <!--     /> -->
+    <!--  -->
+</configure>
+
