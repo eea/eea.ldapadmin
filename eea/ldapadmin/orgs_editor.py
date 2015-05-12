@@ -1,4 +1,5 @@
 from Products.Five.browser import BrowserView
+from DateTime.DateTime import DateTime
 from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
 from AccessControl.unauthorized import Unauthorized
@@ -18,6 +19,7 @@ from persistent.mapping import PersistentMapping
 from ui_common import extend_crumbs, CommonTemplateLogic
 from ui_common import load_template, SessionMessages, TemplateRenderer
 from zope.component import getUtility
+from zope.component import getMultiAdapter
 from zope.component.interfaces import ComponentLookupError
 from zope.sendmail.interfaces import IMailDelivery
 import codecs
@@ -1154,6 +1156,42 @@ class OrganisationChangelog(BrowserView):
     """
 
     def entries(self):
-        return []
-        org_id = self.request.form.get('org_id')
-        return self.context._get_ldap_agent(bind=True).org_info(org_id)
+        org_id = self.request.form.get('id')
+        agent = self.context._get_ldap_agent()
+        org_dn = agent._org_dn(org_id)
+
+
+        log_entries = list(reversed(agent._get_metadata(org_dn)))
+        VIEWS = {}
+
+        for entry in log_entries:
+            date = DateTime(entry['timestamp']).toZone("CET")
+            entry['timestamp'] = date.ISO()
+            view = VIEWS.get(entry['action'])
+            if not view:
+                view = getMultiAdapter((entry, self.request),
+                                       name="details_" + entry['action'])
+                view.base = self.context
+                VIEWS[entry['action']] = view
+            entry['view'] = view
+
+        output = []
+        for entry in log_entries:
+            if output:
+                last_entry = output[-1]
+                check = ['author', 'action', 'timestamp']
+                flag = True
+                for k in check:
+                    if last_entry[k] != entry[k]:
+                        flag = False
+                        break
+                if flag:
+                    last_entry['data'].append(entry['data'])
+                else:
+                    entry['data'] = [entry['data']]
+                    output.append(entry)
+            else:
+                entry['data'] = [entry['data']]
+                output.append(entry)
+
+        return output

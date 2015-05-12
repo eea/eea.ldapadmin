@@ -1,6 +1,6 @@
-<div>
+<div tal:define="entries view/entries">
   <h2>Organisation changelog</h2>
-  <table class="datatable account-history" tal:define="entries view/entries">
+  <table class="datatable account-history" >
     <tr>
       <th>Timestamp</th>
       <th>Action</th>
