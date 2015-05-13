@@ -91,6 +91,6 @@
 
     </table>
 
-    <div tal:content="structure python:browserview(options['context'], name='org_changelog')()" />
+    <div tal:condition="common/can_edit_organisation" tal:content="structure python:browserview(options['context'], name='org_changelog')()" />
 
 </div>
