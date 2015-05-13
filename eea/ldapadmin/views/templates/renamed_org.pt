@@ -1,0 +1,2 @@
+<strong>Old id:</strong><br/>
+<span tal:replace="view/old_name" />

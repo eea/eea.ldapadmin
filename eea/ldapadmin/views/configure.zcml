@@ -59,7 +59,7 @@
         />
 
     <browser:page
-        name="details_RENAMED_ORG"
+        name="details_RENAMED_ORGANISATION"
         for="*"
         permission="zope.Public"
         class=".changelog.RenamedOrg"

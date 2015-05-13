@@ -59,6 +59,9 @@ class RenamedOrg(BaseActionDetails):
 
     action_title = "Renamed organisation"
 
+    def old_name(self):
+        return self.context['data'][0]['old_name']
+
 
 class AddedMemberToOrg(BaseActionDetails):
     """
