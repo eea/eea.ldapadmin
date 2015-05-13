@@ -1,5 +1,7 @@
+from DateTime.DateTime import DateTime
 from Products.Five import BrowserView
 from eea.usersdb import factories
+from zope.component import getMultiAdapter
 from zope.interface import Interface, Attribute, implements
 
 
@@ -35,6 +37,7 @@ class BaseActionDetails(BrowserView):
 
     def _get_ldap_agent(self):
         return factories.agent_from_uf(self.context.restrictedTraverse("/acl_users"))
+
 
 class EditedOrg(BaseActionDetails):
     """
@@ -74,7 +77,7 @@ class AddedPendingMemberToOrg(BaseActionDetails):
     action_title = "Added pending member to organisation"
 
     def member(self):
-        return "tibi"
+        return [x['member'] for x in self.context['data']]
 
 
 class RemovedMemberFromOrg(BaseActionDetails):
@@ -83,9 +86,59 @@ class RemovedMemberFromOrg(BaseActionDetails):
 
     action_title = "Removed member from organisation"
 
+    def member(self):
+        return [x['member'] for x in self.context['data']]
+
 
 class RemovedPendingMemberFromOrg(BaseActionDetails):
     """
     """
 
     action_title = "Removed pending member from organisation"
+
+    def member(self):
+        return [x['member'] for x in self.context['data']]
+
+
+class OrganisationChangelog(BrowserView):
+    """ Changelog for an organisation
+
+    Context is an instance of OrganisationsEditor
+    """
+
+    def entries(self):
+        org_id = self.request.form.get('id')
+        agent = self.context._get_ldap_agent()
+        org_dn = agent._org_dn(org_id)
+
+
+        log_entries = list(reversed(agent._get_metadata(org_dn)))
+
+        for entry in log_entries:
+            date = DateTime(entry['timestamp']).toZone("CET")
+            entry['timestamp'] = date.ISO()
+            view = getMultiAdapter((entry, self.request),
+                                    name="details_" + entry['action'])
+            view.base = self.context
+            entry['view'] = view
+
+        output = []
+        for entry in log_entries:
+            if output:
+                last_entry = output[-1]
+                check = ['author', 'action', 'timestamp']
+                flag = True
+                for k in check:
+                    if last_entry[k] != entry[k]:
+                        flag = False
+                        break
+                if flag:
+                    last_entry['data'].append(entry['data'])
+                else:
+                    entry['data'] = [entry['data']]
+                    output.append(entry)
+            else:
+                entry['data'] = [entry['data']]
+                output.append(entry)
+
+        return output

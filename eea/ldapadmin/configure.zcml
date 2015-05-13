@@ -51,12 +51,4 @@
       class=".roles_editor.NoExceptionManagementView"
       />
 
-  <browser:page 
-      name="org_changelog"
-      for="*"
-      permission="zope2.View"
-      class=".orgs_editor.OrganisationChangelog"
-      template="views/templates/org_changelog.pt"
-      />
-
 </configure>
