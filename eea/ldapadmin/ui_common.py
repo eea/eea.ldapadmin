@@ -195,6 +195,7 @@ class CommonTemplateLogic(object):
             'common': self,
             'can_edit_roles': self.context.can_edit_roles(user),
             'can_edit_members': self.context.can_edit_members(role_id, user),
+            'can_edit_extended_roles': self.context.can_edit_extended_roles(user),
             'can_delete_role': self.context.can_delete_role(role_id, user),
             'members_in_role': members_in_role,
             'leaders_enabled': roles_leaders.leaders_enabled(role_id),

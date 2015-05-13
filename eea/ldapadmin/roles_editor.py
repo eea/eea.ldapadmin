@@ -397,6 +397,7 @@ class RolesEditor(Folder):
             'permitted_persons': persons,
             'permitted_senders': permitted_senders,
             'can_edit': self.can_edit_roles(REQUEST.AUTHENTICATED_USER),
+            'can_edit_extended_roles': self.can_edit_extended_roles(REQUEST.AUTHENTICATED_USER),
             'can_edit_members': self.can_edit_members(role_id, user),
             'can_delete_role': self.can_delete_role(role_id, user),
             'has_subroles': has_subroles,
@@ -634,6 +635,9 @@ class RolesEditor(Folder):
 
     def can_edit_roles(self, user):
         return bool(user.has_permission(eionet_edit_roles, self))
+
+    def can_edit_extended_roles(self, user):
+        return bool(user.has_permission(eionet_edit_extended_roles, self))
 
     security.declareProtected(view, 'can_edit_members')
 

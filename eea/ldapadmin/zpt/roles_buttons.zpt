@@ -3,6 +3,7 @@
     role_id options/role_id | nothing;
     can_edit_members options/can_edit_members;
     can_edit_roles options/can_edit_roles;
+    can_edit_extended_roles options/can_edit_extended_roles;
     can_delete_role options/can_delete_role;
     ">
     <script type="text/javascript">
@@ -80,7 +81,7 @@
 
         <a class="button"
             tal:attributes="href string:${common/base_url}/@@edit_members_of_one_role?role_id=${role_id}" 
-            tal:condition="python:common.context.restrictedTraverse('@@is_extended_enabled')(role_id)">
+            tal:condition="python:can_edit_extended_roles and common.context.restrictedTraverse('@@is_extended_enabled')(role_id)">
             <img class="middle-image image12" src="/++resource++eea.ldapadmin-www/delete_user.png" />Extended management
         </a>
 
@@ -149,7 +150,7 @@
                    </li>
                    <li>
                        <a tal:define="new_url string:${common/base_url}/@@extended_management"
-                           tal:condition="editable_role"
+                           tal:condition="python: editable_role and can_edit_extended_roles"
                            tal:attributes="href string:${new_url}?role_id=${role_param}"
                            >Extended management</a>
                    </li>

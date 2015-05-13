@@ -1,5 +1,11 @@
 1.4.78 (unreleased)
 ------------------------
+* Feature: enable a changelog for organisations, which includes: adding/removing members
+  editing details of organisation (no details here, though), and renaming the organisation
+  [tiberich #20663]
+* Bug fix: see if user has the Eionet edit extended roles permission before showing
+  extended roles functionality
+  [tiberich #22472]
 
 1.4.77 (2015-05-06)
 ------------------------
