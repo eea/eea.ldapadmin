@@ -1,4 +1,4 @@
-1.4.78 (unreleased)
+1.4.78 (2015-05-14)
 ------------------------
 * Feature: enable a changelog for organisations, which includes: adding/removing members
   editing details of organisation (no details here, though), and renaming the organisation
