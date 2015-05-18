@@ -1,27 +1,28 @@
-import logging
-from datetime import datetime, timedelta
-from collections import namedtuple
-from email.mime.text import MIMEText
-
 from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
 from App.class_init import InitializeClass
 from OFS.SimpleItem import SimpleItem
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
+from collections import namedtuple
+from datetime import datetime, timedelta
+from eea.ldapadmin import ldap_config
+from eea.ldapadmin import query
+from eea.ldapadmin.constants import NETWORK_NAME
+from eea.ldapadmin.ui_common import CommonTemplateLogic
+from eea.ldapadmin.ui_common import SessionMessages
+from eea.ldapadmin.ui_common import TemplateRenderer
+from eea.ldapadmin.ui_common import load_template
+from eea.ldapadmin.users_admin import eionet_edit_users
+from email.mime.text import MIMEText
 from persistent.mapping import PersistentMapping
 from zope.component import getUtility
 from zope.component.interfaces import ComponentLookupError
 from zope.sendmail.interfaces import IMailDelivery
+import base64
+import hashlib
+import logging
+import random
 
-from eea.ldapadmin import ldap_config
-from eea.ldapadmin import query
-from eea.ldapadmin.ui_common import load_template
-from eea.ldapadmin.ui_common import SessionMessages
-from eea.ldapadmin.ui_common import TemplateRenderer
-from eea.ldapadmin.ui_common import CommonTemplateLogic
-from eea.ldapadmin.constants import NETWORK_NAME
-
-from eea.ldapadmin.users_admin import eionet_edit_users
 
 log = logging.getLogger(__name__)
 
@@ -67,11 +68,8 @@ TokenData = namedtuple('TokenData', 'user_id timestamp')
 
 
 def random_token():
-    import base64
-    import hashlib
-    import random
     bits = hashlib.sha1(str(datetime.now()) + str(random.random())).digest()
-    return base64.urlsafe_b64encode(bits)[:20]
+    return base64.urlsafe_b64encode(bits).replace('-', '')[:20]
 
 
 class PasswordResetTool(SimpleItem):
