@@ -737,7 +737,7 @@ class CreateUser(BrowserView):
         if self.nfp_has_access():
             requester = logged_in_user(self.request)
             info = agent.user_info(requester)
-            for to in [info['mail'], "helpdesk@eionet.europa.eu"]:
+            for to in [info['email'], "helpdesk@eionet.europa.eu"]:
                 self._send_new_user_email(user_id, user_info, to)
 
         # put id and password back on user_info, for further processing
