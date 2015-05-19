@@ -1,5 +1,8 @@
 1.4.79 (unreleased)
 ------------------------
+* Feature: also email the NFP that created the user with a confirmation email
+  about user creation
+  [tiberich #23076]
 
 1.4.78 (2015-05-14)
 ------------------------
