@@ -145,3 +145,4 @@ class OrganisationChangelog(BrowserView):
                 output.append(entry)
 
         return output
+

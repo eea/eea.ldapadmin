@@ -1386,3 +1386,24 @@ class AutomatedUserDisabler(BrowserView):
         message['Subject'] = "[You will be automatically disabled]"
         message.set_payload(body.encode('utf-8'), charset='utf-8')
         _send_email(addr_from, addr_to, message)
+
+
+class MigrateDisabledEmails(BrowserView):
+
+    def _get_metadata(self, metadata):
+        if not metadata:
+            metadata = "[]"
+        metadata = json.loads(metadata)
+        return metadata
+
+
+    def __call__(self):
+        agent = self.context._get_ldap_agent(bind=True)
+        disabled_users = agent.get_disabled_users()
+        for user_info in disabled_users:
+            metadata = self._get_metadata(user_info['metadata'])
+            email = agent._get_email_for_disabled_user(metadata)
+            user_info['old_email'] = email
+            agent.set_user_info(user_info['id'], user_info)
+
+        return "done"

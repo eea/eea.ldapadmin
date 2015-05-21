@@ -1,54 +1,61 @@
 <configure xmlns="http://namespaces.zope.org/zope"
-           xmlns:browser="http://namespaces.zope.org/browser"
-           xmlns:five="http://namespaces.zope.org/five">
+    xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:five="http://namespaces.zope.org/five">
 
-  <five:registerPackage
-      package="eea.ldapadmin"
-      initialize="eea.ldapadmin.initialize"
-      />
+    <five:registerPackage
+        package="eea.ldapadmin"
+        initialize="eea.ldapadmin.initialize"
+        />
 
-  <include file="permissions.zcml" />
-  <include file="extended_management.zcml" />
-  <include package=".views" />
+    <include file="permissions.zcml" />
+    <include file="extended_management.zcml" />
+    <include package=".views" />
 
-  <browser:resourceDirectory
-      name="eea.ldapadmin-www"
-      directory="www"
-      />
+    <browser:resourceDirectory
+        name="eea.ldapadmin-www"
+        directory="www"
+        />
 
-  <browser:page 
-      name="create_user" 
-      for=".nfp_nrc.NfpNrc" 
-      permission="zope.Public" 
-      class=".nfp_nrc.CreateUser"
-      />
+    <browser:page 
+        name="create_user" 
+        for=".nfp_nrc.NfpNrc" 
+        permission="zope.Public" 
+        class=".nfp_nrc.CreateUser"
+        />
 
-  <browser:page 
-      name="reset_user" 
-      for=".users_admin.UsersAdmin" 
-      permission="eionet.EditUsers" 
-      class=".users_admin.ResetUser"
-      />
+    <browser:page 
+        name="reset_user" 
+        for=".users_admin.UsersAdmin" 
+        permission="eionet.EditUsers" 
+        class=".users_admin.ResetUser"
+        />
 
-  <browser:page 
-      name="auto_disable_users" 
-      for=".users_admin.UsersAdmin" 
-      permission="eionet.EditUsers" 
-      class=".users_admin.AutomatedUserDisabler"
-      />
+    <browser:page 
+        name="auto_disable_users" 
+        for=".users_admin.UsersAdmin" 
+        permission="eionet.EditUsers" 
+        class=".users_admin.AutomatedUserDisabler"
+        />
 
-  <browser:page 
-      name="bulk_create_user"
-      for=".users_admin.UsersAdmin"
-      permission="eionet.EditUsers"
-      class=".users_admin.BulkUserImporter"
-      />
+    <browser:page 
+        name="bulk_create_user"
+        for=".users_admin.UsersAdmin"
+        permission="eionet.EditUsers"
+        class=".users_admin.BulkUserImporter"
+        />
 
-  <browser:page 
-      name="index.html"
-      for=".roles_editor.NoExtendedManagementRoleError"
-      permission="zope.Public"
-      class=".roles_editor.NoExceptionManagementView"
-      />
+    <browser:page 
+        name="index.html"
+        for=".roles_editor.NoExtendedManagementRoleError"
+        permission="zope.Public"
+        class=".roles_editor.NoExceptionManagementView"
+        />
+
+    <browser:page
+        name="migrate_disabled_emails"
+        for=".users_admin.UsersAdmin"
+        permission='eionet.EditUsers'
+        class='.users_admin.MigrateDisabledEmails'
+        />
 
 </configure>
