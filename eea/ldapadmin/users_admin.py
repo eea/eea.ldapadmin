@@ -278,10 +278,9 @@ class UsersAdmin(SimpleItem, PropertyManager):
             options['search_results'] = results
 
         for row in options.get('search_results', []):
-            if row.get('status') in ['disabled'] or \
-                    'disabled@' in row.get('email', ''):
-                row['email'] = "disabled - %s" % \
-                    agent.get_email_for_disabled_user_dn(row['dn'])
+            if row.get('status') in ['disabled']:
+                row['email'] = "disabled - %s" % row['email']
+
         return self._render_template('zpt/users_index.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'get_statistics')
@@ -581,10 +580,11 @@ class UsersAdmin(SimpleItem, PropertyManager):
             choices.append((org['id'], label))
         widget = SelectWidget(values=choices)
         schema['organisation'].widget = widget
-        if 'disabled@' in form_data.get('email', ''):
-            user_dn = agent._user_dn(user_id)
-            form_data['email'] = "disabled - %s" % \
-                agent.get_email_for_disabled_user_dn(user_dn)
+
+        # if 'disabled@' in form_data.get('email', ''):
+        #     user_dn = agent._user_dn(user_id)
+        #     form_data['email'] = "disabled - %s" % \
+        #         agent.get_email_for_disabled_user_dn(user_dn)
 
         options = {'user': user,
                    'form_data': form_data,
@@ -1403,7 +1403,9 @@ class MigrateDisabledEmails(BrowserView):
         for user_info in disabled_users:
             metadata = self._get_metadata(user_info['metadata'])
             email = agent._get_email_for_disabled_user(metadata)
-            user_info['old_email'] = email
+            user_info['email'] = email
             agent.set_user_info(user_info['id'], user_info)
+            log.info("Migrated disabled email info for user %s",
+                     user_info['id'])
 
         return "done"

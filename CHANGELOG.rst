@@ -3,6 +3,9 @@
 * Feature: also email the NFP that created the user with a confirmation email
   about user creation
   [tiberich #23076]
+* Change: because emails of disabled users are no longer changed, adjust
+  users_admin and password reset tool accordingly
+  [tiberich #24321]
 
 1.4.78 (2015-05-14)
 ------------------------

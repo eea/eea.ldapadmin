@@ -31,8 +31,6 @@ manage_add_pwreset_tool_html = PageTemplateFile('zpt/pwreset_manage_add',
 manage_add_pwreset_tool_html.ldap_config_edit_macro = ldap_config.edit_macro
 manage_add_pwreset_tool_html.config_defaults = lambda: ldap_config.defaults
 
-DISABLED_EMAILS = ['disabled@eionet.europa.eu']
-
 
 def manage_add_pwreset_tool(parent, id, REQUEST=None):
     """ Create a new PasswordResetTool object """
@@ -169,28 +167,25 @@ class PasswordResetTool(SimpleItem):
         if not email:
             email = REQUEST.form['email']
 
-        if email in DISABLED_EMAILS:
-            msg = ("The email %s is attached to disabled users "
-                   "and cannot be used for password reset" % email)
-            _set_session_message(REQUEST, 'error', msg)
-            location = self.absolute_url() + '/'
-            return REQUEST.RESPONSE.redirect(location)
-
         agent = self._get_ldap_agent()
-        users = agent.search_user_by_email(email, no_disabled=True)
+        users = agent.search_user_by_email(email)   #, no_disabled=True)
 
         if users:
             # some people have multiple accounts; send mail for each account.
             for user_info in users:
                 if user_info['status'] == 'disabled':
-                    continue
+                    msg = "This email: %s belongs to a disabled account" % \
+                        user_info['email']
+                    _set_session_message(REQUEST, 'error', msg)
+                    location = self.absolute_url() + '/messages_html?msg=email-disabled'   #?msg=email-sent'
+                else:
+                    token = self._new_token(user_info['id'])
+                    log.info("Sending password recovery email to user %r at %r.",
+                            user_info['id'], email)
+                    self._send_token_email(email, token, user_info)
 
-                token = self._new_token(user_info['id'])
-                log.info("Sending password recovery email to user %r at %r.",
-                         user_info['id'], email)
-                self._send_token_email(email, token, user_info)
+                    location = self.absolute_url() + '/messages_html?msg=email-sent'
 
-            location = self.absolute_url() + '/messages_html?msg=email-sent'
         else:
             log.info("Requested password recovery with invalid email %r.",
                      email)
