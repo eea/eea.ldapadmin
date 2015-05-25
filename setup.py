@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='eea.ldapadmin',
-      version='1.4.79',
+      version='1.4.80',
       author='Eau de Web',
       author_email='office@eaudeweb.ro',
       packages=find_packages(),

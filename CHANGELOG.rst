@@ -1,3 +1,6 @@
+1.4.80 (unreleased)
+------------------------
+
 1.4.79 (2015-05-25)
 ------------------------
 * Feature: also email the NFP that created the user with a confirmation email
