@@ -1,5 +1,7 @@
 1.4.80 (unreleased)
 ------------------------
+* Feature: when creating a user, validate his email with email_validate.
+  [tiberich #18815]
 
 1.4.79 (2015-05-25)
 ------------------------

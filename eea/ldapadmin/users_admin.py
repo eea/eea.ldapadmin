@@ -31,6 +31,7 @@ from ui_common import CommonTemplateLogic   # load_template,
 from ui_common import SessionMessages, TemplateRenderer
 from ui_common import extend_crumbs, TemplateRendererNoWrap
 from unidecode import unidecode
+from validate_email import validate_email
 from zope.component import getUtility
 from zope.component.interfaces import ComponentLookupError
 from zope.sendmail.interfaces import IMailDelivery
@@ -434,10 +435,41 @@ class UsersAdmin(SimpleItem, PropertyManager):
             if list(agent.existing_usernames([value])):
                 raise colander.Invalid(node, 'This username is taken')
 
+        def check_valid_email(node, value):
+            is_valid = validate_email(value, verify=True)
+            if not is_valid:
+                raise colander.Invalid(node, 'This email is invalid')
+
+        skip_email_validation_node = colander.SchemaNode(
+            colander.Boolean(),
+            title='',
+            name='skip_email_validation',
+            description='Skip email validation',
+            widget=deform.widget.CheckboxWidget(),
+        )
+
         schema = user_info_add_schema.clone()
+
+        # add the "skip email validation" field if email fails validation
+        email = form_data.get('email')
+        if email:
+            email = email.strip()
+            is_valid = validate_email(email, verify=True)
+            if not is_valid:
+                email_node = schema['email']
+                pos = schema.children.index(email_node)
+                schema.children.insert(pos+1, skip_email_validation_node)
+
+        # if the skip_email_validation field exists but is not activated,
+        # add an extra validation to the form
+        if not (form_data.get('edit-skip_email_validation') == 'on'):
+            schema['email'].validator = colander.All(
+                schema['email'].validator, check_valid_email)
+
         for children in schema.children:
             help_text = help_messages['create-user'].get(children.name, None)
             setattr(children, 'help_text', help_text)
+
         schema['id'].validator = colander.All(
             schema['id'].validator, no_duplicate_id_validator)
 
@@ -476,6 +508,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 user_id = user_info['id']
                 agent = self._get_ldap_agent(bind=True)
                 with agent.new_action():
+                    user_info.pop('skip_email_validation')
                     try:
                         self._create_user(agent, user_info)
                     except NameAlreadyExists, e:
@@ -1407,5 +1440,6 @@ class MigrateDisabledEmails(BrowserView):
             agent.set_user_info(user_info['id'], user_info)
             log.info("Migrated disabled email info for user %s",
                      user_info['id'])
+            print email
 
         return "done"
