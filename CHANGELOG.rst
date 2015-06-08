@@ -1,3 +1,6 @@
+1.4.82 (unreleased)
+------------------------
+
 1.4.81 (2015-06-08)
 ------------------------
 * Bug fix: fix get_nfps_for_country method, it was not updated for API changes
