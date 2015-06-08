@@ -132,8 +132,8 @@ def get_nfps_for_country(agent, country_code):
                                    filterstr=filterstr,
                                    attrlist=("description",))
 
-    for nfp in nfp_roles:
-        out.append(nfp[1]['id'])
+    for role_id, attrs in nfp_roles:
+        out.append(role_id)
 
     return sorted(out)
 
