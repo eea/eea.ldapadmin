@@ -436,7 +436,11 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 raise colander.Invalid(node, 'This username is taken')
 
         def check_valid_email(node, value):
-            is_valid = validate_email(value, verify=True)
+            is_valid = False
+            try:
+                is_valid = validate_email(value, verify=True)
+            except:
+                raise colander.Invalid(node, 'There was an error checking email validity. Perhaps email server is down?')
             if not is_valid:
                 raise colander.Invalid(node, 'This email is invalid')
 
