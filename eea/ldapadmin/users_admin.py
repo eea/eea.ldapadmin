@@ -1296,7 +1296,7 @@ class AutomatedUserDisabler(BrowserView):
     """ A view that will automatically disable users
     """
 
-    DISABLE_DELTA = timedelta(days=420)
+    DISABLE_DELTA = timedelta(days=780)
     ONE_MONTH = timedelta(days=30)
     SERVICE_URL = "http://ldapmon.eea.europa.eu/export"
     LDAP_PREDISABLE_FIELDNAME = "employeeNumber"
@@ -1377,8 +1377,8 @@ class AutomatedUserDisabler(BrowserView):
                 user['last_login'] = last_login
                 if last_login + self.DISABLE_DELTA < now:
                     if user['pending_disable']:
-                        ts = parser.parse(user['pending_disable'])
-                        if last_login + DISABLE_DELTA + ONE_MONTH < now:
+                        #ts = parser.parse(user['pending_disable'])
+                        if (last_login + self.DISABLE_DELTA + self.ONE_MONTH) < now:
                             users_to_disable.append(user)
                     else:
                         users_to_predisable.append(user)
