@@ -1,4 +1,4 @@
-1.4.82 (unreleased)
+1.4.82 (2015-06-17)
 ------------------------
 * Bug fix: check if validate_email raises error, in case email server can't be contacted
 * Bug fix: added pyDNS and validate_email to dependencies
