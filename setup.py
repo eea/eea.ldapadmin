@@ -25,6 +25,8 @@ setup(name='eea.ldapadmin',
           'requests==1.2.3',
           'sparql-client',
           'python-dateutil',
+          'pyDNS',
+          'validate-email',
       ],
       entry_points={'console_scripts':
                     ['dump_ldap = eea.ldapadmin.ldapdump:dump_ldap',

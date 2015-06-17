@@ -1306,8 +1306,6 @@ class AutomatedUserDisabler(BrowserView):
         return data
 
     def get_ldap_users(self):
-        # agent = self.context._get_ldap_agent(bind=True)
-
         result = []
         reader = getUtility(IDumpReader)
         for dn, attrs in reader.get_dump():
@@ -1377,7 +1375,6 @@ class AutomatedUserDisabler(BrowserView):
                 user['last_login'] = last_login
                 if last_login + self.DISABLE_DELTA < now:
                     if user['pending_disable']:
-                        #ts = parser.parse(user['pending_disable'])
                         if (last_login + self.DISABLE_DELTA + self.ONE_MONTH) < now:
                             users_to_disable.append(user)
                     else:
@@ -1385,6 +1382,10 @@ class AutomatedUserDisabler(BrowserView):
 
         self.predisable_users(users_to_predisable)
         self.disable_users(users_to_disable)
+
+        return "Predisabled %s users, disabled % users" % (
+            len(users_to_predisable), len(users_to_disable)
+        )
 
     def send_disable_notification_email(self, user):
         addr_from = "no-reply@eea.europa.eu"
