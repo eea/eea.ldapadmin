@@ -1,5 +1,7 @@
-1.4.83 (unreleased)
+1.4.83 (2015-06-17)
 ------------------------
+* Bug fix: fix a case when adding user and email validatino didn't fail
+  [tiberich #26590]
 
 1.4.82 (2015-06-17)
 ------------------------

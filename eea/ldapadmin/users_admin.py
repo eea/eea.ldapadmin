@@ -512,7 +512,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 user_id = user_info['id']
                 agent = self._get_ldap_agent(bind=True)
                 with agent.new_action():
-                    user_info.pop('skip_email_validation')
+                    user_info.pop('skip_email_validation', None)
                     try:
                         self._create_user(agent, user_info)
                     except NameAlreadyExists, e:
