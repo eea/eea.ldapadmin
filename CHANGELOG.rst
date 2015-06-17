@@ -1,3 +1,6 @@
+1.4.84 (unreleased)
+------------------------
+
 1.4.83 (2015-06-17)
 ------------------------
 * Bug fix: fix a case when adding user and email validatino didn't fail
