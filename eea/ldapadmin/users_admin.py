@@ -1438,7 +1438,6 @@ class MigrateDisabledEmails(BrowserView):
         return metadata
 
     def __call__(self):
-        import pdb; pdb.set_trace()
         agent = self.context._get_ldap_agent(bind=True)
         disabled_users = agent.get_disabled_users()
 
@@ -1450,81 +1449,37 @@ class MigrateDisabledEmails(BrowserView):
             log.info("Migrated disabled email info for user %s",
                      user_info['id'])
 
-        return "done"
+        return "done" 
 
-# class MigrateDisabledEmailsScript(object):
-#
-#     def _get_metadata(self, metadata):
-#         if not metadata:
-#             metadata = "[]"
-#         metadata = json.loads(metadata)
-#         return metadata
-#
-#     def __call__(self):
-#         import os
-#         from ZEO.ClientStorage import ClientStorage
-#         from ZODB.DB import DB
-#
-#         zeo_addr = os.environ['_ZEO_ADDRESS']
-#         storage = ClientStorage(zeo_addr)
-#         db = DB(storage)
-#         conn = db.open()
-#         root = conn.root()
-#         app = root['Application']
-#         users_editor = app['nfp-eionet']['users']
-#         context = users_editor
-#         agent = context._get_ldap_agent(bind=True)
-#         disabled_users = agent.get_disabled_users()
-#
-#         for user_info in disabled_users:
-#             metadata = self._get_metadata(user_info['metadata'])
-#             email = agent._get_email_for_disabled_user(metadata)
-#             user_info['email'] = email
-#             agent.set_user_info(user_info['id'], user_info)
-#             log.info("Migrated disabled email info for user %s",
-#                      user_info['id'])
 
 def auto_disable_users():
     """ A script to automatically disable users
 
-    Should be run as bin/zope-instance run /path/to/this/disable_users.py
+    Should be run as ``bin/zope-instance run /path/to/this/disable_users.py``
     """
-    import pdb; pdb.set_trace()
-    import zope
-    import transaction
-    from AccessControl.SecurityManagement import newSecurityManager
-    from Testing.makerequest import makerequest
 
-    # Use Zope application server user database (not plone site)
+    from AccessControl.SecurityManagement import newSecurityManager
+    from Globals import DB
+    from Testing.makerequest import makerequest
+    from zope.component import getMultiAdapter
+    from zope.site.hooks import setSite
+    import transaction
+
+    app = DB.open().root()['Application']
 
     def spoofRequest(app):
-        """
-        Make REQUEST variable to be available on the Zope application server.
-
-        This allows acquisition to work properly
-        """
-        # _policy=PermissiveSecurityPolicy()
-        # _oldpolicy=setSecurityPolicy(_policy)
-        #newSecurityManager(None, OmnipotentUser().__of__(app.acl_users))
-
         admin=app.acl_users.getUserById("admin")
         newSecurityManager(None, admin)
 
         return makerequest(app)
 
-    # Enable Faux HTTP request object
     app = spoofRequest(app)
 
-    # Get Plone site object from Zope application server root
-    site = app.unrestrictedTraverse("mysite")
-    site.setupCurrentSkin(app.REQUEST)
-    zope.app.component.hooks.setSite(site)
-
-    # here's an example function
-    from zope.component import getMultiAdapter
-    users = app['nfp-eionet']['users']
+    site = app['nfp-eionet']
+    users = site['users']
     request = users.REQUEST
     view = getMultiAdapter((users, request), name="auto_disable_users")
+    import pdb; pdb.set_trace()
     view()
 
     transaction.commit()
