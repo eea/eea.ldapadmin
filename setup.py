@@ -30,8 +30,10 @@ setup(name='eea.ldapadmin',
       ],
       entry_points={'console_scripts':
                     ['dump_ldap = eea.ldapadmin.ldapdump:dump_ldap',
-                     'update_countries = \
-                        eea.ldapadmin.countries:update_countries',
+                     'update_countries = '
+                        'eea.ldapadmin.countries:update_countries',
+                     'auto_disable_users = eea.ldapadmin.users_admin:'
+                        'auto_disable_users'
                      ]
                     },
       )
