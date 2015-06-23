@@ -1,0 +1,13 @@
+Hello Helpdesk,
+
+This is an automated email from <span tal:replace="options/site_title"></span>!
+
+The following users has been sent messages that their account will be disabled if they don't login in a month:
+
+<span tal:repeat="user options/users_predisabled" tal:omit-tag=""><span tal:replace="user/id"></span></span>
+
+The following users have been automatically disabled, they haven't logged in:
+
+<span tal:repeat="user options/users_disabled" tal:omit-tag=""><span tal:replace="user/id"></span></span>
+
+<span tal:replace="options/site_title"></span>

@@ -21,6 +21,7 @@ from eea.ldapadmin.logic_common import _session_pop
 from eea.ldapadmin.ui_common import NaayaViewPageTemplateFile
 from eea.usersdb import factories
 from eea.usersdb.db_agent import NameAlreadyExists, EmailAlreadyExists
+from eea.usersdb.db_agent import UserNotFound
 from email.mime.text import MIMEText
 from import_export import excel_headers_to_object
 from import_export import generate_excel
@@ -177,7 +178,8 @@ def logged_in_user(request):
     user_id = ''
     if _is_authenticated(request):
         user = request.get('AUTHENTICATED_USER', '')
-        user_id = user.id
+        if user:
+            user_id = user.id
 
     return user_id
 
@@ -1314,6 +1316,8 @@ class AutomatedUserDisabler(BrowserView):
         for dn, attrs in reader.get_dump():
             if not dn.startswith('uid='):
                 continue
+            if not attrs.get('mail'):   # probably a system user
+                continue
             result.append(dict(
                 disabled=attrs.get('employeeType', 'enabled') in ['disabled'],
                 dn=dn,
@@ -1348,7 +1352,10 @@ class AutomatedUserDisabler(BrowserView):
         agent = self.context._get_ldap_agent(bind=True)
 
         for user in users:
-            agent.disable_user(user['username'])
+            username = user.get('username') or user.get('id')
+            if not username:
+                continue
+            agent.disable_user(username)
             self.send_disable_notification_email(user)
 
     def __call__(self):
@@ -1365,24 +1372,34 @@ class AutomatedUserDisabler(BrowserView):
         users_stats = self.get_login_statistics()
         all_ldap_users = self.get_ldap_users()
 
+        agent = self.context._get_ldap_agent(bind=True)
+
         now = datetime.now()
         users_to_disable = []
         users_to_predisable = []
 
-        for user in all_ldap_users:
+        for user in all_ldap_users: #only use all_ldap_users to provide a list of users
             if user['disabled']:
                 continue
-            last_login = users_stats.get(user['username'])
+            username = user['username']
+            try:
+                user = agent.user_info(user['username'])
+            except UserNotFound:
+                continue
+            user['username'] = username
+            last_login = users_stats.get(username)
             if last_login:
                 last_login = parser.parse(last_login)
                 user['last_login'] = last_login
                 if last_login + self.DISABLE_DELTA < now:
                     if user['pending_disable']:
-                        if (last_login + self.DISABLE_DELTA + self.ONE_MONTH) < now:
+                        #if (last_login + self.DISABLE_DELTA + self.ONE_MONTH) < now:
+                        if (last_login + self.DISABLE_DELTA) < now:
                             users_to_disable.append(user)
                     else:
                         users_to_predisable.append(user)
 
+        #import pdb; pdb.set_trace()
         self.predisable_users(users_to_predisable)
         self.disable_users(users_to_disable)
 
@@ -1427,6 +1444,27 @@ class AutomatedUserDisabler(BrowserView):
         message['Subject'] = "[You will be automatically disabled]"
         message.set_payload(body.encode('utf-8'), charset='utf-8')
         _send_email(addr_from, addr_to, message)
+    
+    def send_admin_report_email(self, users_to_predisable, users_to_disable):
+        addr_from = "no-reply@eea.europa.eu"
+        addr_to = 'helpdesk@eea.europa.eu'
+
+        message = MIMEText('')
+        message['From'] = addr_from
+        message['To'] = attr_to
+
+        options = {}
+        options['users_predisable'] = users_to_predisable
+        options['users_disable'] = users_to_disable
+        options['site_title'] = self.context.unrestrictedTraverse('/').title
+
+        body = self.context._render_template.render(
+            "zpt/users/email_report_autodisable.zpt",
+            **options)
+
+        message['Subject'] = "[Report on auto-disabled users]"
+        message.set_payload(body.encode('utf-8'), charset='utf-8')
+        _send_email(addr_from, addr_to, message)
 
 
 class MigrateDisabledEmails(BrowserView):
@@ -1459,6 +1497,7 @@ def auto_disable_users():
     """
 
     from AccessControl.SecurityManagement import newSecurityManager
+    from AccessControl.SpecialUsers import system
     from Globals import DB
     from Testing.makerequest import makerequest
     from zope.component import getMultiAdapter
@@ -1478,8 +1517,9 @@ def auto_disable_users():
     site = app['nfp-eionet']
     users = site['users']
     request = users.REQUEST
+    system.id = u'SystemUser'
+    request.AUTHENTICATED_USER = request['AUTHENTICATED_USER'] = system
     view = getMultiAdapter((users, request), name="auto_disable_users")
-    import pdb; pdb.set_trace()
     view()
 
     transaction.commit()
