@@ -1,5 +1,9 @@
 1.4.84 (unreleased)
 ------------------------
+* Bug fix: fixes to auto-disabling users. It can now be used in production
+* Feature: added a script that can be run from cron that can trigger user
+  autodisabling. Run as ``bin/zope-instance run bin/auto_disable_users``
+  [tiberich 20559]
 
 1.4.83 (2015-06-17)
 ------------------------

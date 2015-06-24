@@ -1329,11 +1329,9 @@ class AutomatedUserDisabler(BrowserView):
 
         return result
 
-    def predisable_users(self, users):
-        agent = self.context._get_ldap_agent(bind=True)
-
+    def predisable_users(self, agent, users):
         for user in users:
-            log.info("User will be disabled the next check %s",
+            log.warn("User will be disabled the next check %s",
                      user['username'])
             self.send_predisable_notification_email(user)
             timestamp = datetime.now().isoformat()
@@ -1348,13 +1346,12 @@ class AutomatedUserDisabler(BrowserView):
                 continue
             assert result[:2] == (ldap.RES_MODIFY, [])
 
-    def disable_users(self, users):
-        agent = self.context._get_ldap_agent(bind=True)
-
+    def disable_users(self, agent, users):
         for user in users:
             username = user.get('username') or user.get('id')
             if not username:
                 continue
+            log.warn("Disabling user %s", username)
             agent.disable_user(username)
             self.send_disable_notification_email(user)
 
@@ -1372,7 +1369,7 @@ class AutomatedUserDisabler(BrowserView):
         users_stats = self.get_login_statistics()
         all_ldap_users = self.get_ldap_users()
 
-        agent = self.context._get_ldap_agent(bind=True)
+        agent = self.context.restrictedTraverse('ldap-roles')._get_ldap_agent(bind=True)
 
         now = datetime.now()
         users_to_disable = []
@@ -1392,16 +1389,17 @@ class AutomatedUserDisabler(BrowserView):
                 last_login = parser.parse(last_login)
                 user['last_login'] = last_login
                 if last_login + self.DISABLE_DELTA < now:
-                    if user['pending_disable']:
-                        #if (last_login + self.DISABLE_DELTA + self.ONE_MONTH) < now:
-                        if (last_login + self.DISABLE_DELTA) < now:
+                    if user.get('pending_disable'):
+                        pending_disable = parser.parse(user['pending_disable'])
+                        if (pending_disable + self.ONE_MONTH) < now:
                             users_to_disable.append(user)
+                            #   if (last_login + self.DISABLE_DELTA + self.ONE_MONTH) < now:
+                            #       users_to_disable.append(user)
                     else:
                         users_to_predisable.append(user)
 
-        #import pdb; pdb.set_trace()
-        self.predisable_users(users_to_predisable)
-        self.disable_users(users_to_disable)
+        self.predisable_users(agent, users_to_predisable)
+        self.disable_users(agent, users_to_disable)
 
         return "Predisabled %s users, disabled % users" % (
             len(users_to_predisable), len(users_to_disable)
