@@ -1378,6 +1378,19 @@ class AutomatedUserDisabler(BrowserView):
             agent.disable_user(username)
             self.send_disable_notification_email(user)
 
+    def remove_pending_users(self, agent, users):
+        for user in users:
+            log.warn("Removing predisable for user %s", user['username'])
+            try:
+                result = agent.conn.modify_s(
+                    agent._user_dn(user['username']),
+                    [(ldap.MOD_REPLACE, self.LDAP_PREDISABLE_FIELDNAME, ''), ]
+                )
+            except ldap.NO_SUCH_OBJECT:
+                log.info("Could not remove predisable for user: %s", user['dn'])
+                continue
+            assert result[:2] == (ldap.RES_MODIFY, [])
+
     def __call__(self):
         # call up the login service report
         # make a list of all users from ldap that are not disabled
@@ -1397,6 +1410,7 @@ class AutomatedUserDisabler(BrowserView):
         now = datetime.now()
         users_to_disable = []
         users_to_predisable = []
+        users_to_remove_pending = []
 
         for user in all_ldap_users: #only use all_ldap_users to provide a list of users
             if user['disabled']:
@@ -1411,9 +1425,17 @@ class AutomatedUserDisabler(BrowserView):
             if last_login:
                 last_login = parser.parse(last_login)
                 user['last_login'] = last_login
+
+                # check if the user has logged during in the one month period
+                pending_disable = user.get('pending_disable')
+                if pending_disable:
+                    pending_disable = parser.parse(pending_disable)
+                    if last_login > pending_disable:
+                        users_to_remove_pending.append(user)
+                        continue
+                
                 if last_login + self.DISABLE_DELTA < now:
-                    if user.get('pending_disable'):
-                        pending_disable = parser.parse(user['pending_disable'])
+                    if pending_disable:
                         if (pending_disable + self.ONE_MONTH) < now:
                             # double check if everything is ok
                             if (last_login + self.DISABLE_DELTA + self.ONE_MONTH) < now:
@@ -1423,6 +1445,7 @@ class AutomatedUserDisabler(BrowserView):
 
         self.predisable_users(agent, users_to_predisable)
         self.disable_users(agent, users_to_disable)
+        self.remove_pending_users(agent, users_to_remove_pending)
 
         self.send_admin_report_email(users_to_predisable, users_to_disable)
 
