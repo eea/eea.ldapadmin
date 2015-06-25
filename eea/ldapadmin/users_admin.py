@@ -1297,6 +1297,29 @@ class ResetUser(BrowserView):
         return self.index(**options)
 
 
+class MigrateDisabledEmails(BrowserView):
+
+    def _get_metadata(self, metadata):
+        if not metadata:
+            metadata = "[]"
+        metadata = json.loads(metadata)
+        return metadata
+
+    def __call__(self):
+        agent = self.context._get_ldap_agent(bind=True)
+        disabled_users = agent.get_disabled_users()
+
+        for user_info in disabled_users:
+            metadata = self._get_metadata(user_info['metadata'])
+            email = agent._get_email_for_disabled_user(metadata)
+            user_info['email'] = email
+            agent.set_user_info(user_info['id'], user_info)
+            log.info("Migrated disabled email info for user %s",
+                     user_info['id'])
+
+        return "done" 
+
+
 class AutomatedUserDisabler(BrowserView):
     """ A view that will automatically disable users
     """
@@ -1392,14 +1415,16 @@ class AutomatedUserDisabler(BrowserView):
                     if user.get('pending_disable'):
                         pending_disable = parser.parse(user['pending_disable'])
                         if (pending_disable + self.ONE_MONTH) < now:
-                            users_to_disable.append(user)
-                            #   if (last_login + self.DISABLE_DELTA + self.ONE_MONTH) < now:
-                            #       users_to_disable.append(user)
+                            # double check if everything is ok
+                            if (last_login + self.DISABLE_DELTA + self.ONE_MONTH) < now:
+                                users_to_disable.append(user)
                     else:
                         users_to_predisable.append(user)
 
         self.predisable_users(agent, users_to_predisable)
         self.disable_users(agent, users_to_disable)
+
+        self.send_admin_report_email(users_to_predisable, users_to_disable)
 
         return "Predisabled %s users, disabled % users" % (
             len(users_to_predisable), len(users_to_disable)
@@ -1449,12 +1474,13 @@ class AutomatedUserDisabler(BrowserView):
 
         message = MIMEText('')
         message['From'] = addr_from
-        message['To'] = attr_to
+        message['To'] = addr_to
 
         options = {}
         options['users_predisable'] = users_to_predisable
         options['users_disable'] = users_to_disable
         options['site_title'] = self.context.unrestrictedTraverse('/').title
+        options['days'] = (self.DISABLE_DELTA + self.ONE_MONTH).days
 
         body = self.context._render_template.render(
             "zpt/users/email_report_autodisable.zpt",
@@ -1463,29 +1489,6 @@ class AutomatedUserDisabler(BrowserView):
         message['Subject'] = "[Report on auto-disabled users]"
         message.set_payload(body.encode('utf-8'), charset='utf-8')
         _send_email(addr_from, addr_to, message)
-
-
-class MigrateDisabledEmails(BrowserView):
-
-    def _get_metadata(self, metadata):
-        if not metadata:
-            metadata = "[]"
-        metadata = json.loads(metadata)
-        return metadata
-
-    def __call__(self):
-        agent = self.context._get_ldap_agent(bind=True)
-        disabled_users = agent.get_disabled_users()
-
-        for user_info in disabled_users:
-            metadata = self._get_metadata(user_info['metadata'])
-            email = agent._get_email_for_disabled_user(metadata)
-            user_info['email'] = email
-            agent.set_user_info(user_info['id'], user_info)
-            log.info("Migrated disabled email info for user %s",
-                     user_info['id'])
-
-        return "done" 
 
 
 def auto_disable_users():
