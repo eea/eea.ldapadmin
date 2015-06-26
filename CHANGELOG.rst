@@ -1,5 +1,7 @@
-1.4.84 (unreleased)
+1.4.84 (2015-06-26)
 ------------------------
+* Bug fix: fix editing of users in organisation context
+  [tiberich #26967]
 * Bug fix: fixes to auto-disabling users. It can now be used in production
 * Feature: added a script that can be run from cron that can trigger user
   autodisabling. Run as ``bin/zope-instance run bin/auto_disable_users``

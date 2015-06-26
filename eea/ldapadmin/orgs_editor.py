@@ -905,8 +905,9 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         REQUEST.RESPONSE.redirect(self.absolute_url() +
                                   '/members_html?id=' + org_id)
 
-    def can_edit_users(self):
-        user = self.REQUEST.AUTHENTICATED_USER
+    def can_edit_users(self, user=None):
+        if user is None:
+            user = self.REQUEST.AUTHENTICATED_USER
         return bool(user.has_permission(eionet_edit_users, self))
 
     def can_edit_members(self, user, org_id, member_id):
