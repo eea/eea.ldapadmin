@@ -2,6 +2,8 @@
 ------------------------
 * Bug fix: properly interogate NFP role when determining NFPs for user
   [tiberich #27547]
+* Bug fix: fix bug in loading countries in NFP tool
+  [tiberich #27547]
 
 1.4.84 (2015-06-26)
 ------------------------

@@ -72,7 +72,8 @@ def load_countries():
     try:
         f = open(os.path.join(LDAP_DISK_STORAGE, "countries.json"), "r")
         data = json.load(f)
-    except (IOError, ValueError) as e:
+        return data
+    except (IOError, ValueError):
         update_countries()
         return load_countries()
     else:

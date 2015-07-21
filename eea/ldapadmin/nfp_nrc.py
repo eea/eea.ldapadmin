@@ -162,6 +162,7 @@ def _get_roles_for_user(agent, user_id, prefix_dn):
 
     return sorted(out, key=operator.attrgetter('role_id'))
 
+
 def get_nfp_roles(agent, user_id=None):  #XXX: a fost request
     """ Returns the nfp roles (as SimplifiedRole instances) for current user
     """
