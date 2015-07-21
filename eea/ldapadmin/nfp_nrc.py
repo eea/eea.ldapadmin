@@ -142,7 +142,12 @@ def _get_roles_for_user(agent, user_id, prefix_dn):
     out = []
     filterstr = ("(&(objectClass=groupOfUniqueNames)(uniqueMember=%s))" %
                  agent._user_dn(user_id))
-    roles = agent.filter_roles("eionet-nrc-*-*",
+    branch =""
+    if "eionet-nfp" in prefix_dn:
+        branch = "eionet-nfp-*-*"
+    elif "eionet-nrc" in prefix_dn:
+        branch = "eionet-nrc-*-*"
+    roles = agent.filter_roles(branch,
                                prefix_dn=prefix_dn,   #"cn=eionet-nrc,cn=eionet"
                                filterstr=filterstr,
                                attrlist=("description",))
@@ -163,7 +168,7 @@ def get_nfp_roles(agent, user_id=None):  #XXX: a fost request
 
     return _get_roles_for_user(agent,
                                user_id,
-                               prefix_dn="cn=eionet-nrc,cn=eionet")
+                               prefix_dn="cn=eionet-nfp,cn=eionet")
 
 
 def get_nrc_roles(agent, user_id):

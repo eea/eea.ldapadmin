@@ -1,3 +1,8 @@
+1.4.85 (2015-07-21)
+------------------------
+* Bug fix: properly interogate NFP role when determining NFPs for user
+  [tiberich #27547]
+
 1.4.84 (2015-06-26)
 ------------------------
 * Bug fix: fix editing of users in organisation context
