@@ -1,5 +1,7 @@
-1.4.86 (unreleased)
+1.4.86 (2015-08-07)
 ------------------------
+* Bug fix: In bulk import users, also add users to desired organisation
+  [tiberich #27767]
 
 1.4.85 (2015-07-21)
 ------------------------

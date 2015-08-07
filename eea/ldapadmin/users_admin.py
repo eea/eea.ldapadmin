@@ -687,6 +687,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
     def _add_to_org(self, agent, org_id, user_id):
         try:
             agent.add_to_org(org_id, [user_id])
+            log.info("USER %s ADDED %s as member of organisation %s",
+                     logged_in_user(self.REQUEST), user_id, org_id)
         except ldap.INSUFFICIENT_ACCESS:
             ids = self.aq_parent.objectIds(["Eionet Organisations Editor"])
             if ids:
@@ -1223,6 +1225,7 @@ class BulkUserImporter(BrowserView):
             for username in existing_users:
                 users_data = filter(lambda x: x['id'] != username, users_data)
 
+        import pdb; pdb.set_trace()
         for user_info in users_data:
             user_id = user_info['id']
             try:
@@ -1231,6 +1234,13 @@ class BulkUserImporter(BrowserView):
             except Exception:
                 errors.append("Error creating %s user" % user_id)
             else:
+
+                new_org_id = user_info['organisation']
+                new_org_id_valid = agent.org_exists(new_org_id)
+
+                if new_org_id_valid:
+                    self.context._add_to_org(agent, new_org_id, user_id)
+
                 try:
                     self.context.send_confirmation_email(user_info)
                 except Exception, e:
@@ -1317,7 +1327,7 @@ class MigrateDisabledEmails(BrowserView):
             log.info("Migrated disabled email info for user %s",
                      user_info['id'])
 
-        return "done" 
+        return "done"
 
 
 class AutomatedUserDisabler(BrowserView):
@@ -1433,7 +1443,7 @@ class AutomatedUserDisabler(BrowserView):
                     if last_login > pending_disable:
                         users_to_remove_pending.append(user)
                         continue
-                
+
                 if last_login + self.DISABLE_DELTA < now:
                     if pending_disable:
                         if (pending_disable + self.ONE_MONTH) < now:
@@ -1490,7 +1500,7 @@ class AutomatedUserDisabler(BrowserView):
         message['Subject'] = "[You will be automatically disabled]"
         message.set_payload(body.encode('utf-8'), charset='utf-8')
         _send_email(addr_from, addr_to, message)
-    
+
     def send_admin_report_email(self, users_to_predisable, users_to_disable):
         addr_from = "no-reply@eea.europa.eu"
         addr_to = 'helpdesk@eea.europa.eu'
