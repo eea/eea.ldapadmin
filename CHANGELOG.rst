@@ -1,3 +1,6 @@
+1.4.87 (unreleased)
+------------------------
+
 1.4.86 (2015-08-07)
 ------------------------
 * Bug fix: In bulk import users, also add users to desired organisation
