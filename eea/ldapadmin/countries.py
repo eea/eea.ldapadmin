@@ -69,6 +69,7 @@ def update_countries():
 
 def load_countries():
     """ Load countries from json file in memory """
+    global COUNTRIES
     try:
         f = open(os.path.join(LDAP_DISK_STORAGE, "countries.json"), "r")
         data = json.load(f)
@@ -80,6 +81,7 @@ def load_countries():
         _country_storage['data'].clear()
         _country_storage['data'].update([(x['code'], x) for x in data])
         _country_storage['time'] = time.time()
+        COUNTRIES = _country_storage['data']
         f.close()
 
 

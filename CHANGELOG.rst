@@ -1,5 +1,7 @@
-1.4.87 (unreleased)
+1.4.87 (2015-08-10)
 ------------------------
+* Bug fix: also update the COUNTRIES dict when loading countries from disk
+  [tiberich #27908]
 
 1.4.86 (2015-08-07)
 ------------------------
