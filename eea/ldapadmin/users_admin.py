@@ -1225,7 +1225,6 @@ class BulkUserImporter(BrowserView):
             for username in existing_users:
                 users_data = filter(lambda x: x['id'] != username, users_data)
 
-        import pdb; pdb.set_trace()
         for user_info in users_data:
             user_id = user_info['id']
             try:
