@@ -1,5 +1,6 @@
 1.4.89 (unreleased)
 ------------------------
+* add option to skip extended email validation to user edit [dumitval]
 
 1.4.88 (2015-08-21)
 ------------------------

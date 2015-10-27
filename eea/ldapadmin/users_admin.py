@@ -440,20 +440,11 @@ class UsersAdmin(SimpleItem, PropertyManager):
             if list(agent.existing_usernames([value])):
                 raise colander.Invalid(node, 'This username is taken')
 
-        def check_valid_email(node, value):
-            is_valid = False
-            try:
-                is_valid = validate_email(value, verify=True)
-            except:
-                raise colander.Invalid(node, 'There was an error checking email validity. Perhaps email server is down?')
-            if not is_valid:
-                raise colander.Invalid(node, 'This email is invalid')
-
         skip_email_validation_node = colander.SchemaNode(
             colander.Boolean(),
             title='',
             name='skip_email_validation',
-            description='Skip email validation',
+            description='Skip extended email validation',
             widget=deform.widget.CheckboxWidget(),
         )
 
@@ -613,6 +604,31 @@ class UsersAdmin(SimpleItem, PropertyManager):
             form_data['organisation'] = org_id
         orgs.sort(lambda x, y: cmp(x['text'], y['text']))
         schema = user_info_edit_schema.clone()
+
+        skip_email_validation_node = colander.SchemaNode(
+            colander.Boolean(),
+            title='',
+            name='skip_email_validation',
+            description='Skip extended email validation',
+            widget=deform.widget.CheckboxWidget(),
+        )
+
+        # add the "skip email validation" field if email fails validation
+        email = form_data.get('email')
+        if email:
+            email = email.strip()
+            is_valid = validate_email(email, verify=True)
+            if not is_valid:
+                email_node = schema['email']
+                pos = schema.children.index(email_node)
+                schema.children.insert(pos+1, skip_email_validation_node)
+
+        # if the skip_email_validation field exists but is not activated,
+        # add an extra validation to the form
+        if not (form_data.get('edit-skip_email_validation') == 'on'):
+            schema['email'].validator = colander.All(
+                schema['email'].validator, check_valid_email)
+
         choices = [('', '-')]
         for org in orgs:
             if org['ldap']:
@@ -643,7 +659,14 @@ class UsersAdmin(SimpleItem, PropertyManager):
         """ view """
         user_id = REQUEST.form['id']
 
-        user_form = deform.Form(user_info_edit_schema)
+        schema = user_info_edit_schema.clone()
+        # if the skip_email_validation field exists but is not activated,
+        # add an extra validation to the form
+        if not (REQUEST.form.get('edit-skip_email_validation') == 'on'):
+            schema['email'].validator = colander.All(
+                schema['email'].validator, check_valid_email)
+
+        user_form = deform.Form(schema)
 
         try:
             new_info = user_form.validate(REQUEST.form.items())
@@ -1396,7 +1419,8 @@ class AutomatedUserDisabler(BrowserView):
                     [(ldap.MOD_REPLACE, self.LDAP_PREDISABLE_FIELDNAME, ''), ]
                 )
             except ldap.NO_SUCH_OBJECT:
-                log.info("Could not remove predisable for user: %s", user['dn'])
+                log.info("Could not remove predisable for user: %s",
+                         user['dn'])
                 continue
             assert result[:2] == (ldap.RES_MODIFY, [])
 
@@ -1414,14 +1438,16 @@ class AutomatedUserDisabler(BrowserView):
         users_stats = self.get_login_statistics()
         all_ldap_users = self.get_ldap_users()
 
-        agent = self.context.restrictedTraverse('ldap-roles')._get_ldap_agent(bind=True)
+        agent = self.context.restrictedTraverse('ldap-roles')._get_ldap_agent(
+            bind=True)
 
         now = datetime.now()
         users_to_disable = []
         users_to_predisable = []
         users_to_remove_pending = []
 
-        for user in all_ldap_users: #only use all_ldap_users to provide a list of users
+        # only use all_ldap_users to provide a list of users
+        for user in all_ldap_users:
             if user['disabled']:
                 continue
             username = user['username']
@@ -1447,7 +1473,8 @@ class AutomatedUserDisabler(BrowserView):
                     if pending_disable:
                         if (pending_disable + self.ONE_MONTH) < now:
                             # double check if everything is ok
-                            if (last_login + self.DISABLE_DELTA + self.ONE_MONTH) < now:
+                            if (last_login + self.DISABLE_DELTA +
+                                    self.ONE_MONTH) < now:
                                 users_to_disable.append(user)
                     else:
                         users_to_predisable.append(user)
@@ -1534,13 +1561,12 @@ def auto_disable_users():
     from Globals import DB
     from Testing.makerequest import makerequest
     from zope.component import getMultiAdapter
-    from zope.site.hooks import setSite
     import transaction
 
     app = DB.open().root()['Application']
 
     def spoofRequest(app):
-        admin=app.acl_users.getUserById("admin")
+        admin = app.acl_users.getUserById("admin")
         newSecurityManager(None, admin)
 
         return makerequest(app)
@@ -1557,3 +1583,16 @@ def auto_disable_users():
 
     transaction.commit()
     app._p_jar.sync()
+
+
+def check_valid_email(node, value):
+    is_valid = False
+    try:
+        is_valid = validate_email(value, verify=True)
+    except:
+        raise colander.Invalid(
+            node,
+            'There was an error checking email validity. '
+            'Perhaps email server is down?')
+    if not is_valid:
+        raise colander.Invalid(node, 'This email is invalid')

@@ -134,7 +134,7 @@
                         ['text-input', 'large']);
                         name string:${field/name}:utf8:ustring;
                         value field/value" />
-                    <input type="checkbox" tal:condition="is_checkbox" class="account-checkbox" 
+                    <input type="checkbox" tal:condition="is_checkbox" class="account-checkbox"
                         tal:attributes="id field_id; name field_id" />
                     <textarea tal:condition="is_textarea"
                         class="account-textarea large"

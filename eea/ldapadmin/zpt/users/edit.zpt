@@ -61,7 +61,7 @@
                         field_name schema_field/name;
                         field python:{
                           'name': field_name,
-                          'value': options['form_data'][field_name],
+                          'value': options['form_data'].get(field_name),
                           'label': schema_field.description,
                           'error': options['errors'].get(field_name, None),
                           'widget': schema_field.widget,
@@ -99,9 +99,10 @@
     <td tal:define="widget_template field/widget/template|string:textinput;
                     input_classes python:['error'] if field['error'] else [];
                     is_textarea python: widget_template == 'textarea';
-                    is_select python: widget_template=='select';">
+                    is_select python: widget_template=='select';
+                    is_checkbox python: widget_template=='checkbox';">
       <span tal:condition="field/required"/>
-      <input tal:condition="python: not (is_textarea or is_select)"
+      <input tal:condition="python: not (is_textarea or is_select or is_checkbox)"
              type="text" size="50"
              tal:attributes="id field_id;
                              class python:' '.join(input_classes +
@@ -109,6 +110,8 @@
                              name string:${field/name}:utf8:ustring;
                              disabled disabled_user;
                              value field/value" />
+      <input type="checkbox" tal:condition="is_checkbox" class="account-checkbox"
+             tal:attributes="id field_id; name field_id" />
       <textarea tal:condition="is_textarea"
                 class="account-textarea large"
                 tal:attributes="id field_id;
@@ -117,23 +120,27 @@
                                     ['account-textarea', 'large']);
                                 name string:${field/name}:utf8:ustring"
                 tal:content="field/value"></textarea>
-    <select tal:condition="is_select"
-        tal:attributes="id field_id; 
-                        disabled disabled_user;
-                        name string:${field/name}:utf8:ustring"
-                        >
-        <tal:def tal:define="choices python:field['widget'].values">
-            <option 
-                tal:repeat="ch choices" 
-                tal:attributes="value python:ch[0]; selected python:ch[0] == field['value']" 
-                tal:content="python: ch[1]">1</option>
-        </tal:def>
-    </select>
+      <select tal:condition="is_select"
+          tal:attributes="id field_id; 
+                          disabled disabled_user;
+                          name string:${field/name}:utf8:ustring"
+                          >
+          <tal:def tal:define="choices python:field['widget'].values">
+              <option 
+                  tal:repeat="ch choices" 
+                  tal:attributes="value python:ch[0]; selected python:ch[0] == field['value']" 
+                  tal:content="python: ch[1]">1</option>
+          </tal:def>
+      </select>
 
-      <p class="error-hint"
-         tal:attributes="id string:error-${field_id}"
-         tal:condition="field/error"
-         tal:content="field/error" />
+      <tal:def define="errors python: isinstance(field['error'], list) and field['error'] or [field['error']]">
+        <tal:rep tal:repeat="error errors">
+          <p class="error-hint"
+             tal:attributes="id string:error-${field_id}"
+             tal:condition="error"
+             tal:content="error" />
+        </tal:rep>
+      </tal:def>
     </td>
   </tal:block>
 
