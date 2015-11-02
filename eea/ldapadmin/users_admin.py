@@ -77,8 +77,10 @@ def generate_password():
 
 
 def generate_user_id(first_name, last_name, agent, id_list):
-    first_name = unidecode(first_name).replace('-', '').replace("'", "")
-    last_name = unidecode(last_name).replace('-', '').replace("'", "")
+    first_name = unidecode(first_name).replace(
+        '-', '').replace("'", "").replace(" ", "")
+    last_name = unidecode(last_name).replace(
+        '-', '').replace("'", "").replace(" ", "")
     min_first_length = min(first_name, 3)
     uid1 = last_name[:8-min_first_length]
     uid2 = first_name[:8-len(uid1)]
@@ -1218,7 +1220,7 @@ class BulkUserImporter(BrowserView):
                 if count > 1:
                     errors.append('Duplicate email: %s appears %d times'
                                   % (email, count))
-                    users_data = filter(lambda x: x['email'] != email,
+                    users_data = filter(lambda x: x['email'] != email.lower(),
                                         users_data)
 
         if len(usernames) != len(set(usernames)):
@@ -1239,7 +1241,8 @@ class BulkUserImporter(BrowserView):
                 errors.append("The following email is already in database: %s"
                               % email)
             for email in existing_emails:
-                users_data = filter(lambda x: x['email'] != email, users_data)
+                users_data = filter(lambda x: x['email'] != email.lower(),
+                                    users_data)
 
         if existing_users:
             for user_id in existing_users:

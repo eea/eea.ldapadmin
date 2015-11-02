@@ -32,7 +32,7 @@ def excel_headers_to_object(properties):
     return {
         'id': properties.get('user id'),
         'password': str(properties.get('password')),
-        'email': properties.get('e-mail*'),
+        'email': properties.get('e-mail*').lower(),
         'first_name': properties.get('first name*'),
         'last_name': properties.get('last name*'),
         'job_title': properties.get('job title'),
