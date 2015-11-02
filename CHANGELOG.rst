@@ -1,4 +1,7 @@
-1.4.90 (unreleased)
+1.4.91 (unreleased)
+------------------------
+
+1.4.90 (2015-11-02)
 ------------------------
 * fix creation from excel (crashes with blanks in user name and
   uppercase letters in email [dumitval]
