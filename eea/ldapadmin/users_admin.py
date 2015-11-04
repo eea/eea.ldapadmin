@@ -821,9 +821,10 @@ class UsersAdmin(SimpleItem, PropertyManager):
     def enable_user_action(self, REQUEST):
         """ Performing the enable user action """
         id = REQUEST.form['id']
+        restore_roles = REQUEST.form.get('restore_roles')
         agent = self._get_ldap_agent(bind=True)
         with agent.new_action():
-            agent.enable_user(id)
+            agent.enable_user(id, restore_roles=restore_roles)
 
         log.info("%s ENABLED USER %s", logged_in_user(REQUEST), id)
 

@@ -11,20 +11,25 @@
     <form tal:define="user options/user"
           tal:attributes="action string:enable_user_action"
           method="post">
-    
-      <p class="confirm-delete">
+
+      <div class="field confirm-delete">
         Are you sure you want to enable the user
         <em tal:content="user/full_name"></em>
         <tt tal:content="string:(${options/user/id})" />?
-      </p>
-    
-      <p>
+      </div>
+
+      <div class="field-inline">
+        <label for="restore_roles">Restore user roles</label>
+        <input type="checkbox" name="restore_roles" checked="checked" />
+      </div>
+
+      <div class="field">
         <input type="hidden" name="id" tal:attributes="value user/id"/>
         <input type="submit" value="Yes, enable"/>
         <a tal:attributes="href string:${common/base_url}/edit_user?id=${user/id}"
             >Cancel</a>
-      </p>
-    
+      </div>
+
     </form>
 </div>
 
