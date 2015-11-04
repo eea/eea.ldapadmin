@@ -851,9 +851,10 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 mailer.send(addr_from, [addr_to], message)
 
         when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        extra = ''
         if restore_roles:
             extra = ', previous roles restored'
+        else:
+            extra = ', previous roles NOT restored'
         _set_session_message(REQUEST, 'info',
                              'Account enabled for "%s (%s)"%s.' % (id, when,
                                                                    extra))
