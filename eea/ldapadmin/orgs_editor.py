@@ -416,7 +416,9 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
     def organisation(self, REQUEST):
         """ Index of an organisation """
         nfp_country = self.nfp_for_country()
-        org_id = REQUEST.form['id']
+        org_id = REQUEST.form.get('id')
+        if not org_id:
+            return REQUEST.RESPONSE.redirect(self.absolute_url())
         agent = self._get_ldap_agent()
         org_info = agent.org_info(org_id)
         if not (self.checkPermissionView()
