@@ -1,5 +1,9 @@
-1.4.92 (unreleased)
+1.4.93 (unreleased)
 ------------------------
+
+1.4.92 (2016-02-23)
+------------------------
+* handle missing id in organisations editor [dumitval]
 
 1.4.91 (2015-11-04)
 ------------------------
