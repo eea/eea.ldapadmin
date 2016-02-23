@@ -953,17 +953,18 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             form_data['user_id'] = member['uid']
 
         orgs = agent.all_organisations()
-        orgs = [{'id':k, 'text':v['name'], 'ldap':True} for k,v in orgs.items()]
+        orgs = [{'id': k, 'text': v['name'], 'ldap': True} for
+                k, v in orgs.items()]
         user_orgs = list(agent.user_organisations(user_id))
         if not user_orgs:
             org = form_data['organisation']
             if org:
-                orgs.append({'id':org, 'text':org, 'ldap':False})
+                orgs.append({'id': org, 'text': org, 'ldap': False})
         else:
             org = user_orgs[0]
             org_id = agent._org_id(org)
             form_data['organisation'] = org_id
-        orgs.sort(lambda x,y:cmp(x['text'], y['text']))
+        orgs.sort(lambda x, y: cmp(x['text'], y['text']))
         schema = user_info_edit_schema.clone()
         choices = [('-', '-')]
         for org in orgs:
@@ -1069,7 +1070,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                     org_agent = obj._get_ldap_agent(bind=True)
                     try:
                         org_agent.remove_from_org(org_id, [user_id])
-                    except ldap.NO_SUCH_ATTRIBUTE:    #user is not in org
+                    except ldap.NO_SUCH_ATTRIBUTE:    # user is not in org
                         pass
                 else:
                     raise
