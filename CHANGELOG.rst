@@ -1,5 +1,6 @@
 1.4.93 (unreleased)
 ------------------------
+* allow country filtering of organisations [dumitval]
 
 1.4.92 (2016-02-23)
 ------------------------

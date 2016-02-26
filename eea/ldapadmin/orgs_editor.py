@@ -171,6 +171,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
     def index_html(self, REQUEST):
         """ Index of organisations """
+        country = REQUEST.get('country')
         nfp_country = self.nfp_for_country()
         if self.title != 'National Organisations':
             nfp_country = None
@@ -178,7 +179,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             raise Unauthorized
         agent = self._get_ldap_agent()
         orgs_by_id = agent.all_organisations()
-        countries = dict(get_country_options(country=nfp_country))
+        countries = dict(get_country_options(country=nfp_country or country))
         orgs = []
         for org_id, info in orgs_by_id.iteritems():
             country = countries.get(info['country'])
