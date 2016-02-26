@@ -1,4 +1,7 @@
-1.4.93 (unreleased)
+1.4.94 (unreleased)
+------------------------
+
+1.4.93 (2016-02-26)
 ------------------------
 * allow country filtering of organisations [dumitval]
 
