@@ -36,10 +36,10 @@
             All <tal:block replace="common/network_name" /> roles
         </option>
         <option value='country_nfp'>
-            Nantional Focal Points
+            National Focal Points
         </option>
         <option value='country_nrc'>
-            Nantional Reference Centres
+            National Reference Centres
         </option>
     </select>
     <input type="submit" value="Go" id="shortcut_queries"
