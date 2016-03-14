@@ -8,7 +8,7 @@ setup(name='eea.ldapadmin',
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-          'eea.usersdb>=1.3.31',
+          'eea.usersdb>=1.3.33',
           'naaya.ldapdump',
 
           'BeautifulSoup',
