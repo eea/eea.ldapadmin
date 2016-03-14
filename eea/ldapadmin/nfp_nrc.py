@@ -21,6 +21,7 @@ from eea.ldapadmin.users_admin import eionet_edit_users
 from eea.ldapadmin.users_admin import generate_password
 from eea.ldapadmin.users_admin import generate_user_id
 from eea.ldapadmin.users_admin import get_duplicates_by_name
+from eea.ldapadmin.users_admin import _transliterate
 from eea.ldapadmin.users_admin import user_info_add_schema
 from eea.usersdb.db_agent import NameAlreadyExists, EmailAlreadyExists
 from email.mime.text import MIMEText
@@ -869,6 +870,9 @@ class CreateUser(BrowserView):
             try:
                 user_form = deform.Form(schema)
                 user_info = user_form.validate(form_data.items())
+                user_info['search_helper'] = _transliterate(
+                    user_info['first_name'], user_info['last_name'],
+                    user_info['full_name_native'], user_info['search_helper'])
             except deform.ValidationFailure, e:
                 for field_error in e.error.children:
                     errors[field_error.node.name] = field_error.msg

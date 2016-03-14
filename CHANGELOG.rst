@@ -1,5 +1,6 @@
 1.4.94 (unreleased)
 ------------------------
+* add name in native language and search helper to user attributes [dumitval]
 
 1.4.93 (2016-02-26)
 ------------------------
