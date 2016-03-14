@@ -142,15 +142,14 @@ def _get_roles_for_user(agent, user_id, prefix_dn):
     out = []
     filterstr = ("(&(objectClass=groupOfUniqueNames)(uniqueMember=%s))" %
                  agent._user_dn(user_id))
-    branch =""
+    branch = ""
     if "eionet-nfp" in prefix_dn:
         branch = "eionet-nfp-*-*"
     elif "eionet-nrc" in prefix_dn:
         branch = "eionet-nrc-*-*"
-    roles = agent.filter_roles(branch,
-                               prefix_dn=prefix_dn,   #"cn=eionet-nrc,cn=eionet"
-                               filterstr=filterstr,
-                               attrlist=("description",))
+    roles = agent.filter_roles(
+        branch, prefix_dn=prefix_dn,  # "cn=eionet-nrc,cn=eionet"
+        filterstr=filterstr, attrlist=("description",))
 
     for nrc in roles:
         try:
@@ -163,7 +162,7 @@ def _get_roles_for_user(agent, user_id, prefix_dn):
     return sorted(out, key=operator.attrgetter('role_id'))
 
 
-def get_nfp_roles(agent, user_id=None):  #XXX: a fost request
+def get_nfp_roles(agent, user_id=None):  # XXX: a fost request
     """ Returns the nfp roles (as SimplifiedRole instances) for current user
     """
 
@@ -295,6 +294,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         return extend_crumbs(crumbs_html, self.absolute_url(), extra_crumbs)
 
     security.declarePrivate('_allowed')
+
     def _allowed(self, agent, request, country_code):
         """
         Tests if logged in user is allowed to manage NRC members for
@@ -319,10 +319,12 @@ class NfpNrc(SimpleItem, PropertyManager):
             return True
 
     security.declareProtected(view_management_screens, 'get_config')
+
     def get_config(self):
         return dict(self._config)
 
     security.declareProtected(view_management_screens, 'manage_edit_save')
+
     def manage_edit_save(self, REQUEST):
         """ save changes to configuration """
         self._config.update(ldap_config.read_form(REQUEST.form, edit=True))
@@ -337,6 +339,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         return agent
 
     security.declareProtected(view, 'index_html')
+
     def index_html(self, REQUEST):
         """ view """
         if not _is_authenticated(REQUEST):
@@ -348,6 +351,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         return self._render_template('zpt/nfp_nrc/index.zpt', **options)
 
     security.declareProtected(eionet_access_nfp_nrc, 'nrcs')
+
     def nrcs(self, REQUEST):
         """ view nrcs and members in these roles """
 
@@ -386,6 +390,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         return self._render_template('zpt/nfp_nrc/nrcs.zpt', **options)
 
     security.declareProtected(eionet_access_nfp_nrc, 'add_member_html')
+
     def add_member_html(self, REQUEST):
         """ view to add a member as"""
 
@@ -416,6 +421,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         return self._render_template('zpt/nfp_nrc/add_member.zpt', **options)
 
     security.declareProtected(eionet_access_nfp_nrc, 'add_user')
+
     def add_user(self, REQUEST):
         """ Add user `user_id` to role `role_id`;
 
@@ -437,8 +443,9 @@ class NfpNrc(SimpleItem, PropertyManager):
 
         # test if the user to be added is member of a national organisation
         if not get_national_org(agent, user_id, role_id):
-            msg += "The user you added as an NRC does not have a sufficient"\
-            " reference to an organisation for your country. Please corect!"
+            msg += ("The user you added as an NRC does not have a mandatory"
+                    " reference to an organisation for your country. "
+                    "Please corect!")
 
         _set_session_message(REQUEST, 'info', msg)
 
@@ -450,6 +457,7 @@ class NfpNrc(SimpleItem, PropertyManager):
                                   (country_code, role_id))
 
     security.declareProtected(eionet_access_nfp_nrc, 'remove_members_html')
+
     def remove_members_html(self, REQUEST):
         """ Bulk-remove several members """
 
@@ -476,6 +484,7 @@ class NfpNrc(SimpleItem, PropertyManager):
                                      **options)
 
     security.declareProtected(eionet_access_nfp_nrc, 'remove_members')
+
     def remove_members(self, REQUEST):
         """ Remove several members from a role """
 
@@ -505,6 +514,7 @@ class NfpNrc(SimpleItem, PropertyManager):
                                   (country_code, role_id))
 
     security.declareProtected(eionet_access_nfp_nrc, 'edit_member')
+
     def edit_member(self, REQUEST):
         """ Update profile of a member of the NRC role """
         agent = self._get_ldap_agent()
@@ -564,6 +574,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         return self._render_template('zpt/nfp_nrc/edit_member.zpt', **options)
 
     security.declareProtected(eionet_access_nfp_nrc, 'edit_member_action')
+
     def edit_member_action(self, REQUEST):
         """ Edit a member: the action handler """
 
@@ -652,6 +663,7 @@ class NfpNrc(SimpleItem, PropertyManager):
                     raise
 
     security.declareProtected(eionet_access_nfp_nrc, 'set_pcp')
+
     def set_pcp(self, REQUEST):
         """ callback that saves the PCP """
 
@@ -680,6 +692,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         return bool(user.has_permission(eionet_edit_users, self))
 
     security.declarePrivate('_find_duplicates')
+
     def _find_duplicates(self, fname, lname, email):
         """ find similar users """
         duplicate_records = []
@@ -890,7 +903,7 @@ class CreateUser(BrowserView):
                             self.send_confirmation_email(user_info)
                             self.send_password_reset_email(user_info)
 
-                        #self._send_new_account_email_to_nfps(user_id)
+                        # self._send_new_account_email_to_nfps(user_id)
                         when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         msg = "User %s created (%s)" % (user_id, when)
                         _set_session_message(self.request, 'info', msg)
