@@ -26,6 +26,7 @@ setup(name='eea.ldapadmin',
           'sparql-client',
           'python-dateutil',
           'pyDNS',
+          'transliterate',
           'validate-email',
       ],
       entry_points={'console_scripts':
