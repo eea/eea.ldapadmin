@@ -1114,8 +1114,12 @@ def _send_email(addr_from, addr_to, message):
         mailer = getUtility(IMailDelivery, name="Mail")
         mailer.send(addr_from, [addr_to], message.as_string())
     except ComponentLookupError:
-        mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
-        mailer.send(addr_from, [addr_to], message)
+        try:
+            mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
+            mailer.send(addr_from, [addr_to], message)
+        except TypeError:
+            mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
+            mailer.send(addr_from, [addr_to], message.as_string())
 
 
 class BulkUserImporter(BrowserView):

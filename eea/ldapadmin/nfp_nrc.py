@@ -869,6 +869,8 @@ class CreateUser(BrowserView):
             try:
                 user_form = deform.Form(schema)
                 user_info = user_form.validate(form_data.items())
+                user_info['destinationIndicator'] = user_info[
+                    'destinationIndicator'].replace('&', 'and')
             except deform.ValidationFailure, e:
                 for field_error in e.error.children:
                     errors[field_error.node.name] = field_error.msg

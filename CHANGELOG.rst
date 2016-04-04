@@ -1,5 +1,6 @@
 1.4.94 (unreleased)
 ------------------------
+* handle weird limitation of ldap field destinationIndicator [dumitval]
 * handling for missing org and user_id in nfp user edit page [dumitval]
 * fix typo in roles_filter_form [dumitval]
 
