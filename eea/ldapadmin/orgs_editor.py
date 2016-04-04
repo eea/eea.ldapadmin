@@ -935,15 +935,24 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
     def edit_member(self, REQUEST):
         """ Update profile of a member of the organisation """
         user = REQUEST.AUTHENTICATED_USER
-        org_id = REQUEST.form['org_id']
-        user_id = REQUEST.form['user_id']
+        org_id = REQUEST.form.get('org_id')
+        user_id = REQUEST.form.get('user_id')
+        if not (org_id and user_id):
+            if org_id:
+                _set_session_message(REQUEST, 'error',
+                                     "The user id is mandatory")
+                return REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                                 '/members_html?id=' + org_id)
+            else:
+                _set_session_message(REQUEST, 'error',
+                                     "The organisation id is mandatory")
+                return REQUEST.RESPONSE.redirect(self.absolute_url())
         if not self.can_edit_members(user, org_id, user_id):
             _set_session_message(REQUEST, 'error',
                                  "You are not allowed to edit user %s" %
                                  user_id)
-            REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                      '/members_html?id=' + org_id)
-            return None
+            return REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                             '/members_html?id=' + org_id)
         errors = _session_pop(REQUEST, SESSION_FORM_ERRORS, {})
         agent = self._get_ldap_agent(bind=True)
         member = agent.user_info(user_id)

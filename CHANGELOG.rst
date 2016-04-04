@@ -1,5 +1,6 @@
 1.4.94 (unreleased)
 ------------------------
+* handling for missing org and user_id in nfp user edit page [dumitval]
 * fix typo in roles_filter_form [dumitval]
 
 1.4.93 (2016-02-26)
