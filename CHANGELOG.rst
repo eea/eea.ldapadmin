@@ -1,4 +1,7 @@
-1.4.94 (unreleased)
+1.4.95 (unreleased)
+------------------------
+
+1.4.94 (2016-04-04)
 ------------------------
 * handle weird limitation of ldap field destinationIndicator [dumitval]
 * handling for missing org and user_id in nfp user edit page [dumitval]
