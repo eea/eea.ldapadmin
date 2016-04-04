@@ -680,7 +680,11 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
     def members_html(self, REQUEST):
         """ view """
 
-        org_id = REQUEST.form['id']
+        org_id = REQUEST.form.get('id')
+        if not org_id:
+            _set_session_message(REQUEST, 'error',
+                                 ("The organisation id is mandatory"))
+            return REQUEST.RESPONSE.redirect(self.absolute_url())
         agent = self._get_ldap_agent()
 
         org_members = []
