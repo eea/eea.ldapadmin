@@ -36,6 +36,7 @@ from validate_email import validate_email
 from zope.component import getUtility
 from zope.component.interfaces import ComponentLookupError
 from zope.sendmail.interfaces import IMailDelivery
+from transliterate import translit, get_available_language_codes
 import colander
 import deform
 import jellyfish
@@ -65,6 +66,7 @@ user_info_add_schema.children.insert(0, usersdb.schema._uid_node)
 user_info_add_schema.children.insert(1, usersdb.schema._password_node)
 user_info_add_schema['postal_address'].widget = deform.widget.TextAreaWidget()
 user_info_edit_schema['postal_address'].widget = deform.widget.TextAreaWidget()
+user_info_add_schema['search_helper'].widget = deform.widget.TextAreaWidget()
 
 CONFIG = getConfiguration()
 FORUM_URL = getattr(CONFIG, 'environment', {}).get('FORUM_URL', '')
@@ -501,6 +503,9 @@ class UsersAdmin(SimpleItem, PropertyManager):
             try:
                 user_form = deform.Form(schema)
                 user_info = user_form.validate(form_data.items())
+                user_info['search_helper'] = _transliterate(
+                    user_info['first_name'], user_info['last_name'],
+                    user_info['full_name_native'], user_info['search_helper'])
             except deform.ValidationFailure, e:
                 for field_error in e.error.children:
                     errors[field_error.node.name] = field_error.msg
@@ -597,7 +602,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 for k, v in orgs.items()]
         user_orgs = list(agent.user_organisations(user_id))
         if not user_orgs:
-            org = form_data['organisation']
+            org = form_data.get('organisation')
             if org:
                 orgs.append({'id': org, 'text': org, 'ldap': False})
         else:
@@ -690,6 +695,10 @@ class UsersAdmin(SimpleItem, PropertyManager):
             # make a check if user is changing the organisation
             user_orgs = [agent._org_id(org)
                          for org in list(agent.user_organisations(user_id))]
+
+            new_info['search_helper'] = _transliterate(
+                new_info['first_name'], new_info['last_name'],
+                new_info['full_name_native'], new_info['search_helper'])
 
             with agent.new_action():
                 if not (new_org_id in user_orgs):
@@ -1114,12 +1123,11 @@ def _send_email(addr_from, addr_to, message):
         mailer = getUtility(IMailDelivery, name="Mail")
         mailer.send(addr_from, [addr_to], message.as_string())
     except ComponentLookupError:
+        mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
         try:
-            mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
-            mailer.send(addr_from, [addr_to], message)
-        except TypeError:
-            mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
             mailer.send(addr_from, [addr_to], message.as_string())
+        except AssertionError:
+            mailer.send(addr_from, [addr_to], message)
 
 
 class BulkUserImporter(BrowserView):
@@ -1127,6 +1135,8 @@ class BulkUserImporter(BrowserView):
     """
     buttons = ('download_template', 'bulk_create')
     TEMPLATE_COLUMNS = ["User ID", "Password", "First Name*", "Last Name*",
+                        "Full name (native language)",
+                        "Search helper (ASCII characters only!)",
                         "E-mail*", "Job Title", "URL", "Postal Address",
                         "Telephone Number", "Mobile Telephone Number",
                         "Fax Number", "Organisation", "Reason to create"]
@@ -1262,6 +1272,9 @@ class BulkUserImporter(BrowserView):
                 users_data = filter(lambda x: x['id'] != username, users_data)
 
         for user_info in users_data:
+            user_info['search_helper'] = _transliterate(
+                user_info['first_name'], user_info['last_name'],
+                user_info['full_name_native'], user_info['search_helper'])
             user_id = user_info['id']
             try:
                 self.context._create_user(agent, user_info,
@@ -1609,3 +1622,36 @@ def check_valid_email(node, value):
             'Perhaps email server is down?')
     if not is_valid:
         raise colander.Invalid(node, 'This email is invalid')
+
+
+def _transliterate(first_name, last_name, full_name_native, search_helper):
+    vocab = set(first_name.split(' ') + last_name.split(' ') +
+                full_name_native.split(' ') + search_helper.split(' '))
+    langs = get_available_language_codes()
+    ascii_values = []
+    translate_table = {
+        0xe4: ord('a'),
+        0xc4: ord('A'),
+        0xf6: ord('o'),
+        0xd6: ord('O'),
+        0xfc: ord('u'),
+        0xdc: ord('U'),
+        }
+
+    for name in vocab:
+        ascii_values.append(unidecode(name))
+        for lang in langs:
+            try:
+                ascii_values.append(
+                    str(translit(name, lang, reversed=True)))
+            except UnicodeEncodeError:
+                # if we encounter other characters = other languages
+                # than German
+                pass
+        try:
+            ascii_values.append(
+                str(name.replace(u'\xdf', 'ss').translate(translate_table)))
+        except UnicodeEncodeError:
+            # if we encounter other characters = other languages than German
+            pass
+    return ' '.join(sorted(set(ascii_values))).strip()

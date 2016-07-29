@@ -156,7 +156,10 @@ class PasswordResetTool(SimpleItem):
             mailer.send(addr_from, [addr_to], message.as_string())
         except ComponentLookupError:
             mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
-            mailer.send(addr_from, [addr_to], message)
+            try:
+                mailer.send(addr_from, [addr_to], message.as_string())
+            except AssertionError:
+                mailer.send(addr_from, [addr_to], message)
 
     security.declareProtected(view, 'ask_for_password_reset')
 
@@ -168,7 +171,7 @@ class PasswordResetTool(SimpleItem):
             email = REQUEST.form['email']
 
         agent = self._get_ldap_agent()
-        users = agent.search_user_by_email(email)   #, no_disabled=True)
+        users = agent.search_user_by_email(email)   # , no_disabled=True)
 
         if users:
             # some people have multiple accounts; send mail for each account.
@@ -177,14 +180,18 @@ class PasswordResetTool(SimpleItem):
                     msg = "This email: %s belongs to a disabled account" % \
                         user_info['email']
                     _set_session_message(REQUEST, 'error', msg)
-                    location = self.absolute_url() + '/messages_html?msg=email-disabled'   #?msg=email-sent'
+                    location = (
+                        self.absolute_url() +
+                        '/messages_html?msg=email-disabled')
                 else:
                     token = self._new_token(user_info['id'])
-                    log.info("Sending password recovery email to user %r at %r.",
-                            user_info['id'], email)
+                    log.info(
+                        "Sending password recovery email to user %r at %r.",
+                        user_info['id'], email)
                     self._send_token_email(email, token, user_info)
 
-                    location = self.absolute_url() + '/messages_html?msg=email-sent'
+                    location = (self.absolute_url() +
+                                '/messages_html?msg=email-sent')
 
         else:
             log.info("Requested password recovery with invalid email %r.",
@@ -267,6 +274,7 @@ class PasswordResetTool(SimpleItem):
         REQUEST.RESPONSE.redirect(location)
 
     security.declareProtected(view, 'can_edit_users')
+
     def can_edit_users(self):
         user = self.REQUEST.AUTHENTICATED_USER
         return bool(user.has_permission(eionet_edit_users, self))
