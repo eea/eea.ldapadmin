@@ -444,11 +444,7 @@ class NfpNrc(SimpleItem, PropertyManager):
 
         # test if the user to be added is member of a national organisation
         if not get_national_org(agent, user_id, role_id):
-<<<<<<< HEAD
-            msg += ("The user you added as an NRC does not have a sufficient"
-=======
             msg += ("The user you added as an NRC does not have a mandatory"
->>>>>>> ldap_search_field
                     " reference to an organisation for your country. "
                     "Please corect!")
 
@@ -874,14 +870,11 @@ class CreateUser(BrowserView):
             try:
                 user_form = deform.Form(schema)
                 user_info = user_form.validate(form_data.items())
-<<<<<<< HEAD
                 user_info['destinationIndicator'] = user_info[
                     'destinationIndicator'].replace('&', 'and')
-=======
                 user_info['search_helper'] = _transliterate(
                     user_info['first_name'], user_info['last_name'],
                     user_info['full_name_native'], user_info['search_helper'])
->>>>>>> ldap_search_field
             except deform.ValidationFailure, e:
                 for field_error in e.error.children:
                     errors[field_error.node.name] = field_error.msg
