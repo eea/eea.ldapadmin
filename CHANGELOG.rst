@@ -1,5 +1,6 @@
 1.4.95 (unreleased)
 ------------------------
+* add department to the LDAP fields [dumitval]
 * add name in native language and search helper to user attributes [dumitval]
 
 1.4.94 (2016-04-04)

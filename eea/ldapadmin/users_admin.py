@@ -67,6 +67,7 @@ user_info_add_schema.children.insert(1, usersdb.schema._password_node)
 user_info_add_schema['postal_address'].widget = deform.widget.TextAreaWidget()
 user_info_edit_schema['postal_address'].widget = deform.widget.TextAreaWidget()
 user_info_add_schema['search_helper'].widget = deform.widget.TextAreaWidget()
+user_info_add_schema['department'].widget = deform.widget.TextAreaWidget()
 
 CONFIG = getConfiguration()
 FORUM_URL = getattr(CONFIG, 'environment', {}).get('FORUM_URL', '')
@@ -1139,7 +1140,8 @@ class BulkUserImporter(BrowserView):
                         "Search helper (ASCII characters only!)",
                         "E-mail*", "Job Title", "URL", "Postal Address",
                         "Telephone Number", "Mobile Telephone Number",
-                        "Fax Number", "Organisation", "Reason to create"]
+                        "Fax Number", "Organisation", "Department",
+                        "Reason to create"]
 
     def __call__(self):
         """ upload view """
