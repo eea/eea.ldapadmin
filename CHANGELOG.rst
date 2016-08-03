@@ -1,5 +1,6 @@
 1.4.95 (unreleased)
 ------------------------
+* remove search helper from view and edit [dumitval]
 * add department to the LDAP fields [dumitval]
 * add name in native language and search helper to user attributes [dumitval]
 
