@@ -309,7 +309,7 @@ class NfpNrc(SimpleItem, PropertyManager):
                                        prefix_dn="cn=eionet-nfp,cn=eionet",
                                        filterstr=filterstr,
                                        attrlist=("description",))
-        if not bool(nfp_roles):
+        if not (bool(nfp_roles) or self.checkPermissionZopeManager()):
             _set_session_message(
                 request, 'error',
                 "You are not allowed to manage NRC members for %s"
@@ -691,6 +691,11 @@ class NfpNrc(SimpleItem, PropertyManager):
         """ Returns True if user has permission to edit users"""
         user = self.REQUEST.AUTHENTICATED_USER
         return bool(user.has_permission(eionet_edit_users, self))
+
+    def checkPermissionZopeManager(self):
+        """ Returns True if user has the manager role in Zope"""
+        user = self.REQUEST.AUTHENTICATED_USER
+        return bool(user.has_permission(view_management_screens, self))
 
     security.declarePrivate('_find_duplicates')
 

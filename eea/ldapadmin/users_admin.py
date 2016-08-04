@@ -66,6 +66,7 @@ user_info_add_schema.children.insert(0, usersdb.schema._uid_node)
 user_info_add_schema.children.insert(1, usersdb.schema._password_node)
 user_info_add_schema['postal_address'].widget = deform.widget.TextAreaWidget()
 user_info_edit_schema['postal_address'].widget = deform.widget.TextAreaWidget()
+user_info_add_schema['search_helper'].widget = deform.widget.TextAreaWidget()
 user_info_add_schema['department'].widget = deform.widget.TextAreaWidget()
 
 CONFIG = getConfiguration()
@@ -505,8 +506,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 user_info = user_form.validate(form_data.items())
                 user_info['search_helper'] = _transliterate(
                     user_info['first_name'], user_info['last_name'],
-                    user_info['full_name_native'],
-                    user_info.get('search_helper', ''))
+                    user_info['full_name_native'], user_info['search_helper'])
             except deform.ValidationFailure, e:
                 for field_error in e.error.children:
                     errors[field_error.node.name] = field_error.msg
@@ -699,8 +699,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
             new_info['search_helper'] = _transliterate(
                 new_info['first_name'], new_info['last_name'],
-                new_info['full_name_native'],
-                new_info.get('search_helper', ''))
+                new_info['full_name_native'], new_info['search_helper'])
 
             with agent.new_action():
                 if not (new_org_id in user_orgs):
@@ -1277,8 +1276,7 @@ class BulkUserImporter(BrowserView):
         for user_info in users_data:
             user_info['search_helper'] = _transliterate(
                 user_info['first_name'], user_info['last_name'],
-                user_info['full_name_native'],
-                user_info.get('search_helper', ''))
+                user_info['full_name_native'], user_info['search_helper'])
             user_id = user_info['id']
             try:
                 self.context._create_user(agent, user_info,
