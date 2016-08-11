@@ -27,7 +27,7 @@ setup(name='eea.ldapadmin',
           'python-dateutil',
           'pyDNS',
           'transliterate',
-          'validate-email',
+          'validate-email==1.3-edw2',
       ],
       entry_points={'console_scripts':
                     ['dump_ldap = eea.ldapadmin.ldapdump:dump_ldap',

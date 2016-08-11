@@ -32,7 +32,7 @@ from ui_common import CommonTemplateLogic   # load_template,
 from ui_common import SessionMessages, TemplateRenderer
 from ui_common import extend_crumbs, TemplateRendererNoWrap
 from unidecode import unidecode
-from validate_email import validate_email
+from validate_email import validate_email, INCORRECT_EMAIL
 from zope.component import getUtility
 from zope.component.interfaces import ComponentLookupError
 from zope.sendmail.interfaces import IMailDelivery
@@ -459,8 +459,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
         email = form_data.get('email')
         if email:
             email = email.strip()
-            is_valid = validate_email(email, verify=True)
-            if not is_valid:
+            validity_status = validate_email(email, verify=True, verbose=True)
+            if validity_status is not True:
                 email_node = schema['email']
                 pos = schema.children.index(email_node)
                 schema.children.insert(pos+1, skip_email_validation_node)
@@ -625,8 +625,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
         email = form_data.get('email')
         if email:
             email = email.strip()
-            is_valid = validate_email(email, verify=True)
-            if not is_valid:
+            validity_status = validate_email(email, verify=True, verbose=True)
+            if validity_status is not True:
                 email_node = schema['email']
                 pos = schema.children.index(email_node)
                 schema.children.insert(pos+1, skip_email_validation_node)
@@ -1614,16 +1614,11 @@ def auto_disable_users():
 
 
 def check_valid_email(node, value):
-    is_valid = False
-    try:
-        is_valid = validate_email(value, verify=True)
-    except:
-        raise colander.Invalid(
-            node,
-            'There was an error checking email validity. '
-            'Perhaps email server is down?')
-    if not is_valid:
-        raise colander.Invalid(node, 'This email is invalid')
+    validity_status = validate_email(value, verify=True, verbose=True)
+    if validity_status is not True:
+        if validity_status != INCORRECT_EMAIL:  # avoid a double error message
+            raise colander.Invalid(
+                node, 'This email is possibly invalid. %s' % validity_status)
 
 
 def _transliterate(first_name, last_name, full_name_native, search_helper):
