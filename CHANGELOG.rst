@@ -1,5 +1,6 @@
 1.4.95 (unreleased)
 ------------------------
+* changed validate_email version dependency [dumitval]
 * add support for the edw version of validate_email [dumitval]
 * add permission to Zope managers to view nrc administration [dumitval]
 * add Department column in nrc administration [dumitval]
