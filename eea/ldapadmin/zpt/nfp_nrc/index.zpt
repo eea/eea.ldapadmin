@@ -45,8 +45,8 @@ Click to browse and manage members in National Resource Centres.</p>
 
 
 <p tal:condition="not: options/nfps">
-The logged in user (<span tal:content="common/user_id" />)
-  is not a National Focal Point.    
+The authenticated user (<span tal:content="common/user_id" />)
+  is not a National Focal Point.
 </p>
 
 </tal:block>
