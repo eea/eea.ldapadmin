@@ -1,0 +1,137 @@
+<script type="text/javascript" src="/++resource++eea.ldapadmin-www/role_leaders.js"></script>
+<link href="/++resource++eea.ldapadmin-www/role_leaders.css" type="text/css" rel="stylesheet" />
+
+<style>
+    .disabled_user {
+        text-decoration: line-through;
+    }
+</style>
+
+<tal:block content="structure common/message_boxes" />
+
+<h1> Reportnet AWPs for <span tal:replace="options/country_name" /></h1>
+<tal:block condition="options/roles">
+    <ul>
+      <li>You can <b>add or remove members</b> in the AWP roles of your country. Use the Add/Remove members buttons on the top right of each AWP role.</li>
+      <li>You can <b>change profile information</b> of existing users by clicking their names.</li>
+    </ul>
+    <br />
+  <tal:block repeat="role options/roles" define="is_authenticated common/is_authenticated">
+  <div class="nrc_role" tal:attributes="id role/role_id">
+      <h3 tal:attributes="id string:role_${role/role_id}">
+        <metal:block use-macro="template/macros/buttons" />
+        <span tal:replace="role/description" />
+      </h3>
+
+    <tal:block condition="role/users">
+      <table class="account-datatable">
+        <thead>
+          <tr>
+            <td>Name</td>
+            <tal:block condition="is_authenticated">
+              <td>User ID</td>
+              <td>Email</td>
+              <td>Tel/Fax</td>
+              <td>Organisation</td>
+              <td>Department</td>
+            </tal:block>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tal:rep tal:repeat="user_info role/users">
+            <tr tal:define="is_disabled python: user_info['status'] == 'disabled';
+                    is_odd python: 'odd' if path('repeat/user_info/odd') else 'even';
+                    is_disabled_class python: is_disabled  and 'disabled_user' or '';
+                    klass string:$is_odd $is_disabled_class;
+                    "
+                    tal:attributes="class klass">
+              <td>
+                  <a tal:attributes="href string:edit_member?user_id=${user_info/id}&role_id=${role/role_id}" tal:content="user_info/full_name" />
+              </td>
+
+              <tal:block condition="is_authenticated">
+                  <td>
+                      <span tal:content="user_info/id" />
+                      <span tal:condition="is_disabled">(disabled)</span>
+                  </td>
+
+                  <td>
+                      <a tal:condition="user_info/email"
+                          tal:attributes="href string:mailto:${user_info/email}"
+                          tal:content="user_info/email"
+                          class="user-email"></a>
+                  </td>
+
+                  <td>
+                      <span class="user-phone" tal:content="user_info/phone" />
+                      <br />
+                      <span class="user-phone" tal:content="user_info/fax" />
+                  </td>
+
+                  <td tal:condition="user_info/ldap_org|nothing">
+                      <img src="/++resource++eea.ldapadmin-www/users.png"
+                          class="middle-image image12" alt=""
+                          title="LDAP Organisation">
+                          <a tal:define="org user_info/ldap_org"
+                              tal:content="org/name"
+                              tal:attributes="href string:http://www.eionet.europa.eu/ldap-organisations/organisation?id=${org/id}">Something</a>
+                            (<span tal:content="user_info/ldap_org/id" />)
+                  </td>
+                  <td tal:condition="not:user_info/ldap_org|nothing">
+                    <span tal:content="user_info/organisation" />
+                  </td>
+                  <td>
+                    <span tal:content="user_info/department" />
+                  </td>
+              </tal:block>
+            </tr>
+          </tal:rep>
+        </tbody>
+      </table>
+
+      <div class="clear">&nbsp;</div>
+      </tal:block>
+
+    <tal:block condition="python:not role.users and not role.orgs">
+        <p>No member from <span tal:content="options/country_name" />.</p>
+    </tal:block>
+
+      <div class="left-position">
+      <a href="#workarea" class="account-link button" title="Click to go back to top">
+        <img src="/++resource++eea.ldapadmin-www/up.png" alt=""
+             class="middle-image image12" title="Back to top" />
+        Back to top
+      </a>
+      </div>
+      <br />
+      <div class="clear">&nbsp;</div>
+  </div>
+  </tal:block>
+</tal:block>
+
+<p tal:condition="not: options/roles" class="search-message">
+  <img src="/++resource++eea.ldapadmin-www/info.png" class="middle-image"
+       title="Note" alt=""/>
+  No users found.
+</p>
+
+<tal:block condition="nothing">
+  <metal:block define-macro="buttons">
+    <div class="nrc-action-buttons">
+      <a tal:attributes="href string:${common/base_url}/add_member_html?role_id=${role/role_id};
+                       class string:button">
+      <img src="/++resource++eea.ldapadmin-www/users.png"
+           class="middle-image image12" alt="" title="Remove members" />
+      Add members
+      </a>
+      &nbsp;
+      <a tal:attributes="href string:${common/base_url}/remove_members_html?role_id=${role/role_id};
+                         class string:last-button button">
+      <img src="/++resource++eea.ldapadmin-www/delete_user.png"
+           class="middle-image image12" alt="" title="Remove members" />
+      Remove members
+      </a>
+    </div>
+  </metal:block>
+</tal:block>

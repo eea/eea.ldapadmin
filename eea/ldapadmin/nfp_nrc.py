@@ -102,15 +102,25 @@ class SimplifiedRole(object):
     def __init__(self, role_id, description):
         m = re.match(r'^eionet-(nfp|nrc)-(.*)(mc|cc)-([^-]*)$', role_id,
                      re.IGNORECASE)
+        r = re.match(
+            r'^reportnet-awp-(cdda|wise1|wise3|wise4|wise5)-reporter-([^-]*)$',
+            role_id, re.IGNORECASE)
         if m:
             self.type = m.groups()[0].lower()
             self.country = m.groups()[3].lower()
             self.role_id = role_id
             self.description = description
+        elif r:
+            self.type = r.groups()[0].lower()
+            self.country = r.groups()[1].lower()
+            self.role_id = role_id
+            self.description = description
         else:
-            raise ValueError("Not a valid NFP/NRC role")
-        if not self.country or (self.type not in ('nfp', 'nrc')):
-            raise ValueError("Not a valid NFP/NRC role")
+            raise ValueError("Not a valid NFP/NRC/REPORTNET role")
+        if not self.country or (
+            self.type not in
+                ('nfp', 'nrc', 'cdda', 'wise1', 'wise3', 'wise4', 'wise5')):
+            raise ValueError("Not a valid NFP/NRC/REPORTNET role")
 
     def set_members_info(self, users=[], orgs=[], leaders=[], alternates=[]):
         self.users = users
@@ -148,6 +158,8 @@ def _get_roles_for_user(agent, user_id, prefix_dn):
         branch = "eionet-nfp-*-*"
     elif "eionet-nrc" in prefix_dn:
         branch = "eionet-nrc-*-*"
+    elif "reportnet-awp" in prefix_dn:
+        branch = "reportnet-awp-*-reporter-*"
     roles = agent.filter_roles(
         branch, prefix_dn=prefix_dn,  # "cn=eionet-nrc,cn=eionet"
         filterstr=filterstr, attrlist=("description",))
@@ -181,7 +193,16 @@ def get_nrc_roles(agent, user_id):
                                prefix_dn="cn=eionet-nrc,cn=eionet")
 
 
-def get_nrc_members(agent, country_code):
+def get_awp_roles(agent, user_id):
+    """ Returns the awp roles (as SimplifiedRole instances) for current user
+    """
+
+    return _get_roles_for_user(agent,
+                               user_id,
+                               prefix_dn="cn=reportnet-awp,cn=reportnet")
+
+
+def get_members(agent, country_code, dn_branch):
     """ Get the nrc members assigned to this country code
     """
 
@@ -189,7 +210,7 @@ def get_nrc_members(agent, country_code):
 
     top_nrc_role_dns = [x[0] for x in
                         agent.conn.search_s(
-                            agent._role_dn('eionet-nrc'),
+                            agent._role_dn(dn_branch),
                             ldap.SCOPE_ONELEVEL,
                             filterstr='(objectClass=groupOfUniqueNames)',
                             attrlist=['id'])
@@ -366,7 +387,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         if not self._allowed(agent, REQUEST, country_code):
             return None
 
-        roles = get_nrc_members(agent, country_code)
+        roles = get_members(agent, country_code, 'eionet-nrc')
         has_problematic_users = False
 
         for role in roles:
@@ -385,10 +406,34 @@ class NfpNrc(SimpleItem, PropertyManager):
                    'country_name': country_name or country_code,
                    # naming is similar to all NRC roles
                    'naming': roles_leaders.naming(roles[0].role_id),
-                   # 'has_problematic_users': has_problematic_users,
                    }
         self._set_breadcrumbs([("Browsing NRC-s in %s" % country_name, '#')])
         return self._render_template('zpt/nfp_nrc/nrcs.zpt', **options)
+
+    security.declareProtected(eionet_access_nfp_nrc, 'awps')
+
+    def awps(self, REQUEST):
+        """ view awp roles and members in these roles """
+
+        if not _is_authenticated(REQUEST):
+            pass
+
+        country_code = REQUEST.form.get("nfp")
+        country_name = code_to_name(country_code)
+        agent = self._get_ldap_agent()
+
+        if not self._allowed(agent, REQUEST, country_code):
+            return None
+
+        roles = get_members(agent, country_code, 'reportnet-awp')
+
+        options = {'roles': roles,
+                   'country': country_code,
+                   'country_name': country_name or country_code,
+                   }
+        self._set_breadcrumbs([("Browsing AWP roles in %s" % country_name,
+                                '#')])
+        return self._render_template('zpt/nfp_nrc/awps.zpt', **options)
 
     security.declareProtected(eionet_access_nfp_nrc, 'add_member_html')
 
@@ -416,9 +461,14 @@ class NfpNrc(SimpleItem, PropertyManager):
                 'users': agent.search_user(search_name, no_disabled=True)
             }
 
-        self._set_breadcrumbs([("Browsing NRC-s in %s" % country_name,
-                                self.absolute_url()+'/nrcs?nfp=%s' %
-                                country_code), ("Add member", '#')])
+        if '-nrc-' in role_id:
+            self._set_breadcrumbs([("Browsing NRC-s in %s" % country_name,
+                                    self.absolute_url()+'/nrcs?nfp=%s' %
+                                    country_code), ("Add member", '#')])
+        elif '-awp-' in role_id:
+            self._set_breadcrumbs([("Browsing AWP-s in %s" % country_name,
+                                    self.absolute_url()+'/awps?nfp=%s' %
+                                    country_code), ("Add member", '#')])
         return self._render_template('zpt/nfp_nrc/add_member.zpt', **options)
 
     security.declareProtected(eionet_access_nfp_nrc, 'add_user')
@@ -442,20 +492,27 @@ class NfpNrc(SimpleItem, PropertyManager):
         role_msg = get_role_name(agent, role_id)
         msg = "User %r added to role %s. \n" % (user_id, role_msg)
 
-        # test if the user to be added is member of a national organisation
-        if not get_national_org(agent, user_id, role_id):
-            msg += ("The user you added as an NRC does not have a mandatory"
-                    " reference to an organisation for your country. "
-                    "Please corect!")
+        # for NRC roles only, test if the added user is member of a national
+        # organisation
+        if '-nrc-' in role_id:
+            if not get_national_org(agent, user_id, role_id):
+                msg += ("The user you added as an NRC does not have a "
+                        "mandatory reference to an organisation for your "
+                        "country. Please corect!")
 
         _set_session_message(REQUEST, 'info', msg)
 
         log.info("%s ADDED USER %r TO ROLE %r",
                  logged_in_user(REQUEST), user_id, role_id_list)
 
-        REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                  '/nrcs?nfp=%s#role_%s' %
-                                  (country_code, role_id))
+        if '-nrc-' in role_id:
+            REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                      '/nrcs?nfp=%s#role_%s' %
+                                      (country_code, role_id))
+        elif '-awp-' in role_id:
+            REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                      '/awps?nfp=%s#role_%s' %
+                                      (country_code, role_id))
 
     security.declareProtected(eionet_access_nfp_nrc, 'remove_members_html')
 
@@ -477,10 +534,16 @@ class NfpNrc(SimpleItem, PropertyManager):
             'role_members': role_members(agent, role_id),
         }
 
-        self._set_breadcrumbs([("Browsing NRC-s in %s" % country_name,
-                                self.absolute_url()+'/nrcs?nfp=%s' %
-                                country_code),
-                              ("Remove members", "#")])
+        if '-nrc-' in role_id:
+            self._set_breadcrumbs([("Browsing NRC-s in %s" % country_name,
+                                    self.absolute_url()+'/nrcs?nfp=%s' %
+                                    country_code),
+                                  ("Remove members", "#")])
+        elif '-awp-' in role_id:
+            self._set_breadcrumbs([("Browsing AWP-s in %s" % country_name,
+                                    self.absolute_url()+'/awps?nfp=%s' %
+                                    country_code),
+                                  ("Remove members", "#")])
         return self._render_template('zpt/nfp_nrc/remove_members.zpt',
                                      **options)
 
@@ -510,9 +573,14 @@ class NfpNrc(SimpleItem, PropertyManager):
             msg = "Users %r removed from role %s" % (user_id_list, role_name)
             _set_session_message(REQUEST, 'info', msg)
 
-        REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                  '/nrcs?nfp=%s#role_%s' %
-                                  (country_code, role_id))
+        if '-nrc-' in role_id:
+            REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                      '/nrcs?nfp=%s#role_%s' %
+                                      (country_code, role_id))
+        if '-awp-' in role_id:
+            REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                      '/awps?nfp=%s#role_%s' %
+                                      (country_code, role_id))
 
     security.declareProtected(eionet_access_nfp_nrc, 'edit_member')
 
@@ -568,10 +636,16 @@ class NfpNrc(SimpleItem, PropertyManager):
             'errors': errors,
             'role_id': role_id,
         }
-        self._set_breadcrumbs([(role_id,
-                                '%s/nrcs?nfp=%s' % (self.absolute_url(),
-                                                    country_code)),
-                               (user_id, '#')])
+        if '-nrc-' in role_id:
+            self._set_breadcrumbs([(role_id,
+                                    '%s/nrcs?nfp=%s' % (self.absolute_url(),
+                                                        country_code)),
+                                   (user_id, '#')])
+        elif '-awp-' in role_id:
+            self._set_breadcrumbs([(role_id,
+                                    '%s/awps?nfp=%s' % (self.absolute_url(),
+                                                        country_code)),
+                                   (user_id, '#')])
         return self._render_template('zpt/nfp_nrc/edit_member.zpt', **options)
 
     security.declareProtected(eionet_access_nfp_nrc, 'edit_member_action')

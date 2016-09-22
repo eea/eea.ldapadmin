@@ -2,27 +2,32 @@
 
 <h1>Add members to role <span tal:content="options/role_name" /></h1>
 
-<div>
-  <div class="account-links clear" tal:condition="options/role_id">
-
-    <div class="left">
-      <a tal:attributes="href string:${common/base_url}/nrcs?nfp=${options/country}#role_${options/role_id};
-                         title string:Back to NRC-s in ${options/country}"
-         class="button">
-           <img src="/++resource++eea.ldapadmin-www/back.png" class="middle-image image12"
-                alt="" tal:attributes="title string:Back to NRC-s in ${options/country_name}"/>
-           <span tal:content="string:Back to NRC-s in ${options/country_name}" />
-      </a>
-      &nbsp;
-    </div>
+<div class="account-links clear" tal:condition="options/role_id" tal:define="role_id options/role_id">
+  <div class="left">
+    <a tal:condition="python: '-nrc-' in role_id"
+      tal:attributes="href string:${common/base_url}/nrcs?nfp=${options/country}#role_${options/role_id};
+                       title string:Back to NRC-s in ${options/country_name}"
+       class="button">
+         <img src="/++resource++eea.ldapadmin-www/back.png" class="middle-image image12"
+              alt="" tal:attributes="title string:Back to NRC-s in ${options/country}"/>
+         <span tal:content="string:Back to NRC-s in ${options/country_name}" />
+    </a>
+    <a tal:condition="python: '-awp-' in role_id"
+      tal:attributes="href string:${common/base_url}/awps?nfp=${options/country}#role_${options/role_id};
+                       title string:Back to AWP-s in ${options/country_name}"
+       class="button">
+         <img src="/++resource++eea.ldapadmin-www/back.png" class="middle-image image12"
+              alt="" tal:attributes="title string:Back to AWP-s in ${options/country}"/>
+         <span tal:content="string:Back to AWP-s in ${options/country_name}" />
+    </a>
+    &nbsp;
   </div>
-  <br />
 </div>
 
 <div class="search-form">
   <form name="search-form">
     <input type="hidden" name="role_id" tal:attributes="value options/role_id"/>
-    
+
     <label for="search-query">
       Name of user:
     </label>
@@ -30,7 +35,7 @@
     <input type="search" name="name:ustring:utf8" id="search-query"
            class="text-input large"
            tal:attributes="value options/search_name"/>
-  
+
     <input type="submit" value="Search" class="primary-button" />
     <div class="clear">&nbsp;</div>
   </form>
@@ -57,19 +62,19 @@
         <td>
           Name / Email
         </td>
-        
+
         <td>
           User ID
         </td>
-        
+
         <td>
           Tel/Fax
         </td>
-        
+
         <td>
           Organisation
         </td>
-        
+
         <td>
           Add as member
         </td>
@@ -81,7 +86,7 @@
         <td>
           <span tal:content="user_info/full_name" />
           <br />
-          
+
           <a tal:condition="user_info/email"
                   tal:attributes="href string:mailto:${user_info/email}"
                   tal:content="user_info/email"
