@@ -1135,13 +1135,13 @@ class BulkUserImporter(BrowserView):
     """ A view to bulk import users from an xls file
     """
     buttons = ('download_template', 'bulk_create')
-    TEMPLATE_COLUMNS = ["User ID", "Password", "First Name*", "Last Name*",
+    TEMPLATE_COLUMNS = ["First Name*", "Last Name*",
                         "Full name (native language)",
                         "Search helper (ASCII characters only!)",
                         "E-mail*", "Job Title", "URL", "Postal Address",
-                        "Telephone Number", "Mobile Telephone Number",
-                        "Fax Number", "Organisation", "Department",
-                        "Reason to create"]
+                        "Telephone Number*", "Mobile Telephone Number",
+                        "Fax Number", "Organisation*", "Department",
+                        "Reason to create*"]
 
     def __call__(self):
         """ upload view """
@@ -1188,12 +1188,10 @@ class BulkUserImporter(BrowserView):
                 properties[column.lower()] = value
 
             row_data = excel_headers_to_object(properties)
-            if not row_data['password']:
-                row_data['password'] = generate_password()
-            if not row_data['id']:
-                row_data['id'] = generate_user_id(row_data['first_name'],
-                                                  row_data['last_name'],
-                                                  agent, id_list)
+            row_data['password'] = generate_password()
+            row_data['id'] = generate_user_id(row_data['first_name'],
+                                              row_data['last_name'],
+                                              agent, id_list)
             id_list.append(row_data['id'])
             row_data['url'] = process_url(row_data['url'])
             result.append(row_data)

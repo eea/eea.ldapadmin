@@ -1,5 +1,9 @@
 1.4.95 (unreleased)
 ------------------------
+* make organisation, phone number and reason to create the account
+  mandatory [dumitval]
+* removed uid and password from excel template of bulk user creation
+  [dumitval]
 * add reportnet-awp branch to NFP managed roles [dumitval]
 * changed validate_email version dependency [dumitval]
 * add support for the edw version of validate_email [dumitval]
