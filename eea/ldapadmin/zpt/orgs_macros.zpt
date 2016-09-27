@@ -27,6 +27,12 @@
   </tr>
 
   <tr>
+    <td><label for="edit-name">Name in national language:</label></td>
+    <td><input id="edit-name" type="text" name="name_native:utf8:ustring" size="50"
+               tal:attributes="value form_data/name_native|string:" class="text-input" /></td>
+  </tr>
+
+  <tr>
     <td><label for="edit-email">Email:</label></td>
     <td><input id="edit-email" type="text" name="email:utf8:ustring"
                class="text-input"

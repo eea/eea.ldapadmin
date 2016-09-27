@@ -40,6 +40,11 @@
         </tr>
 
         <tr>
+            <td>Name in national language:</td>
+            <td tal:content="org_info/name_native"></td>
+        </tr>
+
+        <tr>
             <td>URL:</td>
             <td tal:content="org_info/url"></td>
         </tr>

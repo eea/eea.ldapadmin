@@ -1,5 +1,6 @@
 1.4.95 (unreleased)
 ------------------------
+* add organisation name in national language [dumitval]
 * make organisation, phone number and reason to create the account
   mandatory [dumitval]
 * removed uid and password from excel template of bulk user creation
