@@ -41,12 +41,12 @@ def excel_headers_to_object(properties):
         'job_title': properties.get('job title'),
         'url': properties.get('url'),
         'postal_address': properties.get('postal address'),
-        'phone': properties.get('telephone number'),
+        'phone': properties.get('telephone number*'),
         'mobile': properties.get('mobile telephone number'),
         'fax': properties.get('fax number'),
-        'organisation': properties.get('organisation'),
+        'organisation': properties.get('organisation*'),
         'department': properties.get('department'),
-        'destinationIndicator': properties.get('reason to create')
+        'destinationIndicator': properties.get('reason to create*')
     }
 
 
