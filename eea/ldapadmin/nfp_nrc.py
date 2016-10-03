@@ -103,7 +103,7 @@ class SimplifiedRole(object):
         m = re.match(r'^eionet-(nfp|nrc)-(.*)(mc|cc)-([^-]*)$', role_id,
                      re.IGNORECASE)
         r = re.match(
-            r'^reportnet-awp-(cdda|wise1|wise3|wise4|wise5)-reporter-([^-]*)$',
+            r'^reportnet-awp-([^-]*)-reporter-([^-]*)$',
             role_id, re.IGNORECASE)
         if m:
             self.type = m.groups()[0].lower()
@@ -116,11 +116,9 @@ class SimplifiedRole(object):
             self.role_id = role_id
             self.description = description
         else:
-            raise ValueError("Not a valid NFP/NRC/REPORTNET role")
-        if not self.country or (
-            self.type not in
-                ('nfp', 'nrc', 'cdda', 'wise1', 'wise3', 'wise4', 'wise5')):
-            raise ValueError("Not a valid NFP/NRC/REPORTNET role")
+            raise ValueError("Not a valid NFP/NRC/Reporter role")
+        if not self.country or (m and self.type not in ('nfp', 'nrc')):
+            raise ValueError("Not a valid NFP/NRC/Reporter role")
 
     def set_members_info(self, users=[], orgs=[], leaders=[], alternates=[]):
         self.users = users
@@ -431,7 +429,7 @@ class NfpNrc(SimpleItem, PropertyManager):
                    'country': country_code,
                    'country_name': country_name or country_code,
                    }
-        self._set_breadcrumbs([("Browsing AWP roles in %s" % country_name,
+        self._set_breadcrumbs([("Browsing reporter roles in %s" % country_name,
                                 '#')])
         return self._render_template('zpt/nfp_nrc/awps.zpt', **options)
 
@@ -466,7 +464,7 @@ class NfpNrc(SimpleItem, PropertyManager):
                                     self.absolute_url()+'/nrcs?nfp=%s' %
                                     country_code), ("Add member", '#')])
         elif '-awp-' in role_id:
-            self._set_breadcrumbs([("Browsing AWP-s in %s" % country_name,
+            self._set_breadcrumbs([("Browsing reporters in %s" % country_name,
                                     self.absolute_url()+'/awps?nfp=%s' %
                                     country_code), ("Add member", '#')])
         return self._render_template('zpt/nfp_nrc/add_member.zpt', **options)
@@ -540,7 +538,7 @@ class NfpNrc(SimpleItem, PropertyManager):
                                     country_code),
                                   ("Remove members", "#")])
         elif '-awp-' in role_id:
-            self._set_breadcrumbs([("Browsing AWP-s in %s" % country_name,
+            self._set_breadcrumbs([("Browsing reporters in %s" % country_name,
                                     self.absolute_url()+'/awps?nfp=%s' %
                                     country_code),
                                   ("Remove members", "#")])

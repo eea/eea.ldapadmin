@@ -14,11 +14,11 @@
     </a>
     <a tal:condition="python: '-awp-' in role_id"
       tal:attributes="href string:${common/base_url}/awps?nfp=${options/country}#role_${options/role_id};
-                       title string:Back to AWP-s in ${options/country_name}"
+                       title string:Back to reporters in ${options/country_name}"
        class="button">
          <img src="/++resource++eea.ldapadmin-www/back.png" class="middle-image image12"
-              alt="" tal:attributes="title string:Back to AWP-s in ${options/country}"/>
-         <span tal:content="string:Back to AWP-s in ${options/country_name}" />
+              alt="" tal:attributes="title string:Back to reporters in ${options/country}"/>
+         <span tal:content="string:Back to reporters in ${options/country_name}" />
     </a>
     &nbsp;
   </div>
