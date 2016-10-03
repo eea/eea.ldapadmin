@@ -168,6 +168,9 @@ class CommonTemplateLogic(object):
     def checkPermissionEditOrganisations(self):
         return self.context.checkPermissionEditOrganisations()
 
+    def checkPermissionZopeManager(self):
+        return self.context.checkPermissionZopeManager()
+
     def can_edit_organisations(self):
         return self.context.can_edit_organisations()
 
