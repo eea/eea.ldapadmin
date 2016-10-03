@@ -1,4 +1,7 @@
-1.4.95 (unreleased)
+1.4.96 (unreleased)
+------------------------
+
+1.4.95 (2016-10-03)
 ------------------------
 * add organisation name in national language [dumitval]
 * make organisation, phone number and reason to create the account
