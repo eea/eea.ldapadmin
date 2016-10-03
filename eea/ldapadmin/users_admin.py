@@ -512,7 +512,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 user_info = user_form.validate(form_data.items())
                 user_info['search_helper'] = _transliterate(
                     user_info['first_name'], user_info['last_name'],
-                    user_info['full_name_native'], user_info['search_helper'])
+                    user_info.get('full_name_native', ''),
+                    user_info.get('search_helper', ''))
             except deform.ValidationFailure, e:
                 for field_error in e.error.children:
                     errors[field_error.node.name] = field_error.msg
@@ -710,7 +711,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
             new_info['search_helper'] = _transliterate(
                 new_info['first_name'], new_info['last_name'],
-                new_info['full_name_native'], new_info['search_helper'])
+                new_info.get('full_name_native', ''),
+                new_info.get('search_helper', ''))
 
             with agent.new_action():
                 if not (new_org_id in user_orgs):
@@ -1147,8 +1149,6 @@ class BulkUserImporter(BrowserView):
     """
     buttons = ('download_template', 'bulk_create')
     TEMPLATE_COLUMNS = ["First Name*", "Last Name*",
-                        "Full name (native language)",
-                        "Search helper (ASCII characters only!)",
                         "E-mail*", "Job Title", "URL", "Postal Address",
                         "Telephone Number*", "Mobile Telephone Number",
                         "Fax Number", "Organisation*", "Department",
@@ -1285,7 +1285,8 @@ class BulkUserImporter(BrowserView):
         for user_info in users_data:
             user_info['search_helper'] = _transliterate(
                 user_info['first_name'], user_info['last_name'],
-                user_info['full_name_native'], user_info['search_helper'])
+                user_info.get('full_name_native', ''),
+                user_info.get('search_helper', ''))
             user_id = user_info['id']
             try:
                 self.context._create_user(agent, user_info,

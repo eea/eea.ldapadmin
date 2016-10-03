@@ -35,9 +35,9 @@ def excel_headers_to_object(properties):
         'email': properties.get('e-mail*').lower(),
         'first_name': properties.get('first name*'),
         'last_name': properties.get('last name*'),
-        'full_name_native': properties.get('full name (native language)'),
+        'full_name_native': properties.get('full name (native language)', ''),
         'search_helper': properties.get(
-            'search helper (ascii characters only!)'),
+            'search helper (ascii characters only!)', ''),
         'job_title': properties.get('job title'),
         'url': properties.get('url'),
         'postal_address': properties.get('postal address'),
