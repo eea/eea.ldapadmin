@@ -237,6 +237,11 @@ class UsersAdmin(SimpleItem, PropertyManager):
             agent._author = 'System User'
         return agent
 
+    def checkPermissionZopeManager(self):
+        """ Returns True if user has the manager role in Zope"""
+        user = self.REQUEST.AUTHENTICATED_USER
+        return bool(user.has_permission(view_management_screens, self))
+
     security.declareProtected(view_management_screens, 'get_config')
 
     def get_config(self):

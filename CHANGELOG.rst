@@ -1,5 +1,6 @@
 1.4.96 (unreleased)
 ------------------------
+* bugfix in ckecking manager permission [dumitval]
 
 1.4.95 (2016-10-03)
 ------------------------
