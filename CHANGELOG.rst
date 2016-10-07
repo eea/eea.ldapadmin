@@ -1,4 +1,7 @@
-1.4.97 (unreleased)
+1.4.98 (unreleased)
+------------------------
+
+1.4.97 (2016-10-07)
 ------------------------
 * wording change in Reportnet AWP administration [dumitval]
 
