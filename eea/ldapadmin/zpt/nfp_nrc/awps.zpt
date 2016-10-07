@@ -9,7 +9,7 @@
 
 <tal:block content="structure common/message_boxes" />
 
-<h1> Reportnet reporters for <span tal:replace="options/country_name" /></h1>
+<h1> Reporters for <span tal:replace="options/country_name" /></h1>
 <tal:block condition="options/roles">
     <ul>
       <li>You can <b>add or remove members</b> in the reporter roles of your country. Use the Add/Remove members buttons on the top right of each reporter role.</li>
