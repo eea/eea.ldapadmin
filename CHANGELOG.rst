@@ -1,4 +1,7 @@
-1.4.98 (unreleased)
+1.4.99 (unreleased)
+------------------------
+
+1.4.98 (2016-10-26)
 ------------------------
 * bugfix in nrc editing (ref: full_name_native) [dumitval]
 
