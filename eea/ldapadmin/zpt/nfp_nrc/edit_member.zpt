@@ -19,7 +19,7 @@
         </div>
 
         <form tal:condition="is_enabled"
-            tal:attributes="action string:edit_member_action?user_id=${options/form_data/user_id}&role_id=${options/role_id}" 
+            tal:attributes="action string:edit_member_action?user_id=${options/form_data/user_id}&role_id=${options/role_id}"
             method="post" name="edit-account">
             <table class="account-table">
                 <tr>
@@ -39,18 +39,19 @@
                     </td>
                 </tr>
                 <tal:block repeat="schema_field options/schema">
-                    <tr tal:define="field_name schema_field/name;
-                        field python:{
+                  <tal:block define="field_name schema_field/name"
+                      condition="python:field_name not in ['full_name_native', 'search_helper']" >
+                    <tr tal:define="field python:{
                         'name': field_name,
                         'value': options['form_data'][field_name],
                         'label': schema_field.description,
                         'error': options['errors'].get(field_name, None),
                         'widget': schema_field.widget,
                         'required': schema_field.required,
-                        }"
-                        tal:condition="python:field_name not in ['full_name_native', 'search_helper']">
+                        }" >
                         <metal:block use-macro="template/macros/form-field" />
                     </tr>
+                  </tal:block>
                 </tal:block>
                 <tr>
                     <td colspan="2" align="center">

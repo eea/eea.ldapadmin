@@ -961,7 +961,8 @@ class CreateUser(BrowserView):
                     'destinationIndicator'].replace('&', 'and')
                 user_info['search_helper'] = _transliterate(
                     user_info['first_name'], user_info['last_name'],
-                    user_info['full_name_native'], user_info['search_helper'])
+                    user_info.get('full_name_native', ''),
+                    user_info.get('search_helper', ''))
             except deform.ValidationFailure, e:
                 for field_error in e.error.children:
                     errors[field_error.node.name] = field_error.msg

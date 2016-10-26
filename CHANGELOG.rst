@@ -1,5 +1,6 @@
 1.4.98 (unreleased)
 ------------------------
+* bugfix in nrc editing (ref: full_name_native) [dumitval]
 
 1.4.97 (2016-10-07)
 ------------------------
