@@ -1,5 +1,6 @@
 1.4.99 (unreleased)
 ------------------------
+* fix crash when the awp link is called without mandatory argument [dumitval]
 
 1.4.98 (2016-10-26)
 ------------------------

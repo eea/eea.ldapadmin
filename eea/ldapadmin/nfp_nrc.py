@@ -416,7 +416,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         if not _is_authenticated(REQUEST):
             pass
 
-        country_code = REQUEST.form.get("nfp")
+        country_code = REQUEST.form.get("nfp", 'eea')
         country_name = code_to_name(country_code)
         agent = self._get_ldap_agent()
 
@@ -1067,10 +1067,8 @@ class CreateUser(BrowserView):
         if user_id:
             ldap_groups = self.get_ldap_user_groups(user_id)
             for group in ldap_groups:
-                if 'eionet-nfp-cc-' in group[0]:
-                    return group[0].replace('eionet-nfp-cc-', '')
-                if 'eionet-nfp-mc-' in group[0]:
-                    return group[0].replace('eionet-nfp-mc-', '')
+                if 'eionet-nfp-' in group[0]:
+                    return group[0].rsplit('-', 1)[-1]
 
     def get_ldap_user_groups(self, user_id):
         """ """
