@@ -1067,7 +1067,8 @@ class CreateUser(BrowserView):
         if user_id:
             ldap_groups = self.get_ldap_user_groups(user_id)
             for group in ldap_groups:
-                if 'eionet-nfp-' in group[0]:
+                if ('eionet-nfp-mc-' in group[0] or
+                        'eionet-nfp-cc-' in group[0]):
                     return group[0].rsplit('-', 1)[-1]
 
     def get_ldap_user_groups(self, user_id):

@@ -1,5 +1,6 @@
 1.5.00 (unreleased)
 ------------------------
+* bugfix in get country id for NFPs [dumitval]
 
 1.4.99 (2016-10-27)
 ------------------------
