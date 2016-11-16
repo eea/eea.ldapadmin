@@ -40,8 +40,7 @@
                     'widget': schema_field.widget,
                     'required': schema_field.required,
                     'help_text': schema_field.help_text
-                    }"
-                    tal:condition="python: field_name not in ['full_name_native', 'search_helper'] or common.checkPermissionZopeManager()">
+                    }">
                     <metal:block use-macro="template/macros/form-field" />
                 </tr>
             </tal:block>

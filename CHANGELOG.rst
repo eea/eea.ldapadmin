@@ -1,5 +1,6 @@
 1.5.01 (unreleased)
 ------------------------
+* full name native and search helper available to nfps [dumitval]
 
 1.5.00 (2016-11-14)
 ------------------------

@@ -1154,6 +1154,8 @@ class BulkUserImporter(BrowserView):
     """
     buttons = ('download_template', 'bulk_create')
     TEMPLATE_COLUMNS = ["First Name*", "Last Name*",
+                        "Full name (native language)",
+                        "Search helper (ASCII characters only!)",
                         "E-mail*", "Job Title", "URL", "Postal Address",
                         "Telephone Number*", "Mobile Telephone Number",
                         "Fax Number", "Organisation*", "Department",
@@ -1198,7 +1200,10 @@ class BulkUserImporter(BrowserView):
         result = []
         id_list = []
         for record_number, row in enumerate(rows):
-            row = [x.strip() for x in row]
+            try:
+                row = [x.strip() for x in row]
+            except AttributeError:
+                raise ValueError('Please format all cells as text!')
             properties = {}
             for column, value in zip(header, row):
                 properties[column.lower()] = value
