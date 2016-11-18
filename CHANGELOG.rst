@@ -1,6 +1,6 @@
 1.5.01 (unreleased)
 ------------------------
-* full name native and search helper available to nfps [dumitval]
+* full name native and search helper available to nfps and bulk import [dumitval]
 
 1.5.00 (2016-11-14)
 ------------------------
