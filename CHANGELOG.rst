@@ -1,4 +1,7 @@
-1.5.01 (unreleased)
+1.5.02 (unreleased)
+------------------------
+
+1.5.01 (2016-11-18)
 ------------------------
 * full name native and search helper available to nfps and bulk import [dumitval]
 
