@@ -1,11 +1,12 @@
 import yaml
-import os.path
+import os
 import requests
 
 from App.config import getConfiguration
 
-
 CONFIG = getConfiguration()
+CONFIG.environment.update(os.environ)
+
 LDAP_DISK_STORAGE = getattr(CONFIG, 'environment', {}).\
                             get('LDAP_DISK_STORAGE', '')
 

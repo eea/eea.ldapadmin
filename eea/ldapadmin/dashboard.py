@@ -1,4 +1,5 @@
 import operator
+import os
 
 from App.config import getConfiguration
 from AccessControl import ClassSecurityInfo, getSecurityManager
@@ -53,6 +54,8 @@ SESSION_FORM_ERRORS =  SESSION_PREFIX + '.form_errors'
 eionet_access_ldap_explorer = 'Eionet access LDAP explorer'
 
 CONFIG = getConfiguration()
+CONFIG.environment.update(os.environ)
+
 FORUM_URL = getattr(CONFIG, 'environment', {}).get('FORUM_URL', '')
 
 manage_add_ldap_admin_html = PageTemplateFile('zpt/ldapadmin_manage_add',
