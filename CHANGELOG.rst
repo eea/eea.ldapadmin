@@ -1,4 +1,7 @@
-1.5.03 (unreleased)
+1.5.04 (unreleased)
+------------------------
+
+1.5.03 (2016-11-23)
 ------------------------
 * remove option to add own item to selectize list [dumitval]
 
