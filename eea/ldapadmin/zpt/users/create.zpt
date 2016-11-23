@@ -77,12 +77,7 @@
                 </td>
             </tr>
         </table>
-        <script tal:condition="nfp_access">
-            $(document).ready(function() { $("#edit-organisation").selectize({create:false}); });
-        </script>
-        <script tal:condition="not:nfp_access">
-            $(document).ready(function() { $("#edit-organisation").selectize({create:true}); });
-        </script>
+        $(document).ready(function() { $("#edit-organisation").selectize({create:false}); });
     </form>
 
     <script type="text/javascript"

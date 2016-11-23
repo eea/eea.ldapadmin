@@ -81,7 +81,7 @@
       </tr>
     </table>
     <script>
-        $(document).ready(function() { $("#edit-organisation").selectize({create:true}); });
+        $(document).ready(function() { $("#edit-organisation").selectize({create:false}); });
     </script>
     </form>
 </div>
