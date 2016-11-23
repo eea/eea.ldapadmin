@@ -77,7 +77,9 @@
                 </td>
             </tr>
         </table>
-        $(document).ready(function() { $("#edit-organisation").selectize({create:false}); });
+        <script>
+          $(document).ready(function() { $("#edit-organisation").selectize({create:false}); });
+        </script>
     </form>
 
     <script type="text/javascript"

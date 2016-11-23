@@ -1,5 +1,6 @@
 1.5.04 (unreleased)
 ------------------------
+* bugfix in selectize initialisation [dumitval]
 
 1.5.03 (2016-11-23)
 ------------------------
