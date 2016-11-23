@@ -1,4 +1,7 @@
-1.5.04 (unreleased)
+1.5.05 (unreleased)
+------------------------
+
+1.5.04 (2016-11-23)
 ------------------------
 * bugfix in selectize initialisation [dumitval]
 
