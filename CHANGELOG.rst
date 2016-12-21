@@ -1,5 +1,9 @@
-1.5.06 (unreleased)
+1.5.7 (unreleased)
 ------------------------
+
+1.5.6 (2016-12-21)
+------------------------
+* there is no need for access token, we use acl_users [nituacor]
 
 1.5.05 (2016-12-21)
 -------------------
