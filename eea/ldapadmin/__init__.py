@@ -1,5 +1,6 @@
 def initialize(context):
-    import roles_editor, orgs_editor, pwreset_tool, users_admin, dashboard
+    import roles_editor, orgs_editor, pwreset_tool, users_admin, \
+        api_tool, dashboard
     import nfp_nrc, logger
     import countries
 
@@ -34,6 +35,10 @@ def initialize(context):
         ('manage_add_nfp_nrc_html',
          nfp_nrc.manage_add_nfp_nrc_html),
         ('manage_add_nfp_nrc', nfp_nrc.manage_add_nfp_nrc),
+    ))
+
+    context.registerClass(api_tool.ApiTool, constructors=(
+        ('manage_add_api_tool', api_tool.manage_add_api_tool),
     ))
 
     context.registerClass(dashboard.Dashboard, constructors=(
