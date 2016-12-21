@@ -1,5 +1,8 @@
-1.5.05 (unreleased)
+1.5.06 (unreleased)
 ------------------------
+
+1.5.05 (2016-12-21)
+-------------------
 * Task: API entrypoint for EIONET LDAP command line scripts
   - added ApiTool to expose methods to be called remote
   - each call must provide an access token
