@@ -1,4 +1,7 @@
-1.5.05 (unreleased)
+1.5.06 (unreleased)
+------------------------
+
+1.5.05 (2017-01-18)
 ------------------------
 * use the new field reasonToCreate instead of destinationIndicator [dumitval]
 
