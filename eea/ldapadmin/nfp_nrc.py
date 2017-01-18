@@ -461,11 +461,11 @@ class NfpNrc(SimpleItem, PropertyManager):
 
         if '-nrc-' in role_id:
             self._set_breadcrumbs([("Browsing NRC-s in %s" % country_name,
-                                    self.absolute_url()+'/nrcs?nfp=%s' %
+                                    self.absolute_url() + '/nrcs?nfp=%s' %
                                     country_code), ("Add member", '#')])
         elif '-awp-' in role_id:
             self._set_breadcrumbs([("Browsing reporters in %s" % country_name,
-                                    self.absolute_url()+'/awps?nfp=%s' %
+                                    self.absolute_url() + '/awps?nfp=%s' %
                                     country_code), ("Add member", '#')])
         return self._render_template('zpt/nfp_nrc/add_member.zpt', **options)
 
@@ -534,12 +534,12 @@ class NfpNrc(SimpleItem, PropertyManager):
 
         if '-nrc-' in role_id:
             self._set_breadcrumbs([("Browsing NRC-s in %s" % country_name,
-                                    self.absolute_url()+'/nrcs?nfp=%s' %
+                                    self.absolute_url() + '/nrcs?nfp=%s' %
                                     country_code),
                                   ("Remove members", "#")])
         elif '-awp-' in role_id:
             self._set_breadcrumbs([("Browsing reporters in %s" % country_name,
-                                    self.absolute_url()+'/awps?nfp=%s' %
+                                    self.absolute_url() + '/awps?nfp=%s' %
                                     country_code),
                                   ("Remove members", "#")])
         return self._render_template('zpt/nfp_nrc/remove_members.zpt',
@@ -920,7 +920,7 @@ class CreateUser(BrowserView):
         for children in schema.children:
             help_text = help_messages['create-user'].get(children.name, None)
             setattr(children, 'help_text', help_text)
-        schema['destinationIndicator'].help_text = \
+        schema['reasonToCreate'].help_text = \
             ("Please indicate reason of account creation like e.g. "
              "NRC nomination, data reporter in Reportnet for directive XYZ, "
              "project XXXX cooperation ....")
@@ -957,8 +957,8 @@ class CreateUser(BrowserView):
             try:
                 user_form = deform.Form(schema)
                 user_info = user_form.validate(form_data.items())
-                user_info['destinationIndicator'] = user_info[
-                    'destinationIndicator'].replace('&', 'and')
+                user_info['reasonToCreate'] = user_info[
+                    'reasonToCreate'].replace('&', 'and')
                 user_info['search_helper'] = _transliterate(
                     user_info['first_name'], user_info['last_name'],
                     user_info.get('full_name_native', ''),

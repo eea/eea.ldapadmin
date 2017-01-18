@@ -1,5 +1,6 @@
 1.5.05 (unreleased)
 ------------------------
+* use the new field reasonToCreate instead of destinationIndicator [dumitval]
 
 1.5.04 (2016-11-23)
 ------------------------
