@@ -1,9 +1,17 @@
-1.5.06 (unreleased)
-------------------------
-
-1.5.05 (2017-01-18)
+1.5.07 (2017-01-18)
 ------------------------
 * use the new field reasonToCreate instead of destinationIndicator [dumitval]
+
+1.5.06 (2016-12-21)
+------------------------
+* there is no need for access token, we use acl_users [nituacor]
+
+1.5.05 (2016-12-21)
+-------------------
+* Task: API entrypoint for EIONET LDAP command line scripts
+  - added ApiTool to expose methods to be called remote
+  - each call must provide an access token
+  [chiridra #80115]
 
 1.5.04 (2016-11-23)
 ------------------------
@@ -322,7 +330,7 @@
 
 1.4.46 (2014-08-28)
 ------------------------
-* Bug fix: added information about the NFP to create the account, in the 
+* Bug fix: added information about the NFP to create the account, in the
   helpdesk email that is sent when NFPs create new accounts
   [tiberich #20187]
 
@@ -330,8 +338,8 @@
 ------------------------
 * Bug fix: allow changing the last_name of a user, in the account edit form
   [tiberich #20788]
-* Bug fix: allow changing the user organisation when 'o' field value has a 
-  valid user organisation, but it's not really assigned to the organisation 
+* Bug fix: allow changing the user organisation when 'o' field value has a
+  valid user organisation, but it's not really assigned to the organisation
   as a member
   [tiberich #20835]
 * Bug fix: fix creating users by NFPs when send confirmation email is checked
@@ -344,7 +352,7 @@
 
 1.4.43 (2014-08-20)
 ------------------------
-* allow nfps to create Eionet accounts from nfp-eionet portal 
+* allow nfps to create Eionet accounts from nfp-eionet portal
   [dumitval, tiberich #20187]
 
 1.4.42 (2014-08-07)
@@ -354,7 +362,7 @@
 
 1.4.41 (2014-08-06)
 ------------------------
-* Bug fix: Fix styling of permissions accordion in roles_browse.zpt. Open link to 
+* Bug fix: Fix styling of permissions accordion in roles_browse.zpt. Open link to
   Forum/Projects in new window
   [tiberich #20522]
 * Feature: allow filtering users by disabled status in users listing of Roles Editor -
