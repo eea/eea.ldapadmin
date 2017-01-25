@@ -1,4 +1,7 @@
-1.5.08 (unreleased)
+1.5.09 (unreleased)
+------------------------
+
+1.5.08 (2017-01-25)
 ------------------------
 * use eionet for from email domain [nituacor]
 
