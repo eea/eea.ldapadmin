@@ -1,5 +1,6 @@
 1.5.08 (unreleased)
 ------------------------
+* use eionet for from email domain [nituacor]
 
 1.5.07 (2017-01-18)
 ------------------------
