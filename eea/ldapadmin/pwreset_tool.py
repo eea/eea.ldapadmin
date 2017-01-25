@@ -134,7 +134,7 @@ class PasswordResetTool(SimpleItem):
         return token
 
     def _send_token_email(self, addr_to, token, user_info):
-        addr_from = "no-reply@eea.europa.eu"
+        addr_from = "no-reply@eionet.europa.eu"
         email_template = load_template('zpt/pwreset_token_email.zpt')
         expiration_time = datetime.utcnow() + timedelta(days=1)
         options = {
