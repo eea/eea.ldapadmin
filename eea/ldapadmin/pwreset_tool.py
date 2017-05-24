@@ -1,3 +1,4 @@
+from ldap import CONSTRAINT_VIOLATION, NO_SUCH_OBJECT, SCOPE_BASE
 from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
 from App.class_init import InitializeClass
@@ -266,10 +267,31 @@ class PasswordResetTool(SimpleItem):
             log.info("Restting password for user %r with token %r",
                      token_data.user_id, token)
             agent = self._get_ldap_agent(bind=True)
-            agent.set_user_password(token_data.user_id, None, new_password)
-            del self._tokens[token]
-            location = (self.absolute_url() +
-                        '/messages_html?msg=password-reset')
+            try:
+                agent.set_user_password(token_data.user_id, None, new_password)
+            except CONSTRAINT_VIOLATION, e:
+                if e.message['info'] in [
+                        'Password fails quality checking policy']:
+                    try:
+                        defaultppolicy = agent.conn.search_s(
+                            'cn=defaultppolicy,ou=pwpolicies,o=EIONET,'
+                            'l=Europe',
+                            SCOPE_BASE)
+                        p_length = defaultppolicy[0][1]['pwdMinLength'][0]
+                        message = '%s (min. %s characters)' % (
+                            e.message['info'], p_length)
+                    except NO_SUCH_OBJECT:
+                        message = e.message['info']
+                else:
+                    message = e.message['info']
+                _set_session_message(REQUEST, 'error', message)
+                location = (self.absolute_url() +
+                            '/confirm_email?token=' +
+                            token)
+            else:
+                del self._tokens[token]
+                location = (self.absolute_url() +
+                            '/messages_html?msg=password-reset')
 
         REQUEST.RESPONSE.redirect(location)
 

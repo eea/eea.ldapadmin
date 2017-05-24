@@ -1,5 +1,6 @@
 1.5.09 (unreleased)
 ------------------------
+* Prepare password-reset for password constraints [dumitval]
 
 1.5.08 (2017-01-25)
 ------------------------
