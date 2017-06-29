@@ -1,4 +1,7 @@
-1.5.10 (unreleased)
+1.5.11 (unreleased)
+------------------------
+
+1.5.10 (2017-06-29)
 ------------------------
 * organisation editor's change id now checks for correct characters [dumitval]
 
