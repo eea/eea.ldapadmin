@@ -1,5 +1,6 @@
 1.5.10 (unreleased)
 ------------------------
+* organisation editor's change id now checks for correct characters [dumitval]
 
 1.5.09 (2017-06-06)
 ------------------------

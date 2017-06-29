@@ -154,8 +154,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
     security.declarePublic('can_edit_organisations')
 
     def can_edit_organisations(self):
-        return bool(self.checkPermissionEditOrganisations()
-                    or self.nfp_for_country())
+        return bool(self.checkPermissionEditOrganisations() or
+                    self.nfp_for_country())
 
     security.declareProtected(view_management_screens, 'manage_edit_save')
 
@@ -251,21 +251,21 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             'postal_address',
             'fax',
             'email',
-            ]
+        ]
         for i, col in enumerate(cols):
             org_sheet.write(0, i, col.capitalize(), style_header)
 
         org_sheet.write(0, 6, "Members count", style_header)
 
         for i, row in enumerate(orgs):
-            org_sheet.write(i+2, 0, row['id'], style_normal)
-            org_sheet.write(i+2, 1, row['name'], style_normal)
-            org_sheet.write(i+2, 2, row['locality'], style_normal)
-            org_sheet.write(i+2, 3, row['postal_address'], style_normal)
-            org_sheet.write(i+2, 4, row['fax'], style_normal)
-            org_sheet.write(i+2, 5, row['email'], style_normal)
+            org_sheet.write(i + 2, 0, row['id'], style_normal)
+            org_sheet.write(i + 2, 1, row['name'], style_normal)
+            org_sheet.write(i + 2, 2, row['locality'], style_normal)
+            org_sheet.write(i + 2, 3, row['postal_address'], style_normal)
+            org_sheet.write(i + 2, 4, row['fax'], style_normal)
+            org_sheet.write(i + 2, 5, row['email'], style_normal)
             members = agent.members_in_org(row['id'])   # TODO: optimize
-            org_sheet.write(i+2, 6, len(members), style_normal)
+            org_sheet.write(i + 2, 6, len(members), style_normal)
 
         org_sheet.col(1).set_width(9000)
         org_sheet.col(2).set_width(5000)
@@ -296,7 +296,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                 'user id',
                 'fullname',
                 'email',
-                ]
+            ]
 
             for i, col in enumerate(cols):
                 users_sheet.write(row_counter, i, col, style_header)
@@ -357,7 +357,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             'postal_address',
             'fax',
             'email',
-            ]
+        ]
         for i, col in enumerate(cols):
             org_sheet.write(0, i, col, style_header)
             org_sheet.write(2, i, org_info[col], style_normal)
@@ -383,7 +383,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             'user id',
             'fullname',
             'email',
-            ]
+        ]
         for i, col in enumerate(cols):
             users_sheet.write(0, i, col, style_header)
 
@@ -422,8 +422,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             return REQUEST.RESPONSE.redirect(self.absolute_url())
         agent = self._get_ldap_agent()
         org_info = agent.org_info(org_id)
-        if not (self.checkPermissionView()
-                or nfp_country == org_info['country']):
+        if not (self.checkPermissionView() or
+                nfp_country == org_info['country']):
             raise Unauthorized
         options = {
             'organisation': org_info,
@@ -527,7 +527,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
         org_id = options['org_info']['id']
         self._set_breadcrumbs([(options['org_info']['id'],
-                                self.absolute_url()+'/organisation?id=%s' %
+                                self.absolute_url() + '/organisation?id=%s' %
                                 org_id),
                                ('Edit Organisation', '#')])
         return self._render_template('zpt/orgs_edit.zpt', **options)
@@ -583,7 +583,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             'org_id': org_id,
         }
         self._set_breadcrumbs([(org_id,
-                                self.absolute_url()+'/organisation?id=%s' %
+                                self.absolute_url() + '/organisation?id=%s' %
                                 org_id),
                                ('Rename Organisation', '#')])
         return self._render_template('zpt/orgs_rename.zpt', **options)
@@ -599,6 +599,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                                       '/organisation?id=' + org_id)
             return None
         new_org_id = REQUEST.form['new_id']
+        if not re.match('^[a-z_]+$', new_org_id):
+            _set_session_message(REQUEST, 'error', (VALIDATION_ERRORS['id']))
+            return REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                             '/organisation?id=' + org_id)
 
         if org_id == new_org_id:
             REQUEST.RESPONSE.redirect(self.absolute_url() +
@@ -649,7 +653,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             'org_info': self._get_ldap_agent().org_info(org_id),
         }
         self._set_breadcrumbs([(options['org_info']['id'],
-                                self.absolute_url()+'/organisation?id=%s' %
+                                self.absolute_url() + '/organisation?id=%s' %
                                 org_id),
                                ('Delete Organisation', '#')])
         return self._render_template('zpt/orgs_delete.zpt', **options)
@@ -702,7 +706,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             'org_members': org_members,
         }
         self._set_breadcrumbs([(org_id,
-                                self.absolute_url()+'/organisation?id=%s' %
+                                self.absolute_url() + '/organisation?id=%s' %
                                 org_id),
                                ('Members', '#')])
         return self._render_template('zpt/orgs_members.zpt', **options)
