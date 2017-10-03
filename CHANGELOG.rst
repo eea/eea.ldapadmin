@@ -1,4 +1,7 @@
-1.5.11 (unreleased)
+1.5.12 (unreleased)
+------------------------
+
+1.5.11 (2017-10-03)
 ------------------------
 * patch LDAPUserFolder to log bind and connect errors [dumitval]
 
