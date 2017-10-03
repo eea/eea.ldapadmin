@@ -1,5 +1,6 @@
 1.5.12 (unreleased)
 ------------------------
+* change log type for LDAP errors [dumitval]
 
 1.5.11 (2017-10-03)
 ------------------------

@@ -41,7 +41,7 @@ def patched_connect(self, bind_dn='', bind_pwd=''):
                 ldap.TIMEOUT,
                 ldap.INVALID_CREDENTIALS
                 ), e:
-            log.debug('LDAPDEBUG bind error %s' % e)
+            log.info('LDAPDEBUG bind error %s' % e)
             pass
 
     e = None
@@ -61,7 +61,7 @@ def patched_connect(self, bind_dn='', bind_pwd=''):
                 ldap.TIMEOUT,
                 ldap.INVALID_CREDENTIALS
                 ), e:
-            log.debug('LDAPDEBUG connect error %s' % e)
+            log.info('LDAPDEBUG connect error %s' % e)
             continue
 
     # If we get here it means either there are no servers defined or we
