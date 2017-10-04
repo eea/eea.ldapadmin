@@ -1,4 +1,7 @@
-1.5.13 (unreleased)
+1.5.14 (unreleased)
+------------------------
+
+1.5.13 (2017-10-04)
 ------------------------
 * bugfix in connect method [dumitval]
 
