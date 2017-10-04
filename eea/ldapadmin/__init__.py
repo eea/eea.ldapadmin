@@ -30,7 +30,7 @@ def patched_connect(self, bind_dn='', bind_pwd=''):
             user_dn = user_pwd = ''
 
     conn = getResource('%s-connection' % self._hash, str, ())
-    if not isinstance(conn._type(), str):
+    if not conn._type() is str:
         try:
             conn.simple_bind_s(user_dn, user_pwd)
             conn.search_s(self.u_base, self.BASE, '(objectClass=*)')
