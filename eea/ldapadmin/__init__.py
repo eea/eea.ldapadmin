@@ -41,7 +41,21 @@ def patched_connect(self, bind_dn='', bind_pwd=''):
                 ldap.TIMEOUT,
                 ldap.INVALID_CREDENTIALS
                 ), e:
-            log.info('LDAPDEBUG bind error %s' % e)
+            log.exception(
+                'LDAPDEBUG bind error %s; bind_dn: %s, len(bind_pwd): %s,'
+                ' self.binduid_usage: %s, self.bind_dn: %s, '
+                'len(self.bind_pwd): %s, user: %s, '
+                'is user instance of LDAPUser?: %s, '
+                'user_dn: %s, len(user_pwd): %s, '
+                'self.u_base: %s, self.BASE: %s' % (
+                    e,
+                    bind_dn, len(bind_pwd), self.binduid_usage,
+                    self.bind_dn, len(self.bind_pwd),
+                    getSecurityManager().getUser(),
+                    isinstance(getSecurityManager().getUser(), LDAPUser),
+                    user_dn, len(user_pwd),
+                    self.u_base, self.BASE
+                ))
             pass
 
     e = None
@@ -61,7 +75,10 @@ def patched_connect(self, bind_dn='', bind_pwd=''):
                 ldap.TIMEOUT,
                 ldap.INVALID_CREDENTIALS
                 ), e:
-            log.info('LDAPDEBUG connect error %s' % e)
+            log.exception(
+                'LDAPDEBUG connect error %s;'
+                'conn_string: %s, user_dn: %s, len(user_pwd): %s' % (
+                    e, conn_string, user_dn, len(user_pwd)))
             continue
 
     # If we get here it means either there are no servers defined or we

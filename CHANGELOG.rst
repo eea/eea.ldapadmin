@@ -1,5 +1,6 @@
 1.5.14 (unreleased)
 ------------------------
+* extend info in the LDAP error log [dumitval]
 
 1.5.13 (2017-10-04)
 ------------------------
