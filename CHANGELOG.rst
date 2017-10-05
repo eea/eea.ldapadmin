@@ -1,4 +1,7 @@
-1.5.14 (unreleased)
+1.5.15 (unreleased)
+------------------------
+
+1.5.14 (2017-10-05)
 ------------------------
 * extend info in the LDAP error log [dumitval]
 
