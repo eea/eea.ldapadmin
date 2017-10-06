@@ -1,4 +1,7 @@
-1.5.15 (unreleased)
+1.5.16 (unreleased)
+------------------------
+
+1.5.15 (2017-10-06)
 ------------------------
 * move the LDAP log patch to Products.LDAPUserFolder 2.24-edw2 [dumitval]
 
