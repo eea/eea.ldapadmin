@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='eea.ldapadmin',
-      version='1.5.16',
+      version='1.5.17',
       author='Eau de Web',
       author_email='office@eaudeweb.ro',
       packages=find_packages(),
@@ -20,7 +20,7 @@ setup(name='eea.ldapadmin',
 
           'xlrd>=0.9.3',
           'xlwt',
-          'unidecode==0.04.13',
+          'unidecode==1.0.22',
 
           'requests==1.2.3',
           'sparql-client',
