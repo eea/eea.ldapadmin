@@ -164,7 +164,8 @@ class PasswordResetTool(SimpleItem):
 
     security.declareProtected(view, 'ask_for_password_reset')
 
-    def ask_for_password_reset(self, REQUEST=None, email=None):
+    def ask_for_password_reset(self, REQUEST=None, email=None,
+                               on_create=False):
         """ view """
         if REQUEST is None:
             REQUEST = self.REQUEST
@@ -201,7 +202,7 @@ class PasswordResetTool(SimpleItem):
             _set_session_message(REQUEST, 'error', msg)
             location = self.absolute_url() + '/'
 
-        if REQUEST:
+        if REQUEST and not on_create:
             REQUEST.RESPONSE.redirect(location)
 
     security.declareProtected(view, 'messages_html')

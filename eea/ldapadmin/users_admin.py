@@ -1084,7 +1084,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         pwreset_tool = self.restrictedTraverse('/').objectValues(
             'Eionet Password Reset Tool')[0]
         email = user_info['email']
-        pwreset_tool.ask_for_password_reset(email=email)
+        pwreset_tool.ask_for_password_reset(email=email, on_create=True)
 
     def nfp_has_access(self):
         """ """
@@ -1350,9 +1350,6 @@ class BulkUserImporter(BrowserView):
         else:
             msgr('error', 'No user account created')
 
-        if 'location' in self.request.response.headers:
-            del self.request.response.headers['location']
-            self.request.response.headers['status'] = '200 OK'
         return self.context._render_template('zpt/users/bulk_create.zpt')
 
 

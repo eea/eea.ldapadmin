@@ -1053,7 +1053,8 @@ class CreateUser(BrowserView):
         pwreset_tool = self.context.restrictedTraverse('/').objectValues(
             'Eionet Password Reset Tool')[0]
         email = user_info['email']
-        pwreset_tool.ask_for_password_reset(self.request, email=email)
+        pwreset_tool.ask_for_password_reset(self.request, email=email,
+                                            on_create=True)
 
     def nfp_has_access(self):
         """ """
