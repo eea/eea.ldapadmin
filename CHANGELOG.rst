@@ -1,4 +1,7 @@
-1.5.17 (unreleased)
+1.5.18 (unreleased)
+------------------------
+
+1.5.17 (2018-02-09)
 ------------------------
 * bugfix IE on bulk user creation refs #82360 [dumitval]
 
