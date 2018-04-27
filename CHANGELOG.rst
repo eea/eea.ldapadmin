@@ -1,5 +1,6 @@
 1.5.18 (unreleased)
 ------------------------
+* updated config example with ldaps port [dumitval]
 
 1.5.17 (2018-02-09)
 ------------------------

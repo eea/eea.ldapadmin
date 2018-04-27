@@ -1,5 +1,6 @@
 ldap:
     host: ldap.eionet.europa.eu
+    port: 636
     encoding: utf-8
     root_DNs:
         - ou=Users,o=EIONET,l=Europe
