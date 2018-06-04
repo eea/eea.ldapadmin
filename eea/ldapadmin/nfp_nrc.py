@@ -351,7 +351,8 @@ class NfpNrc(SimpleItem, PropertyManager):
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/manage_edit')
 
     def _get_ldap_agent(self, bind=True, secondary=False):
-        agent = ldap_config.ldap_agent_with_config(self._config, bind)
+        agent = ldap_config.ldap_agent_with_config(self._config, bind,
+                                                   secondary=secondary)
         try:
             agent._author = logged_in_user(self.REQUEST)
         except AttributeError:
@@ -892,7 +893,11 @@ class CreateUser(BrowserView):
     def orgs_in_country(self, country):
         """ """
         agent = self.context._get_ldap_agent()
-        orgs_by_id = agent.all_organisations()
+        try:
+            orgs_by_id = agent.all_organisations()
+        except ldap.SIZELIMIT_EXCEEDED:
+            agent = self.context._get_ldap_agent(secondary=True)
+            orgs_by_id = agent.all_organisations()
         countries = dict(get_country_options(country=country))
         orgs = {}
         for org_id, info in orgs_by_id.iteritems():
