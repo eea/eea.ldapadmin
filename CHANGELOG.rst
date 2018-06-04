@@ -1,4 +1,7 @@
-1.5.18 (unreleased)
+1.5.19 (unreleased)
+------------------------
+
+1.5.18 (2018-06-04)
 ------------------------
 * use secondary ldap auth for all_organisations if needed [dumitval]
 * updated config example with ldaps port [dumitval]
