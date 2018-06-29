@@ -1,4 +1,7 @@
-1.5.19 (unreleased)
+1.5.20 (unreleased)
+------------------------
+
+1.5.19 (2018-06-29)
 ------------------------
 * Full name of created user in email notification [dumitval]
 * handle ldap security limitation for main admin user
