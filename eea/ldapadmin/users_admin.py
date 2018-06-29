@@ -86,23 +86,22 @@ def generate_user_id(first_name, last_name, agent, id_list):
     last_name = unidecode(last_name).replace(
         '-', '').replace("'", "").replace(" ", "")
     min_first_length = min(first_name, 3)
-    uid1 = last_name[:8-min_first_length]
-    uid2 = first_name[:8-len(uid1)]
-    base_uid = (uid1+uid2).lower()
-    if not(list(agent.existing_usernames([base_uid]))
-           or base_uid in id_list):
+    uid1 = last_name[:8 - min_first_length]
+    uid2 = first_name[:8 - len(uid1)]
+    base_uid = (uid1 + uid2).lower()
+    if not(list(agent.existing_usernames([base_uid])) or base_uid in id_list):
         return base_uid
     for i in range(8):
         for letter in string.lowercase:
-            new_uid = base_uid[:8-i-1] + letter + base_uid[8-i:]
-            if not(list(agent.existing_usernames([new_uid]))
-                   or new_uid in id_list):
+            new_uid = base_uid[:8 - i - 1] + letter + base_uid[8 - i:]
+            if not(list(agent.existing_usernames([new_uid])) or
+                    new_uid in id_list):
                 return new_uid
 
 
 def process_url(url):
     if url and not (url.startswith('http://') or url.startswith('https://')):
-        return 'http://'+url
+        return 'http://' + url
     return url
 
 eionet_edit_users = 'Eionet edit users'
@@ -230,12 +229,13 @@ class UsersAdmin(SimpleItem, PropertyManager):
         stack.insert(0, (id, self.absolute_url() + "/edit_user?id=" + id))
         return stack
 
-    def _get_ldap_agent(self, bind=True):
-        agent = ldap_config.ldap_agent_with_config(self._config, bind)
-        if hasattr(self, 'REQUEST'):
+    def _get_ldap_agent(self, bind=True, secondary=False):
+        agent = ldap_config.ldap_agent_with_config(self._config, bind,
+                                                   secondary=secondary)
+        try:
             agent._author = logged_in_user(self.REQUEST)
-        else:
-            agent._author = 'System User'
+        except AttributeError:
+            agent._author = "System user"
         return agent
 
     def checkPermissionZopeManager(self):
@@ -469,7 +469,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
             if validity_status is not True:
                 email_node = schema['email']
                 pos = schema.children.index(email_node)
-                schema.children.insert(pos+1, skip_email_validation_node)
+                schema.children.insert(pos + 1, skip_email_validation_node)
 
         # if the skip_email_validation field exists but is not activated,
         # add an extra validation to the form
@@ -485,7 +485,11 @@ class UsersAdmin(SimpleItem, PropertyManager):
             schema['id'].validator, no_duplicate_id_validator)
 
         if self.checkPermissionEditUsers():
-            agent_orgs = agent.all_organisations()
+            try:
+                agent_orgs = agent.all_organisations()
+            except ldap.SIZELIMIT_EXCEEDED:
+                secondary_agent = self._get_ldap_agent(secondary=True)
+                agent_orgs = secondary_agent.all_organisations()
         else:
             agent_orgs = self.orgs_in_country(nfp_country)
 
@@ -611,7 +615,11 @@ class UsersAdmin(SimpleItem, PropertyManager):
         if form_data is None:
             form_data = user
 
-        orgs = agent.all_organisations()
+        try:
+            orgs = agent.all_organisations()
+        except ldap.SIZELIMIT_EXCEEDED:
+            secondary_agent = self._get_ldap_agent(secondary=True)
+            orgs = secondary_agent.all_organisations()
         orgs = [{'id': k, 'text': v['name'], 'text_native': v['name_native'],
                  'ldap': True} for k, v in orgs.items()]
         user_orgs = list(agent.user_organisations(user_id))
@@ -643,7 +651,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
             if validity_status is not True:
                 email_node = schema['email']
                 pos = schema.children.index(email_node)
-                schema.children.insert(pos+1, skip_email_validation_node)
+                schema.children.insert(pos + 1, skip_email_validation_node)
 
         # if the skip_email_validation field exists but is not activated,
         # add an extra validation to the form
@@ -979,7 +987,11 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         agent = self._get_ldap_agent()
         bulk_emails = []
-        orgs = agent.all_organisations()
+        try:
+            orgs = agent.all_organisations()
+        except ldap.SIZELIMIT_EXCEEDED:
+            secondary_agent = self._get_ldap_agent(secondary=True)
+            orgs = secondary_agent.all_organisations()
 
         for org_id, info in orgs.iteritems():
             members = agent.members_in_org(org_id)
@@ -1102,7 +1114,11 @@ class UsersAdmin(SimpleItem, PropertyManager):
     def orgs_in_country(self, country):
         """ """
         agent = self._get_ldap_agent()
-        orgs_by_id = agent.all_organisations()
+        try:
+            orgs_by_id = agent.all_organisations()
+        except ldap.SIZELIMIT_EXCEEDED:
+            secondary_agent = self._get_ldap_agent(secondary=True)
+            orgs_by_id = secondary_agent.all_organisations()
         countries = dict(get_country_options(country=country))
         orgs = {}
         for org_id, info in orgs_by_id.iteritems():
@@ -1256,7 +1272,7 @@ class BulkUserImporter(BrowserView):
             except deform.ValidationFailure, e:
                 for field_error in e.error.children:
                     errors.append('%s at row %d: %s' %
-                                  (field_error.node.name, record_number+1,
+                                  (field_error.node.name, record_number + 1,
                                    field_error.msg))
             else:
                 users_data.append(user_info)
@@ -1659,7 +1675,7 @@ def _transliterate(first_name, last_name, full_name_native, search_helper):
         0xd6: ord('O'),
         0xfc: ord('u'),
         0xdc: ord('U'),
-        }
+    }
 
     for name in vocab:
         ascii_values.append(unidecode(name))

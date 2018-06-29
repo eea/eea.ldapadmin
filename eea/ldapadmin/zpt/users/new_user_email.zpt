@@ -1,6 +1,6 @@
 A new user has been created by <span tal:replace="options/author" />:
 
-* Name: <span tal:replace="options/first_name"></span>,
+* Name: <span tal:replace="options/full_name"></span>,
 * User id: <span tal:replace="options/user_id"></span>,
 * Member of organisation: <span tal:replace="options/organisation"></span>.
 

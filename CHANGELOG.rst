@@ -1,5 +1,8 @@
 1.5.19 (unreleased)
 ------------------------
+* Full name of created user in email notification [dumitval]
+* handle ldap security limitation for main admin user
+  (in test ldap the Admin ldap user cannot list all users anymore) [dumitval]
 
 1.5.18 (2018-06-04)
 ------------------------
