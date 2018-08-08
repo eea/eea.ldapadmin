@@ -1,4 +1,7 @@
-1.5.20 (unreleased)
+1.5.21 (unreleased)
+------------------------
+
+1.5.20 (2018-08-08)
 ------------------------
 * handle duplicate org ID when creating organisations [dumitval]
 
