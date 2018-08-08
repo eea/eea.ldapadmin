@@ -165,7 +165,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/manage_edit')
 
     def _get_ldap_agent(self, bind=True, secondary=False):
-        agent = ldap_config.ldap_agent_with_config(self._config, bind)
+        agent = ldap_config.ldap_agent_with_config(self._config, bind,
+                                                   secondary=secondary)
         agent._author = logged_in_user(self.REQUEST)
         return agent
 
@@ -177,7 +178,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             nfp_country = None
         if not (self.checkPermissionView() or nfp_country):
             raise Unauthorized
-        agent = self._get_ldap_agent()
+        agent = self._get_ldap_agent(secondary=True)
         orgs_by_id = agent.all_organisations()
         countries = dict(get_country_options(country=nfp_country or country))
         orgs = []
@@ -486,8 +487,18 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             return
 
         agent = self._get_ldap_agent(bind=True)
-        with agent.new_action():
-            agent.create_org(org_id, org_info)
+        try:
+            with agent.new_action():
+                agent.create_org(org_id, org_info)
+        except ldap.ALREADY_EXISTS:
+            msg = "Organisation not created. Please correct the errors below."
+            _set_session_message(REQUEST, 'error', msg)
+            _set_session_message(
+                REQUEST, 'error', 'Organisation ID exists already')
+            REQUEST.SESSION[SESSION_FORM_DATA] = dict(org_info, id=org_id)
+            REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                      '/create_organisation_html')
+            return
 
         msg = 'Organisation "%s" created successfully.' % org_id
         _set_session_message(REQUEST, 'info', msg)
