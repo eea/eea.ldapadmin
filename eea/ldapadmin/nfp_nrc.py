@@ -130,6 +130,44 @@ class SimplifiedRole(object):
         return self.role_id.split(s)
 
 
+class SimplifiedRoleDict(dict):
+    """
+    A simple way of representing and addressing attributes
+    of an NFP/NRC Role, json ready
+
+    """
+
+    def __init__(self, role_id, description):
+        m = re.match(r'^eionet-(nfp|nrc)-(.*)(mc|cc)-([^-]*)$', role_id,
+                     re.IGNORECASE)
+        r = re.match(
+            r'^reportnet-awp-([^-]*)-reporter-([^-]*)$',
+            role_id, re.IGNORECASE)
+        if m:
+            self['type'] = m.groups()[0].lower()
+            self['country'] = m.groups()[3].lower()
+            self['role_id'] = role_id
+            self['description'] = description
+        elif r:
+            self['type'] = r.groups()[0].lower()
+            self['country'] = r.groups()[1].lower()
+            self['role_id'] = role_id
+            self['description'] = description
+        else:
+            raise ValueError("Not a valid NFP/NRC/Reporter role")
+        if not self['country'] or (m and self['type'] not in ('nfp', 'nrc')):
+            raise ValueError("Not a valid NFP/NRC/Reporter role")
+
+    def set_members_info(self, users=[], orgs=[], leaders=[], alternates=[]):
+        self['users'] = users
+        self['orgs'] = orgs
+        self['leaders'] = leaders
+        self['alternates'] = alternates
+
+    def split(self, s):
+        return self['role_id'].split(s)
+
+
 def get_nfps_for_country(agent, country_code):
     """ Returns a list of nfp role ids for the given country_code
     """
@@ -198,6 +236,15 @@ def get_awp_roles(agent, user_id):
     return _get_roles_for_user(agent,
                                user_id,
                                prefix_dn="cn=reportnet-awp,cn=reportnet")
+
+
+def get_top_role_dns(agent, dn_branch):
+    return sorted([x[0] for x in agent.conn.search_s(
+        agent._role_dn(dn_branch),
+        ldap.SCOPE_ONELEVEL,
+        filterstr='(objectClass=groupOfUniqueNames)',
+        attrlist=['id'])
+    ])
 
 
 def get_members(agent, country_code, dn_branch):
@@ -371,6 +418,49 @@ class NfpNrc(SimpleItem, PropertyManager):
         options = {'nfps': nfps}
         return self._render_template('zpt/nfp_nrc/index.zpt', **options)
 
+    def get_top_role_members(self, role_dn, country_code):
+        """ """
+        agent = self._get_ldap_agent()
+        has_problematic_users = False
+        top_role_id = agent._role_id(role_dn)
+        filter_country = "%s-*-%s" % (top_role_id, country_code)
+        roles = []
+        for (role_dn, attr) in agent.conn.search_s(
+                role_dn,
+                ldap.SCOPE_SUBTREE,
+                filterstr="(&(objectClass=groupOfUniqueNames)(cn=%s))"
+                % filter_country, attrlist=['description']):
+
+            role_id = agent._role_id(role_dn)
+
+            try:
+                description = attr.get('description', ('',))[0]
+                role = SimplifiedRoleDict(role_id, description)
+            except ValueError:
+                continue
+            else:
+                members = agent.members_in_role(role_id)
+                users = [agent.user_info(user_id) for user_id in
+                         members['users']]
+                for user in users:
+                    user['ldap_org'] = get_national_org(agent,
+                                                        user['id'],
+                                                        role_id)
+                    if not user['ldap_org']:
+                        has_problematic_users = True
+                    del(user['createTimestamp'])
+                    del(user['modifyTimestamp'])
+                orgs = [agent.org_info(org_id) for org_id in members['orgs']]
+                leaders, alternates = agent.role_leaders(role_id)
+                role.set_members_info(users, orgs, leaders, alternates)
+
+                roles.append(role)
+
+        return json.dumps(
+            {'roles': sorted(roles, key=lambda k: k['role_id']),
+             'has_problematic_users': has_problematic_users,
+             'naming': roles_leaders.naming(roles[0]['role_id'])})
+
     security.declareProtected(eionet_access_nfp_nrc, 'nrcs')
 
     def nrcs(self, REQUEST):
@@ -386,25 +476,12 @@ class NfpNrc(SimpleItem, PropertyManager):
         if not self._allowed(agent, REQUEST, country_code):
             return None
 
-        roles = get_members(agent, country_code, 'eionet-nrc')
-        has_problematic_users = False
+        top_role_dns = get_top_role_dns(agent, 'eionet-nrc')
 
-        for role in roles:
-            for user in role.users:
-                if not user['ldap_org']:
-                    has_problematic_users = True
-                    break
-
-        if has_problematic_users:
-            msg = "There are problematic users with regards to their "\
-                  "connection to a national organisation"
-            _set_session_message(REQUEST, 'info', msg)
-
-        options = {'roles': roles,
+        options = {'top_role_dns': top_role_dns,
                    'country': country_code,
+                   'agent': agent,
                    'country_name': country_name or country_code,
-                   # naming is similar to all NRC roles
-                   'naming': roles_leaders.naming(roles[0].role_id),
                    }
         self._set_breadcrumbs([("Browsing NRC-s in %s" % country_name, '#')])
         return self._render_template('zpt/nfp_nrc/nrcs.zpt', **options)

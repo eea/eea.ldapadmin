@@ -1,5 +1,6 @@
 1.5.21 (unreleased)
 ------------------------
+* load nrc listing with ajax to avoid server timeout refs #97788 [dumitval]
 
 1.5.20 (2018-08-08)
 ------------------------
