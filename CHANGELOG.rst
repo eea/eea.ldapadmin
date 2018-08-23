@@ -1,4 +1,7 @@
-1.5.21 (unreleased)
+1.5.22 (unreleased)
+------------------------
+
+1.5.21 (2018-08-23)
 ------------------------
 * load nrc listing with ajax to avoid server timeout refs #97788 [dumitval]
 
