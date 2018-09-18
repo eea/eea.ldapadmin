@@ -1,4 +1,7 @@
-1.5.22 (unreleased)
+1.5.23 (unreleased)
+------------------------
+
+1.5.22 (2018-09-18)
 ------------------------
 * force two letter country code at the beginning of the org id
   (only at creation) [dumitval]
