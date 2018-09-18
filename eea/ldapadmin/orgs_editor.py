@@ -475,7 +475,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         for name in eea.usersdb.editable_org_fields:
             org_info[name] = REQUEST.form.get(name)
 
-        errors = validate_org_info(org_id, org_info)
+        errors = validate_org_info(org_id, org_info, create_mode=True)
         if errors:
             msg = "Organisation not created. Please correct the errors below."
             _set_session_message(REQUEST, 'error', msg)
@@ -486,6 +486,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                                       '/create_organisation_html')
             return
 
+        org_id = str(org_id)
         agent = self._get_ldap_agent(bind=True)
         try:
             with agent.new_action():
@@ -1130,7 +1131,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 InitializeClass(OrganisationsEditor)
 
 
-id_re = re.compile(r'^[a-z_]+$')
+id_re = re.compile(r'^[a-z]{2}_[a-z]+$')
 phone_re = re.compile(r'^\+[\d ]+$')
 postal_code_re = re.compile(r'^[a-zA-Z]{2}[a-zA-Z0-9\- ]+$')
 
@@ -1138,8 +1139,11 @@ _phone_help = ('Telephone numbers must be in international notation (they '
                'must start with a "+" followed by digits which may be '
                'separated using spaces).')
 VALIDATION_ERRORS = {
-    'id': ('Invalid organisation ID. It must contain only '
-           'lowercase letters and underscores ("_").'),
+    'id': ('Invalid organisation ID. Mandatory format xx_yyyy - '
+           'It must start with a two letter lowercase country code, '
+           'followed by an underscore ("_") and then any number '
+           'of lowercase a-z letters (no accented characters - unlike the '
+           'title, which can contain any characters).'),
     'name': "The organisation's name is mandatory",
     'phone': "Invalid telephone number. " + _phone_help,
     'fax': "Invalid fax number. " + _phone_help,
@@ -1151,11 +1155,12 @@ VALIDATION_ERRORS = {
 }
 
 
-def validate_org_info(org_id, org_info):
+def validate_org_info(org_id, org_info, create_mode=False):
     errors = {}
 
-    if id_re.match(org_id) is None:
-        errors['id'] = [VALIDATION_ERRORS['id']]
+    if create_mode:
+        if id_re.match(org_id) is None:
+            errors['id'] = [VALIDATION_ERRORS['id']]
 
     name = org_info['name']
     if not name.strip():

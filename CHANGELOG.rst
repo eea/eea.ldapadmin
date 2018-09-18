@@ -1,5 +1,9 @@
 1.5.22 (unreleased)
 ------------------------
+* force two letter country code at the beginning of the org id
+  (only at creation) [dumitval]
+* handle unicode characters in the id field when creating organisations
+  [dumitval]
 
 1.5.21 (2018-08-23)
 ------------------------
