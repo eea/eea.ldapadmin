@@ -43,8 +43,9 @@ $(function () {
     }).change();
 
     // for setting PCPs in NFP-NRC tool
-    $("div.nrc_role input[class=leader]").click(function(){
+    $('div#role_listing').on('click', 'div.nrc_role input[class=leader]', function(){
         var checkb = $(this);
+        console.log($(this));
         var role_div = checkb.parents("div.nrc_role");
         var role_id = role_div.attr("id");
         var user_id = checkb.val();

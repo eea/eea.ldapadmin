@@ -1,5 +1,6 @@
 1.5.23 (unreleased)
 ------------------------
+* fix PCP setting for the ajax-loaded nrc listing [dumitval]
 
 1.5.22 (2018-09-18)
 ------------------------
