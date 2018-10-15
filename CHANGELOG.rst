@@ -1,4 +1,7 @@
-1.5.24 (unreleased)
+1.5.25 (unreleased)
+------------------------
+
+1.5.24 (2018-10-15)
 ------------------------
 * bugfix in PCP setting [dumitval]
 
