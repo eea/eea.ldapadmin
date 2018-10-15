@@ -146,7 +146,7 @@
                 .addClass('nrc_role')
               .append(
                 $('<h3>')
-                  .attr('id', 'role_'+role['role_id'])
+                  .attr('id', role['role_id'])
                   .text(role['description']).append(
                     $('<div class="nrc-action-buttons">').html(
                       ('<a href="add_member_html?role_id='+role['role_id']+'" class="button"><img src="/++resource++eea.ldapadmin-www/users.png" class="middle-image image12" alt="" title="Remove members" /> Add members</a>')
