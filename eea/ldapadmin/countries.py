@@ -67,9 +67,11 @@ def update_countries():
     f.close()
 
 
-def load_countries():
+def load_countries(update=False):
     """ Load countries from json file in memory """
     global COUNTRIES
+    if update:
+        update_countries()
     try:
         f = open(os.path.join(LDAP_DISK_STORAGE, "countries.json"), "r")
         data = json.load(f)
@@ -94,7 +96,7 @@ def get_country(code):
     if code in pseudos:
         return pseudos[code]
     if time.time() - _country_storage['time'] > _country_storage['timeout']:
-        load_countries()
+        load_countries(update=True)
     return COUNTRIES.get(code.lower(), DUMMY)
 
 
@@ -107,7 +109,7 @@ def get_country_options(country=None):
         country = [country]
     countries = COUNTRIES.items()
     if country:
-        return [country_data for country_data in countries+PSEUDO_COUNTRIES
+        return [country_data for country_data in countries + PSEUDO_COUNTRIES
                 if country_data[0] in country]
     countries.sort(key=lambda x: x[1]['name'])
     return PSEUDO_COUNTRIES + countries

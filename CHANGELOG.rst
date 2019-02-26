@@ -1,5 +1,6 @@
 1.5.25 (unreleased)
 ------------------------
+* once a day update of the  country code to country name mapping [dumitval]
 
 1.5.24 (2018-10-15)
 ------------------------
