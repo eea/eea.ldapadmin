@@ -1,4 +1,7 @@
-1.5.26 (unreleased)
+1.5.27 (unreleased)
+------------------------
+
+1.5.26 (2019-03-06)
 ------------------------
 * ldap agent uses bind in several locations [dumitval]
 
