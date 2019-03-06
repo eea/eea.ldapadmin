@@ -305,21 +305,9 @@ class UsersAdmin(SimpleItem, PropertyManager):
     def get_statistics(self, REQUEST):
         """ view a simple table of how many users have been registered,
         for each year
-
-        For reasons which are unclear, we need to use two agents:
-        * one will be binded with the LDAP special user account. The account
-          needs to have no limits on number of results return by LDAP server
-        * the second agent is based on code in eea.userseditor/userdetails.py.
-        It gets access to the createTimestamp attribute
-
-        The problem is that the first user is not able to retrieve the
-        createTimestamp for all users. For those which are retrieved it
-        contains a longer string (has microseconds as well)
         """
 
         agent = self._get_ldap_agent(bind=True)
-        unbound_agent = factories.agent_from_uf(
-            self.restrictedTraverse("/acl_users"))
 
         msgid = agent.conn.search_ext(
             agent._user_dn_suffix,
@@ -333,14 +321,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
         for res_type, result, res_msgid, res_controls in agent.conn.allresults(
                 msgid):
             for rdn, ldap_obj in result:
-                created = ldap_obj.get('createTimestamp')
-                if not created:
-                    user_info = unbound_agent.user_info(
-                        unbound_agent._user_id(rdn))
-                    all_results.append((rdn, user_info))
-                else:
-                    all_results.append(
-                        (rdn, agent._unpack_user_info(rdn, ldap_obj)))
+                all_results.append(
+                    (rdn, agent._unpack_user_info(rdn, ldap_obj)))
 
         stats = {}
         for dn, rec in all_results:
@@ -1141,11 +1123,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
     def get_ldap_user_groups(self, user_id):
         """ """
-        try:
-            from eea.usersdb.factories import agent_from_uf
-        except ImportError:
-            return []
-        agent = agent_from_uf(self.restrictedTraverse("/acl_users"))
+        agent = self._get_ldap_agent(bind=True, secondary=True)
         ldap_roles = sorted(agent.member_roles_info('user',
                                                     user_id,
                                                     ('description',)))

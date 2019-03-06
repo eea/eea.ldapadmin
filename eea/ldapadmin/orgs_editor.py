@@ -1118,11 +1118,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
     def get_ldap_user_groups(self, user_id):
         """ """
-        try:
-            from eea.usersdb.factories import agent_from_uf
-        except ImportError:
-            return []
-        agent = agent_from_uf(self.restrictedTraverse("/acl_users"))
+        agent = self._get_ldap_agent(bind=True, secondary=True)
         ldap_roles = sorted(agent.member_roles_info('user',
                                                     user_id,
                                                     ('description',)))
