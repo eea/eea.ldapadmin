@@ -1,5 +1,6 @@
 1.5.27 (unreleased)
 ------------------------
+* handle SparqlException on countries import [dumitval]
 
 1.5.26 (2019-03-06)
 ------------------------

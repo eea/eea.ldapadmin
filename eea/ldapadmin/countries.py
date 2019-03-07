@@ -1,12 +1,13 @@
 import os.path
 import json
 import time
-
+import logging
 import sparql
 
 from eea.ldapadmin.constants import SPARQL_ENDPOINT, SPARQL_QUERY
 from eea.ldapadmin.constants import LDAP_DISK_STORAGE
 
+logger = logging.getLogger(__name__)
 
 _country_storage = {
     'time': 0,
@@ -70,23 +71,28 @@ def update_countries():
 def load_countries(update=False):
     """ Load countries from json file in memory """
     global COUNTRIES
-    if update:
-        update_countries()
     try:
         f = open(os.path.join(LDAP_DISK_STORAGE, "countries.json"), "r")
-        data = json.load(f)
-        COUNTRIES = {}
-        COUNTRIES.update([(x['code'], x) for x in data])
-        return data
+        f.close()
     except (IOError, ValueError):
         update_countries()
         return load_countries()
     else:
+        if update:
+            try:
+                update_countries()
+            except sparql.SparqlException, e:
+                logger.error("Couldn't import countries: %s" % e)
+                pass
+        f = open(os.path.join(LDAP_DISK_STORAGE, "countries.json"), "r")
+        data = json.load(f)
+        f.close()
+        COUNTRIES = {}
+        COUNTRIES.update([(x['code'], x) for x in data])
         _country_storage['data'].clear()
         _country_storage['data'].update([(x['code'], x) for x in data])
         _country_storage['time'] = time.time()
-        COUNTRIES = _country_storage['data']
-        f.close()
+        return data
 
 
 def get_country(code):
