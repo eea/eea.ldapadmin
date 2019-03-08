@@ -15,7 +15,7 @@ setup(name='eea.ldapadmin',
           'lxml',
 
           'deform==0.9.4',
-          'colander==0.9.7',
+          'colander==1.7.0',
           'jellyfish==0.2.0',
 
           'xlrd>=0.9.3',
