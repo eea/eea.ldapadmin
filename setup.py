@@ -20,7 +20,7 @@ setup(name='eea.ldapadmin',
 
           'xlrd>=0.9.3',
           'xlwt',
-          'unidecode==1.0.22',
+          'unidecode==1.0.23',
 
           'requests==2.18.4',
           'sparql-client',
