@@ -22,7 +22,7 @@ setup(name='eea.ldapadmin',
           'xlwt',
           'unidecode==1.0.22',
 
-          'requests==2.21.0',
+          'requests==2.18.4',
           'sparql-client',
           'python-dateutil',
           'pyDNS',
