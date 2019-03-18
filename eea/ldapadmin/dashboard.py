@@ -6,6 +6,7 @@ from AccessControl import ClassSecurityInfo, getSecurityManager
 from AccessControl.Permissions import view, view_management_screens
 from App.class_init import InitializeClass
 from OFS.Folder import Folder
+#from Products.Five.browser.pagetemplatefile import PageTemplateFile
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 
 from ui_common import SessionMessages, TemplateRenderer, CommonTemplateLogic
@@ -58,7 +59,7 @@ CONFIG.environment.update(os.environ)
 
 FORUM_URL = getattr(CONFIG, 'environment', {}).get('FORUM_URL', '')
 
-manage_add_ldap_admin_html = PageTemplateFile('zpt/ldapadmin_manage_add',
+manage_add_ldap_admin_html = PageTemplateFile('zpt/ldapadmin_manage_add.zpt',
                                                 globals())
 
 class FakeTool(object):

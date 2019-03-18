@@ -4,6 +4,7 @@ from App.class_init import InitializeClass
 from DateTime import DateTime
 from OFS.Folder import Folder
 from Products.Five.browser import BrowserView
+#from Products.Five.browser.pagetemplatefile import PageTemplateFile
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from StringIO import StringIO
 from collections import defaultdict
@@ -44,7 +45,7 @@ log = logging.getLogger('roles_editor')
 eionet_edit_roles = 'Eionet edit roles'
 eionet_edit_extended_roles = 'Eionet edit extended roles'
 
-manage_add_roles_editor_html = PageTemplateFile('zpt/roles_manage_add',
+manage_add_roles_editor_html = PageTemplateFile('zpt/roles_manage_add.zpt',
                                                 globals())
 manage_add_roles_editor_html.ldap_config_edit_macro = ldap_config.edit_macro
 manage_add_roles_editor_html.config_defaults = lambda: ldap_config.defaults
@@ -289,7 +290,7 @@ class RolesEditor(Folder):
         return dict(self._config)
 
     security.declareProtected(view_management_screens, 'manage_edit')
-    manage_edit = PageTemplateFile('zpt/roles_manage_edit', globals())
+    manage_edit = PageTemplateFile('zpt/roles_manage_edit.zpt', globals())
     manage_edit.ldap_config_edit_macro = ldap_config.edit_macro
 
     security.declareProtected(view_management_screens, 'manage_edit_save')

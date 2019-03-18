@@ -34,7 +34,7 @@
          tal:attributes="value config/roles_dn|nothing" />
   <br />
 
-  <p>This is a secondary Admin DN used by NFP-NRC Tool</p>
+  <p>This is a secondary Admin DN mostly used for unlimited search</p>
   <label for="edit-secondary_admin_dn">Secondary Login DN</label>
   <input id="edit-secondary_admin_dn" name="secondary_admin_dn" size="50"
          tal:attributes="value config/secondary_admin_dn|nothing" />

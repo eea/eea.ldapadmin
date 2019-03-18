@@ -1,11 +1,12 @@
 from AccessControl import ClassSecurityInfo
 from OFS.SimpleItem import SimpleItem
 from OFS.PropertyManager import PropertyManager
+#from Products.Five.browser.pagetemplatefile import PageTemplateFile
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 
 from ui_common import TemplateRenderer
 
-manage_add_query_html = PageTemplateFile('zpt/query_manage_add', globals())
+manage_add_query_html = PageTemplateFile('zpt/query_manage_add.zpt', globals())
 
 def manage_add_query(parent, id, title, pattern, REQUEST=None):
     """ Create a new Query object """

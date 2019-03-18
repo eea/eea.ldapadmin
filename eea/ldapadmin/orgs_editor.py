@@ -4,7 +4,9 @@ from AccessControl.unauthorized import Unauthorized
 from App.class_init import InitializeClass
 from OFS.PropertyManager import PropertyManager
 from OFS.SimpleItem import SimpleItem
-from Products.PageTemplates.PageTemplateFile import PageTemplateFile
+from Products.Five.browser.pagetemplatefile import PageTemplateFile
+#from zope.pagetemplate.pagetemplatefile import PageTemplateFile
+#from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from StringIO import StringIO
 from constants import NETWORK_NAME
 from countries import get_country, get_country_options
@@ -36,7 +38,7 @@ log = logging.getLogger('orgs_editor')
 eionet_edit_orgs = 'Eionet edit organisations'
 eionet_edit_users = 'Eionet edit users'
 
-manage_add_orgs_editor_html = PageTemplateFile('zpt/orgs_manage_add',
+manage_add_orgs_editor_html = PageTemplateFile('zpt/orgs_manage_add.zpt',
                                                globals())
 manage_add_orgs_editor_html.ldap_config_edit_macro = ldap_config.edit_macro
 manage_add_orgs_editor_html.config_defaults = lambda: ldap_config.defaults
@@ -120,7 +122,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         return dict(self._config)
 
     security.declareProtected(view_management_screens, 'manage_edit')
-    manage_edit = PageTemplateFile('zpt/orgs_manage_edit', globals())
+    manage_edit = PageTemplateFile('zpt/orgs_manage_edit.zpt', globals())
     manage_edit.ldap_config_edit_macro = ldap_config.edit_macro
 
     security.declarePublic('checkPermissionView()')

@@ -4,6 +4,7 @@ from AccessControl.unauthorized import Unauthorized
 from OFS.PropertyManager import PropertyManager
 from OFS.SimpleItem import SimpleItem
 from Products.Five.browser import BrowserView
+#from Products.Five.browser.pagetemplatefile import PageTemplateFile
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from copy import deepcopy
 from datetime import datetime
@@ -47,7 +48,8 @@ log = logging.getLogger('nfp_nrc')
 
 eionet_access_nfp_nrc = 'Eionet access NFP admin for NRC'
 
-manage_add_nfp_nrc_html = PageTemplateFile('zpt/nfp_nrc/manage_add', globals())
+manage_add_nfp_nrc_html = PageTemplateFile('zpt/nfp_nrc/manage_add.zpt',
+                                           globals())
 manage_add_nfp_nrc_html.ldap_config_edit_macro = ldap_config.edit_macro
 manage_add_nfp_nrc_html.config_defaults = lambda: ldap_config.defaults
 
@@ -345,7 +347,7 @@ class NfpNrc(SimpleItem, PropertyManager):
     _render_template_no_wrap = TemplateRendererNoWrap(CommonTemplateLogic)
 
     security.declareProtected(view_management_screens, 'manage_edit')
-    manage_edit = PageTemplateFile('zpt/nfp_nrc/manage_edit', globals())
+    manage_edit = PageTemplateFile('zpt/nfp_nrc/manage_edit.zpt', globals())
     manage_edit.ldap_config_edit_macro = ldap_config.edit_macro
 
     def __init__(self, config={}):

@@ -6,6 +6,7 @@ from App.config import getConfiguration
 from OFS.PropertyManager import PropertyManager
 from OFS.SimpleItem import SimpleItem
 from Products.Five.browser import BrowserView
+#from Products.Five.browser.pagetemplatefile import PageTemplateFile
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from copy import deepcopy
 from countries import get_country_options
@@ -19,7 +20,6 @@ from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.help_messages import help_messages
 from eea.ldapadmin.logic_common import _session_pop
 from eea.ldapadmin.ui_common import NaayaViewPageTemplateFile
-from eea.usersdb import factories
 from eea.usersdb.db_agent import NameAlreadyExists, EmailAlreadyExists
 from eea.usersdb.db_agent import UserNotFound
 from email.mime.text import MIMEText
@@ -106,7 +106,7 @@ def process_url(url):
 
 eionet_edit_users = 'Eionet edit users'
 
-manage_add_users_admin_html = PageTemplateFile('zpt/users_manage_add',
+manage_add_users_admin_html = PageTemplateFile('zpt/users_manage_add.zpt',
                                                globals())
 manage_add_users_admin_html.ldap_config_edit_macro = ldap_config.edit_macro
 manage_add_users_admin_html.config_defaults = lambda: ldap_config.defaults
@@ -249,7 +249,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return dict(self._config)
 
     security.declareProtected(view_management_screens, 'manage_edit')
-    manage_edit = PageTemplateFile('zpt/users_manage_edit', globals())
+    manage_edit = PageTemplateFile('zpt/users_manage_edit.zpt', globals())
     manage_edit.ldap_config_edit_macro = ldap_config.edit_macro
 
     security.declareProtected(view_management_screens, 'manage_edit_save')

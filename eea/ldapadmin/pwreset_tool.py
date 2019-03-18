@@ -3,6 +3,7 @@ from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
 from App.class_init import InitializeClass
 from OFS.SimpleItem import SimpleItem
+#from Products.Five.browser.pagetemplatefile import PageTemplateFile
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from collections import namedtuple
 from datetime import datetime, timedelta
@@ -27,7 +28,7 @@ import random
 
 log = logging.getLogger(__name__)
 
-manage_add_pwreset_tool_html = PageTemplateFile('zpt/pwreset_manage_add',
+manage_add_pwreset_tool_html = PageTemplateFile('zpt/pwreset_manage_add.zpt',
                                                 globals())
 manage_add_pwreset_tool_html.ldap_config_edit_macro = ldap_config.edit_macro
 manage_add_pwreset_tool_html.config_defaults = lambda: ldap_config.defaults
@@ -95,7 +96,7 @@ class PasswordResetTool(SimpleItem):
         return dict(self._config)
 
     security.declareProtected(view_management_screens, 'manage_edit')
-    manage_edit = PageTemplateFile('zpt/pwreset_manage_edit', globals())
+    manage_edit = PageTemplateFile('zpt/pwreset_manage_edit.zpt', globals())
     manage_edit.ldap_config_edit_macro = ldap_config.edit_macro
 
     security.declareProtected(view_management_screens, 'manage_edit_save')

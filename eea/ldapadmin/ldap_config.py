@@ -9,9 +9,10 @@ defaults = {
     'users_dn': "ou=Users,o=EIONET,l=Europe",
     'orgs_dn': "ou=Organisations,o=EIONET,l=Europe",
     'roles_dn': "ou=Roles,o=EIONET,l=Europe",
-    'secondary_admin_dn': "",
+    'secondary_admin_dn': "cn=Accounts Browser,o=EIONET,l=Europe",
     'secondary_admin_pw': "",
 }
+
 
 def read_form(form, edit=False):
     config = dict((name, form.get(name, default))
@@ -22,6 +23,7 @@ def read_form(form, edit=False):
         if not config['secondary_admin_pw'].strip():
             del config['secondary_admin_pw']
     return config
+
 
 def ldap_agent_with_config(config, bind=False, secondary=False):
     db = UsersDB(ldap_server=config['ldap_server'],

@@ -1,14 +1,15 @@
 from Acquisition import Implicit
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
-from Products.PageTemplates.PageTemplateFile import PageTemplateFile as \
-    Z2Template
+#from Products.PageTemplates.PageTemplateFile import PageTemplateFile as \
+#    Z2Template
 from constants import NETWORK_NAME
 from eea.ldapadmin import roles_leaders
 from eea.ldapadmin.countries import get_country
 from logic_common import _get_user_id, _is_authenticated
 from persistent.list import PersistentList
 from persistent.mapping import PersistentMapping
-from zope.pagetemplate.pagetemplatefile import PageTemplateFile as Z3Template
+#from zope.pagetemplate.pagetemplatefile import PageTemplateFile as Z3Template
+from Products.Five.browser.pagetemplatefile import PageTemplateFile as Z3Template
 from zope.component import getMultiAdapter
 
 
@@ -83,7 +84,8 @@ class SessionMessages(object):
         tmpl = load_template('zpt/session_messages.zpt')
         return tmpl(messages=messages)
 
-zope2_wrapper = Z2Template('zpt/zope2_wrapper.zpt', globals())
+zope2_wrapper = Z3Template('zpt/zope2_wrapper.zpt', globals())
+plone5_wrapper = Z3Template('zpt/plone5_wrapper.zpt', globals())
 
 
 class TemplateRenderer(Implicit):
@@ -103,7 +105,7 @@ class TemplateRenderer(Implicit):
 
     def wrap(self, body_html):
         context = self.aq_parent
-        zope2_tmpl = zope2_wrapper.__of__(context)
+        plone = False
         # Naaya groupware integration. If present, use the standard template
         # of the current site
         macro = self.aq_parent.restrictedTraverse('/').get('gw_macro')
@@ -114,11 +116,17 @@ class TemplateRenderer(Implicit):
             except:
                 main_template = self.aq_parent.restrictedTraverse(
                     'standard_template.pt')
+            main_page_macro = main_template.macros['page']
         else:
             main_template = self.aq_parent.restrictedTraverse(
-                'standard_template.pt')
-        main_page_macro = main_template.macros['page']
-        return zope2_tmpl(main_page_macro=main_page_macro, body_html=body_html)
+                'main_template')
+            plone = True
+            main_page_macro = main_template.macros['master']
+        if plone:
+            tmpl = plone5_wrapper.__of__(context)
+        else:
+            tmpl = zope2_wrapper.__of__(context)
+        return tmpl(main_page_macro=main_page_macro, body_html=body_html)
 
     def __call__(self, name, **options):
         if 'context' not in options:
