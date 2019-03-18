@@ -1,22 +1,30 @@
+from zope.component import getMultiAdapter
+
 from Acquisition import Implicit
-from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
-#from Products.PageTemplates.PageTemplateFile import PageTemplateFile as \
-#    Z2Template
 from constants import NETWORK_NAME
 from eea.ldapadmin import roles_leaders
 from eea.ldapadmin.countries import get_country
 from logic_common import _get_user_id, _is_authenticated
 from persistent.list import PersistentList
 from persistent.mapping import PersistentMapping
-#from zope.pagetemplate.pagetemplatefile import PageTemplateFile as Z3Template
-from Products.Five.browser.pagetemplatefile import PageTemplateFile as Z3Template
-from zope.component import getMultiAdapter
+from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
+from Products.PageTemplates.PageTemplateFile import PageTemplateFile
+from z3c.pt.pagetemplate import PageTemplateFile as ChameleonTemplate
+
+# from Products.PageTemplates.PageTemplateFile import PageTemplateFile as \
+#    Z2Template
+# from Products.Five.browser.pagetemplatefile import \
+#     PageTemplateFile as Z3Template
+# from zope.pagetemplate.pagetemplatefile import PageTemplateFile as Z3Template
+
+Z3Template = PageTemplateFile
 
 
 def get_role_name(agent, role_id):
     """
     Get role's name if exists else keep the role ID
     """
+
     return agent.role_info(role_id)['description'] or repr(role_id)
 
 
@@ -24,6 +32,7 @@ def roles_list_to_text(agent, roles):
     """
     Returns formatted text with roles' names or IDs for messages in forms
     """
+
     return ', '.join(get_role_name(agent, role_id) for role_id in roles)
 
 
@@ -54,9 +63,16 @@ def extend_crumbs(crumbs_html, editor_url, extra_crumbs):
     return tostring(crumbs)
 
 
-def load_template(name, _memo={}):
+def load_template(name, context=None, _memo={}):
     if name not in _memo:
-        _memo[name] = Z3Template(name, globals())
+        tpl = ChameleonTemplate(name)
+
+        if context is not None:
+            bound = tpl.bind(context)
+            _memo[name] = bound
+        else:
+            _memo[name] = tpl
+
     return _memo[name]
 
 
@@ -67,22 +83,27 @@ class SessionMessages(object):
 
     def add(self, msg_type, msg):
         session = self.request.SESSION
+
         if self.name not in session.keys():
             session[self.name] = PersistentMapping()
         messages = session[self.name]
+
         if msg_type not in messages:
             messages[msg_type] = PersistentList()
         messages[msg_type].append(msg)
 
     def html(self):
         session = self.request.SESSION
+
         if self.name in session.keys():
             messages = dict(session[self.name])
             del session[self.name]
         else:
             messages = {}
         tmpl = load_template('zpt/session_messages.zpt')
+
         return tmpl(messages=messages)
+
 
 zope2_wrapper = Z3Template('zpt/zope2_wrapper.zpt', globals())
 plone5_wrapper = Z3Template('zpt/plone5_wrapper.zpt', globals())
@@ -94,11 +115,21 @@ class TemplateRenderer(Implicit):
 
     def render(self, name, **options):
         context = self.aq_parent
-        template = load_template(name)
-        namespace = template.pt_getContext((), options)
+        template = load_template(name, context)
+
+        try:
+            namespace = template.pt_getContext((), options)
+        except AttributeError:      # Plone5 compatibility
+            namespace = template.im_self._pt_get_context(
+                context, context.REQUEST, options)
+
         namespace['common'] = self.common_factory(context)
         namespace['browserview'] = self.browserview
-        return template.pt_render(namespace)
+
+        if hasattr(template, 'pt_render'):
+            return template.pt_render(namespace)
+        else:
+            return template.im_self.render(**namespace)
 
     def browserview(self, context, name):
         return getMultiAdapter((context, self.aq_parent.REQUEST), name=name)
@@ -109,6 +140,7 @@ class TemplateRenderer(Implicit):
         # Naaya groupware integration. If present, use the standard template
         # of the current site
         macro = self.aq_parent.restrictedTraverse('/').get('gw_macro')
+
         if macro:
             try:
                 layout = self.aq_parent.getLayoutTool().getCurrentSkin()
@@ -122,16 +154,19 @@ class TemplateRenderer(Implicit):
                 'main_template')
             plone = True
             main_page_macro = main_template.macros['master']
+
         if plone:
             tmpl = plone5_wrapper.__of__(context)
         else:
             tmpl = zope2_wrapper.__of__(context)
+
         return tmpl(main_page_macro=main_page_macro, body_html=body_html)
 
     def __call__(self, name, **options):
         if 'context' not in options:
             options['context'] = self.aq_parent
         options['request'] = self.REQUEST
+
         return self.wrap(self.render(name, **options))
 
 
@@ -147,6 +182,7 @@ class TemplateRendererNoWrap(Implicit):
 
         namespace = template.pt_getContext((), options)
         namespace['common'] = self.common_factory(context)
+
         return template.pt_render(namespace)
 
     def __call__(self, name, **options):
@@ -211,6 +247,7 @@ class CommonTemplateLogic(object):
             'leaders_enabled': roles_leaders.leaders_enabled(role_id),
         }
         tr = self.context._render_template
+
         return tr.render('zpt/roles_buttons.zpt', **options)
 
     def search_roles_box(self, pattern=None):
@@ -219,20 +256,23 @@ class CommonTemplateLogic(object):
             'predefined_filters': self.context._predefined_filters(),
         }
         tr = self.context._render_template
+
         return tr.render('zpt/roles_filter_form.zpt', **options)
 
     @property
     def macros(self):
-        return load_template('zpt/macros.zpt').macros
+        return load_template('zpt/macros.zpt', self.context).macros
 
     @property
     def network_name(self):
         """ E.g. EIONET, SINAnet etc. """
+
         return NETWORK_NAME
 
     @property
     def supports_mailing(self):
         """ bool, whether supports role mailing lists """
+
         return NETWORK_NAME == 'Eionet'
 
     @property
@@ -245,6 +285,7 @@ class CommonTemplateLogic(object):
 
 def network_name(self):
     """ E.g. EIONET, SINAnet etc. """
+
     return NETWORK_NAME
 
 
@@ -263,4 +304,5 @@ class NaayaViewPageTemplateFile(ViewPageTemplateFile):
         except TypeError:  # this happens in case instance is a browser view
             renderer = renderer.__of__(__instance.aq_chain[1])
         result = renderer.wrap(s)
+
         return result

@@ -1,4 +1,6 @@
-<script type="text/javascript">
+<div>
+  <script type="text/javascript">
+    /* <![CDATA[ */
     $(document).ready(function(){
         window.data_table = $('.dataTable').dataTable({
             'aaSorting': [[1, "asc"]],
@@ -10,51 +12,51 @@
             "bAutoWidth":false,
         });
     });
-</script>
+    /* ]]> */
+  </script>
 
-<div>
-    <div id="operations" tal:condition="common/can_edit_organisations">
-        <h2>Operations</h2>
-        <ul>
-            <li>
-                <a tal:attributes="href string:${common/base_url}/create_organisation_html"
-                    >Create organisation</a>
-            </li>
-            <li>
-                <a tal:attributes="href string:${common/base_url}/export_organisations"
-                    >Export</a>
-            </li>
-        </ul>
-    </div>
+  <div id="operations" tal:condition="common/can_edit_organisations">
+    <h2>Operations</h2>
+    <ul>
+      <li>
+        <a tal:attributes="href string:${common/base_url}/create_organisation_html"
+          >Create organisation</a>
+      </li>
+      <li>
+        <a tal:attributes="href string:${common/base_url}/export_organisations"
+          >Export</a>
+      </li>
+    </ul>
+  </div>
 
-    <h1>Organisations</h1>
+  <h1>Organisations</h1>
 
-    <tal:block content="structure common/message_boxes"/>
+  <tal:block content="structure common/message_boxes"/>
 
-    <div class="organisation-listing">
-        <table class="account-datatable dataTable">
-            <thead>
-                <tr>
-                    <td class="firstcol">
-                        Country
-                    </td>
-                    <td>
-                        Organisation Name
-                    </td>
-                </tr>
-            </thead>
+  <div class="organisation-listing">
+    <table class="account-datatable dataTable">
+      <thead>
+        <tr>
+          <td class="firstcol">
+            Country
+          </td>
+          <td>
+            Organisation Name
+          </td>
+        </tr>
+      </thead>
 
-            <tbody>
+      <tbody>
 
-                <tr tal:repeat="org options/sorted_organisations">
-                    <td tal:content="string:${org/country} (${org/country_pub_code})" />
-                    <td>
-                        <a tal:define="orgs_url string:${common/base_url}/organisation"
-                            tal:attributes="href string:${orgs_url}?id=${org/id}"
-                            tal:content="org/name" />
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+        <tr tal:repeat="org options/sorted_organisations">
+          <td tal:content="string:${org/country} (${org/country_pub_code})" />
+          <td>
+            <a tal:define="orgs_url string:${common/base_url}/organisation"
+              tal:attributes="href string:${orgs_url}?id=${org/id}"
+              tal:content="org/name" />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>

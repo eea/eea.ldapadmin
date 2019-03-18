@@ -1,5 +1,6 @@
-from ui_common import load_template
 from eea.usersdb import UsersDB
+from ui_common import load_template
+
 
 defaults = {
     'admin_dn': "uid=_admin,ou=Users,o=EIONET,l=Europe",
@@ -17,11 +18,14 @@ defaults = {
 def read_form(form, edit=False):
     config = dict((name, form.get(name, default))
                   for name, default in defaults.iteritems())
+
     if edit:
         if not config['admin_pw'].strip():
             del config['admin_pw']
+
         if not config['secondary_admin_pw'].strip():
             del config['secondary_admin_pw']
+
     return config
 
 
@@ -40,6 +44,7 @@ def ldap_agent_with_config(config, bind=False, secondary=False):
         else:
             db.perform_bind(config['admin_dn'], config['admin_pw'])
         legacy_ldap_server = config.get('legacy_ldap_server', None)
+
         if legacy_ldap_server:
             from eea.userseditor.users_editor import (
                 CircaUsersDB, CIRCA_USERS_DN_SUFFIX, DualLDAPProxy)
@@ -52,5 +57,6 @@ def ldap_agent_with_config(config, bind=False, secondary=False):
             db = DualLDAPProxy(db, legacy_db)
 
     return db
+
 
 edit_macro = load_template('zpt/ldap_config.zpt').macros['edit']

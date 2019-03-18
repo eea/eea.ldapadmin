@@ -1,48 +1,48 @@
 <metal:block define-macro="edit">
   <label for="edit-admin_dn">Login DN</label>
   <input id="edit-admin_dn" name="admin_dn" size="50"
-         tal:attributes="value config/admin_dn|nothing" />
+    tal:attributes="value config/admin_dn|nothing" />
   <br />
 
   <label for="edit-admin_pw">Login password</label>
   <input id="edit-admin_pw" name="admin_pw" type="password" size="50"
-         autocomplete="off" />
+    autocomplete="off" />
   <br />
 
   <label for="edit-ldap_server">LDAP server</label>
   <input id="edit-ldap_server" name="ldap_server" size="50"
-         tal:attributes="value config/ldap_server|nothing" />
+    tal:attributes="value config/ldap_server|nothing" />
   <br />
 
   <label for="edit-users_rdn">Users RDN</label>
   <input id="edit-users_rdn" name="users_rdn" size="50"
-         tal:attributes="value config/users_rdn|nothing" />
+    tal:attributes="value config/users_rdn|nothing" />
   <br />
 
   <label for="edit-users_dn">Users base DN</label>
   <input id="edit-users_dn" name="users_dn" size="50"
-         tal:attributes="value config/users_dn|nothing" />
+    tal:attributes="value config/users_dn|nothing" />
   <br />
 
   <label for="edit-orgs_dn">Organisations base DN</label>
   <input id="edit-orgs_dn" name="orgs_dn" size="50"
-         tal:attributes="value config/orgs_dn|nothing" />
+    tal:attributes="value config/orgs_dn|nothing" />
   <br />
 
   <label for="edit-roles_dn">Roles base DN</label>
   <input id="edit-roles_dn" name="roles_dn" size="50"
-         tal:attributes="value config/roles_dn|nothing" />
+    tal:attributes="value config/roles_dn|nothing" />
   <br />
 
   <p>This is a secondary Admin DN mostly used for unlimited search</p>
   <label for="edit-secondary_admin_dn">Secondary Login DN</label>
   <input id="edit-secondary_admin_dn" name="secondary_admin_dn" size="50"
-         tal:attributes="value config/secondary_admin_dn|nothing" />
+    tal:attributes="value config/secondary_admin_dn|nothing" />
   <br />
 
   <label for="edit-secondary_admin_pw">Login password</label>
-  <input id="edit-secondary_admin_pw" name="secondary_admin_pw" type="password" size="50"
-         autocomplete="off" />
+  <input id="edit-secondary_admin_pw" name="secondary_admin_pw"
+    type="password" size="50" autocomplete="off" />
   <br />
 
 </metal:block>
