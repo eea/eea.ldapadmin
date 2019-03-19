@@ -6,7 +6,6 @@ from App.config import getConfiguration
 from OFS.PropertyManager import PropertyManager
 from OFS.SimpleItem import SimpleItem
 from Products.Five.browser import BrowserView
-#from Products.Five.browser.pagetemplatefile import PageTemplateFile
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from copy import deepcopy
 from countries import get_country_options
@@ -34,7 +33,6 @@ from ui_common import extend_crumbs, TemplateRendererNoWrap
 from unidecode import unidecode
 from validate_email import validate_email, INCORRECT_EMAIL
 from zope.component import getUtility
-from zope.component.interfaces import ComponentLookupError
 from zope.sendmail.interfaces import IMailDelivery
 from transliterate import translit, get_available_language_codes
 import colander
@@ -858,11 +856,14 @@ class UsersAdmin(SimpleItem, PropertyManager):
                            _charset='utf-8')
         message['From'] = addr_from
         message['To'] = addr_to
-        message['Subject'] = "%s Account - account enabled" % NETWORK_NAME
+        subject = "%s Account - account enabled" % NETWORK_NAME
+        message['Subject'] = subject
+
         try:
-            mailer = getUtility(IMailDelivery, name="Mail")
-            mailer.send(addr_from, [addr_to], message.as_string())
-        except ComponentLookupError:
+            from plone import api
+            api.portal.send_email(recipient=[addr_to], sender=addr_from,
+                                  subject=subject, body=message)
+        except ImportError:
             mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
             try:
                 mailer.send(addr_from, [addr_to], message.as_string())
@@ -912,11 +913,14 @@ class UsersAdmin(SimpleItem, PropertyManager):
                            _charset='utf-8')
         message['From'] = addr_from
         message['To'] = addr_to
-        message['Subject'] = "%s Account - New password" % NETWORK_NAME
+        subject = "%s Account - New password" % NETWORK_NAME
+        message['Subject'] = subject
+
         try:
-            mailer = getUtility(IMailDelivery, name="Mail")
-            mailer.send(addr_from, [addr_to], message.as_string())
-        except ComponentLookupError:
+            from plone import api
+            api.portal.send_email(recipient=[addr_to], sender=addr_from,
+                                  subject=subject, body=message)
+        except ImportError:
             mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
             mailer.send(addr_from, [addr_to], message)
 
@@ -1134,9 +1138,10 @@ InitializeClass(UsersAdmin)
 
 def _send_email(addr_from, addr_to, message):
     try:
-        mailer = getUtility(IMailDelivery, name="Mail")
-        mailer.send(addr_from, [addr_to], message.as_string())
-    except ComponentLookupError:
+        from plone import api
+        api.portal.send_email(recipient=[addr_to], sender=addr_from,
+                              subject=message.get('subject'), body=message)
+    except ImportError:
         mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
         try:
             mailer.send(addr_from, [addr_to], message.as_string())

@@ -822,9 +822,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         message['Subject'] = subject
 
         try:
-            mailer = getUtility(IMailDelivery, name="Mail")
-            mailer.send(addr_from, [addr_to], message.as_string())
-        except ComponentLookupError:
+            from plone import api
+            api.portal.send_email(recipient=[addr_to], sender=addr_from,
+                                  subject=subject, body=message)
+        except ImportError:
             mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
             mailer.send(addr_from, [addr_to], message)
 

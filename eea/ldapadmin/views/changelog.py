@@ -1,8 +1,9 @@
 from DateTime.DateTime import DateTime
 from Products.Five import BrowserView
-from eea.usersdb import factories
 from zope.component import getMultiAdapter
 from zope.interface import Interface, Attribute, implements
+from Products.LDAPUserFolder.LDAPUserFolder import LDAPUserFolder
+from eea.usersdb import factories
 
 
 class IActionDetails(Interface):
@@ -10,8 +11,8 @@ class IActionDetails(Interface):
     """
 
     action_title = Attribute("Human readable title for this action")
-    author       = Attribute("Author of changes, in html format")
-    details      = Attribute("Action details in html format")
+    author = Attribute("Author of changes, in html format")
+    details = Attribute("Action details in html format")
 
 
 class BaseActionDetails(BrowserView):
@@ -36,7 +37,13 @@ class BaseActionDetails(BrowserView):
         return u"%s (%s)" % (user_info['full_name'], entry['author'])
 
     def _get_ldap_agent(self):
-        return factories.agent_from_uf(self.context.restrictedTraverse("/acl_users"))
+        # without the leading slash, since it will match the root acl
+        user_folder = self.context.restrictedTraverse("acl_users")
+        # Plone compatibility
+        if not isinstance(user_folder, LDAPUserFolder):
+            user_folder = self.context.restrictedTraverse(
+                "acl_users/ldap-plugin/acl_users")
+        return factories.agent_from_uf(user_folder)
 
 
 class EditedOrg(BaseActionDetails):
@@ -114,14 +121,13 @@ class OrganisationChangelog(BrowserView):
         agent = self.context._get_ldap_agent()
         org_dn = agent._org_dn(org_id)
 
-
         log_entries = list(reversed(agent._get_metadata(org_dn)))
 
         for entry in log_entries:
             date = DateTime(entry['timestamp']).toZone("CET")
             entry['timestamp'] = date.ISO()
             view = getMultiAdapter((entry, self.request),
-                                    name="details_" + entry['action'])
+                                   name="details_" + entry['action'])
             view.base = self.context
             entry['view'] = view
 
@@ -145,4 +151,3 @@ class OrganisationChangelog(BrowserView):
                 output.append(entry)
 
         return output
-

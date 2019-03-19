@@ -11,14 +11,6 @@ from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from z3c.pt.pagetemplate import PageTemplateFile as ChameleonTemplate
 
-# from Products.PageTemplates.PageTemplateFile import PageTemplateFile as \
-#    Z2Template
-# from Products.Five.browser.pagetemplatefile import \
-#     PageTemplateFile as Z3Template
-# from zope.pagetemplate.pagetemplatefile import PageTemplateFile as Z3Template
-
-Z3Template = PageTemplateFile
-
 
 def get_role_name(agent, role_id):
     """
@@ -105,8 +97,8 @@ class SessionMessages(object):
         return tmpl(messages=messages)
 
 
-zope2_wrapper = Z3Template('zpt/zope2_wrapper.zpt', globals())
-plone5_wrapper = Z3Template('zpt/plone5_wrapper.zpt', globals())
+zope2_wrapper = PageTemplateFile('zpt/zope2_wrapper.zpt', globals())
+plone5_wrapper = PageTemplateFile('zpt/plone5_wrapper.zpt', globals())
 
 
 class TemplateRenderer(Implicit):

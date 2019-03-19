@@ -3,7 +3,6 @@ from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
 from App.class_init import InitializeClass
 from OFS.SimpleItem import SimpleItem
-#from Products.Five.browser.pagetemplatefile import PageTemplateFile
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from collections import namedtuple
 from datetime import datetime, timedelta
@@ -18,7 +17,6 @@ from eea.ldapadmin.users_admin import eionet_edit_users
 from email.mime.text import MIMEText
 from persistent.mapping import PersistentMapping
 from zope.component import getUtility
-from zope.component.interfaces import ComponentLookupError
 from zope.sendmail.interfaces import IMailDelivery
 import base64
 import hashlib
@@ -151,12 +149,14 @@ class PasswordResetTool(SimpleItem):
                            _charset='utf-8')
         message['From'] = addr_from
         message['To'] = addr_to
-        message['Subject'] = "%s account password recovery" % NETWORK_NAME
+        subject = "%s account password recovery" % NETWORK_NAME
+        message['Subject'] = subject
 
         try:
-            mailer = getUtility(IMailDelivery, name="Mail")
-            mailer.send(addr_from, [addr_to], message.as_string())
-        except ComponentLookupError:
+            from plone import api
+            api.portal.send_email(recipient=[addr_to], sender=addr_from,
+                                  subject=subject, body=message)
+        except ImportError:
             mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
             try:
                 mailer.send(addr_from, [addr_to], message.as_string())

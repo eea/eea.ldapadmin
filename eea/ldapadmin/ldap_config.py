@@ -3,7 +3,7 @@ from ui_common import load_template
 
 
 defaults = {
-    'admin_dn': "uid=_admin,ou=Users,o=EIONET,l=Europe",
+    'admin_dn': "cn=Eionet Administrator,o=EIONET,l=Europe",
     'admin_pw': "",
     'ldap_server': "ldap2.eionet.europa.eu",
     'users_rdn': 'uid',
