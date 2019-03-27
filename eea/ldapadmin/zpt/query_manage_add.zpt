@@ -1,5 +1,10 @@
-<metal:block use-macro="here/standard_template.pt/macros/page">
-<metal:block fill-slot="body">
+<!-- <metal:block use-macro="here/standard_template.pt/macros/page"> -->
+<metal:block use-macro="context/main_template/macros/master">
+
+<!-- <metal:block fill-slot="body"> -->
+
+<metal:fill-slot fill-slot="content-core">
+
 
 <h2>Add canned query for Eionet roles editor</h2>
 
@@ -17,6 +22,6 @@
 
     <input type="submit" />
 </form>
-
-</metal:block>
+</metal:fill-slot>
+<!-- </metal:block> -->
 </metal:block>

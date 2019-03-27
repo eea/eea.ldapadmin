@@ -59,15 +59,15 @@ ul.potato-menu ul.potato-menu-group {
 	margin-bottom: 0px;
 }
 
-#workarea ul.potato-menu-vertical{
+#main-container ul.potato-menu-vertical{
 	margin-top: 0px;
 	padding: 4px;
 	border: 1px solid #bbb;
 }
-#workarea ul.potato-menu-vertical li{
+#main-container ul.potato-menu-vertical li{
 	display: block;
 }
-#workarea ul.potato-menu-vertical a{
+#main-container ul.potato-menu-vertical a{
 	font-size: 12px;
 	font-family: Helvetica, arial;
 	font-weight: bold;
@@ -75,15 +75,15 @@ ul.potato-menu ul.potato-menu-group {
 	line-height: 18px;
 }
 
-#workarea #manage-role{
+#main-container #manage-role{
 	margin-left: 8px;
 	margin-bottom: 5px;
 	display: inline;
 }
-#workarea #manage-role a.button{
+#main-container #manage-role a.button{
 	margin-top: -4px;
 	line-height: 14px;
 }
-#workarea #manage-role ul{
+#main-container #manage-role ul{
 background-color: #E4E5E5;
 }
