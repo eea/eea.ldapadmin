@@ -295,7 +295,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         for row in options.get('search_results', []):
             if row.get('status') in ['disabled']:
                 row['email'] = "disabled - %s" % row['email']
-
         return self._render_template('zpt/users_index.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'get_statistics')

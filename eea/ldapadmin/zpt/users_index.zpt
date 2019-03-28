@@ -15,9 +15,9 @@
 
 <div id="content">
   <h1>User accounts</h1>
-  
+
   <tal:block content="structure common/message_boxes"/>
-  
+
   <div class="search-form">
     <form name="search-form">
       <label for="search-query">
@@ -65,7 +65,7 @@
                        tal:attributes="href python:'edit_user?id=%s'%user['id']"></a>
                     <span tal:content="string:(${user/id})"></span>
                 </td>
-    
+
                 <td>
                     <a tal:attributes="href string:mailto:${user/email}; title string:Send email to ${user/full_name}"
                        tal:content="user/email" />

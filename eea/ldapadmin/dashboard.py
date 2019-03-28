@@ -150,5 +150,4 @@ class Dashboard(Folder):
         for fake in FAKES:
             tools.append(FakeTool(*fake))
         tools.sort(key=operator.attrgetter('title'))
-
         return self._render_template("zpt/dashboard.zpt", **{'tools': tools})
