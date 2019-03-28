@@ -13,7 +13,7 @@
     });
 </script>
 
-<div id="content">
+<div id="content-users-accounts">
   <h1>User accounts</h1>
 
   <tal:block content="structure common/message_boxes"/>
