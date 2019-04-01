@@ -1,5 +1,6 @@
 1.5.28 (unreleased)
 ------------------------
+* remove unused method to get authenticated user's password [dumitval]
 
 1.5.27 (2019-03-07)
 ------------------------
