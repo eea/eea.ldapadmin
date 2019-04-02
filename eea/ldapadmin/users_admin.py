@@ -281,9 +281,15 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         search_name = REQUEST.form.get('name', '')
         lookup = REQUEST.form.get('lookup', '')
+
+        base_url = REQUEST.ACTUAL_URL
+        if not REQUEST.ACTUAL_URL.endswith('/'):
+            base_url += '/'
+
         options.update({
             'search_name': search_name,
             'lookup': lookup,
+            'base_url': base_url,
         })
 
         if search_name:

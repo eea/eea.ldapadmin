@@ -1,21 +1,23 @@
-<div id="operations" tal:define="full_edit_permission common/full_edit_permission">
-  <h2>Operations</h2>
-  <ul>
-    <li>
-      <a tal:attributes="href string:${common/base_url}/create_user"
-          >Create account</a>
-    </li>
-    <li tal:condition="full_edit_permission">
-      <a tal:attributes="href string:${common/base_url}/bulk_check_username"
-          >Bulk verify usernames</a>
-    </li>
-    <li tal:condition="full_edit_permission">
-      <a tal:attributes="href string:${common/base_url}/bulk_check_email"
-          >Bulk verify emails</a>
-    </li>
-    <li tal:condition="full_edit_permission">
-      <a tal:attributes="href string:${common/base_url}/bulk_create_user"
-          >Create accounts from file</a>
-    </li>
-  </ul>
+<div id="operations" class="portlet" tal:define="full_edit_permission common/full_edit_permission">
+    <header class="portletHeader operations-title">
+      <a href="#" class="operations-title tile">Operations</a>
+    </header>
+    <ul>
+        <li class="portletItem">
+          <a tal:attributes="href string:${common/base_url}/create_user" class="btn btn-primary" role="button"
+              >Create account</a>
+        </li>
+        <li class="portletItem" tal:condition="full_edit_permission">
+          <a tal:attributes="href string:${common/base_url}/bulk_check_username" class="btn btn-primary" role="button"
+              >Bulk verify usernames</a>
+        </li>
+        <li class="portletItem" tal:condition="full_edit_permission">
+          <a tal:attributes="href string:${common/base_url}/bulk_check_email" class="btn btn-primary" role="button"
+              >Bulk verify emails</a>
+        </li>
+        <li class="portletItem" tal:condition="full_edit_permission">
+          <a tal:attributes="href string:${common/base_url}/bulk_create_user" class="btn btn-primary" role="button"
+              >Create accounts from file</a>
+        </li>
+    </ul>
 </div>

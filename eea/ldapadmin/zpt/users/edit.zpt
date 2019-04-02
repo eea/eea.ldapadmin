@@ -4,52 +4,53 @@
 <tal:def tal:define="disabled_user python:options['user'].get('status') == 'disabled'">
 <h1>Editing user data for <span tal:content="python:'%s (%s)'%(options['user']['full_name'], options['user']['id'])"></span></h1>
 
-<div id="operations" >
-  <h2>Operations</h2>
+<div id="operations" class="portlet">
+    <header class="portletHeader operations-title">
+      <a href="#" class="operations-title tile">Operations</a>
+    </header>
   <ul tal:condition="not:disabled_user">
-    <li>
-    <a tal:attributes="href string:/password-reset?email=${options/user/email}"
-          >Reset password</a>
+    <li class="portletItem">
+        <a tal:attributes="href string:/password-reset?email=${options/user/email}"
+             class="btn btn-primary" role="button">Reset password</a>
     </li>
-    <li>
-      <a tal:attributes="href string:eionet_profile?id=${options/user/id}"
-          >In Eionet services</a>
-    </li>
-
-    <li>
-      <a tal:attributes="href string:${options/forum_url}/profile_overview?user=${options/user/id}"
-          >Forum Profile overview</a>
+    <li class="portletItem">
+          <a tal:attributes="href string:eionet_profile?id=${options/user/id}"
+             class="btn btn-primary" role="button">In Eionet services</a>
     </li>
 
-    <li>
-      <a tal:attributes="href string:http://projects.eionet.europa.eu/profile_overview?user=${options/user/id}"
-          >Projects Profile overview</a>
+    <li class="portletItem">
+          <a tal:attributes="href string:${options/forum_url}/profile_overview?user=${options/user/id}"
+             class="btn btn-primary" role="button">Forum Profile overview</a>
     </li>
 
-    <li>
-      <a tal:attributes="href string:http://archives.eionet.europa.eu/profile_overview?user=${options/user/id}"
-          >Archives Profile overview</a>
+    <li class="portletItem">
+          <a tal:attributes="href string:http://projects.eionet.europa.eu/profile_overview?user=${options/user/id}"
+             class="btn btn-primary" role="button">Projects Profile overview</a>
     </li>
 
+    <li class="portletItem">
+          <a tal:attributes="href string:http://archives.eionet.europa.eu/profile_overview?user=${options/user/id}"
+             class="btn btn-primary" role="button">Archives Profile overview</a>
+    </li>
   </ul>
   <hr />
   <ul>
-    <li tal:condition="not:disabled_user">
-      <a tal:attributes="href string:${common/base_url}/disable_user?id=${options/user/id}"
-          >Disable account</a>
+    <li tal:condition="not:disabled_user" class="portletItem">
+          <a tal:attributes="href string:${common/base_url}/disable_user?id=${options/user/id}"
+             class="btn btn-primary" role="button">Disable account</a>
     </li>
-    <li tal:condition="disabled_user">
-      <a tal:attributes="href string:${common/base_url}/enable_user?id=${options/user/id}"
-          >Enable account</a>
+    <li tal:condition="disabled_user" class="portletItem">
+          <a tal:attributes="href string:${common/base_url}/enable_user?id=${options/user/id}"
+             class="btn btn-primary" role="button">Enable account</a>
     </li>
-    <li tal:condition="not:disabled_user">
-      <a tal:attributes="href string:${common/base_url}/reset_user?id=${options/user/id}"
-          >Reset user roles</a>
+    <li tal:condition="not:disabled_user" class="portletItem">
+          <a tal:attributes="href string:${common/base_url}/reset_user?id=${options/user/id}"
+             class="btn btn-primary" role="button">Reset user roles</a>
     </li>
   </ul>
 </div>
 
-<div id="content">
+<div id="content-edit">
     <tal:block content="structure common/message_boxes"/>
 
     <form tal:attributes="action string:edit_user_action?id=${options/form_data/id}" method="post" name="edit-account">

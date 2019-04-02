@@ -16,3 +16,18 @@
     list-style: none;
     padding: 0;
 }
+
+table.account-table {
+    word-break: unset;
+}
+
+.account-table input[type=color], .account-table input[type=date],
+.account-table input[type=datetime-local], .account-table input[type=email],
+.account-table input[type=month], .account-table input[type=number],
+.account-table input[type=password], .account-table input[type=range],
+.account-table input[type=search], .account-table input[type=tel],
+.account-table input[type=text], .account-table input[type=time],
+.account-table input[type=url], .account-table input[type=week],
+.account-table select, .account-table textarea {
+        width: auto;
+}
