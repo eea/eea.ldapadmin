@@ -1,4 +1,4 @@
-<div id="content" tal:define="stats options/stats">
+<div id="content-statistics" tal:define="stats options/stats">
     <table>
         <thead>
             <tr>

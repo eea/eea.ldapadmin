@@ -30,7 +30,7 @@
 
   </ul>
 </div>
-<div id="content">
+<div id="content-eionet-profile">
 <p>Here you can request to display roles associated to the Eionet account.<br />
 These roles are individually assigned and stored in each of the Eionet services, and not in  Eionet User Directory.<br />
 If you deactivate the account, it will still figure

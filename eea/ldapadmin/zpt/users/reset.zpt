@@ -5,7 +5,7 @@
         <tt tal:content="string:(${options/user/id})" />
     </h1>
 
-    <div id="content">
+    <div id="content-users-reset">
 
         <tal:block content="structure common/message_boxes"/>
 

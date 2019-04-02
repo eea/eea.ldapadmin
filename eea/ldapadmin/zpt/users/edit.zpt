@@ -121,14 +121,14 @@
                                 name string:${field/name}:utf8:ustring"
                 tal:content="field/value"></textarea>
       <select tal:condition="is_select"
-          tal:attributes="id field_id; 
+          tal:attributes="id field_id;
                           disabled disabled_user;
                           name string:${field/name}:utf8:ustring"
                           >
           <tal:def tal:define="choices python:field['widget'].values">
-              <option 
-                  tal:repeat="ch choices" 
-                  tal:attributes="value python:ch[0]; selected python:ch[0] == field['value']" 
+              <option
+                  tal:repeat="ch choices"
+                  tal:attributes="value python:ch[0]; selected python:ch[0] == field['value']"
                   tal:content="python: ch[1]">1</option>
           </tal:def>
       </select>

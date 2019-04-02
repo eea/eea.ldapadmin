@@ -4,26 +4,26 @@
   <tt tal:content="string:(${options/user/id})" />
 </h1>
 
-<div id="content">
+<div id="content-user-disable">
 
 <tal:block content="structure common/message_boxes"/>
 
     <form tal:define="user options/user"
           tal:attributes="action string:disable_user_action"
           method="post">
-    
+
       <p class="confirm-delete">
         Are you sure you want to disable the user
         <em tal:content="user/full_name"></em>
         <tt tal:content="string:(${options/user/id})" />?
       </p>
-    
+
       <p>
         <input type="hidden" name="id" tal:attributes="value user/id"/>
         <input type="submit" value="Yes, disable"/>
         <a tal:attributes="href string:${common/base_url}/edit_user?id=${user/id}"
             >Cancel</a>
       </p>
-    
+
     </form>
 </div>

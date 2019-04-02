@@ -4,7 +4,7 @@
   <tt tal:content="string:(${options/user/id})" />
 </h1>
 
-<div id="content">
+<div id="content-users-enable">
 
 <tal:block content="structure common/message_boxes"/>
 
@@ -32,4 +32,3 @@
 
     </form>
 </div>
-

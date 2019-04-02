@@ -1,4 +1,4 @@
-<div id="content">
+<div id="content-dashboard">
 
     <h1 tal:content="string:${common/network_name} User Account Tools"></h1>
 

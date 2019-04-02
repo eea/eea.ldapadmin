@@ -1,6 +1,6 @@
 <tal:block content="structure common/admin_menu" />
 
-<div id="content">
+<div id="content-bulk-username">
     <h1>Bulk verify usernames</h1>
 
     <tal:block content="structure common/message_boxes"/>
@@ -27,7 +27,7 @@
             <p>These are valid usernames that have been <strong>already registered</strong>.</p>
             <textarea id="id_taken" class="error" name="taken" tal:content="python:' '.join(options['taken'])"></textarea>
         </div>
-    
+
         <div class="item_list" tal:condition="options/invalid">
             <p>These are <strong>invalid usernames</strong> (unallowed characters).</p>
             <textarea id="id_taken" class="error"  name="taken" tal:content="python:' '.join(options['invalid'])"></textarea>

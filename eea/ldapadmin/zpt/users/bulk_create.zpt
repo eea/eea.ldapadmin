@@ -1,6 +1,6 @@
 <tal:block content="structure common/admin_menu" />
 
-<div id="content" tal:define="context options/context">
+<div id="content-bulk-create" tal:define="context options/context">
     <h1>Create users using a CSV file</h1>
 
     <tal:block content="structure common/message_boxes"/>

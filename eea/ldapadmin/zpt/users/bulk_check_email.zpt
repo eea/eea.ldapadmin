@@ -1,6 +1,6 @@
 <tal:block content="structure common/admin_menu" />
 
-<div id="content">
+<div id="content-bulk-emails">
     <h1>Bulk verify emails</h1>
     <script type="text/javascript" src="/++resource++eea.ldapadmin-www/jquery.atools.js"></script>
     <script type="text/javascript" src="/++resource++eea.ldapadmin-www/jquery.asuggest.js"></script>
@@ -69,7 +69,7 @@
         <h2>Results</h2>
         <div class="item_list" tal:condition="options/valid">
             <p>These are valid email addresses, <strong>available for registration</strong>.</p>
-            <textarea id="id_valid" name="valid" 
+            <textarea id="id_valid" name="valid"
                 tal:content="python:' '.join(options['valid'])"></textarea>
         </div>
 

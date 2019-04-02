@@ -613,10 +613,10 @@ label {
 	cursor: pointer;
 }
 
-select.select-box {
+/* select.select-box {
     min-width: 200px;
     height: 25px;
-}
+} */
 
 select.account-select.medium {
 	max-width: 200px !important;
@@ -714,14 +714,14 @@ div.account-links {
 
 /*** Central Dashboard ***/
 .eionet_tool{
-	width: 300px;
-	height: 80px;
 	padding: 10px;
 	border: 1px solid #e2ecef;
-	display: inline-block;
 	float: left;
+	/* width: 300px;
+	height: 80px;
+	display: inline-block;
 	margin-left: 15px;
-	margin-top: 15px;
+	margin-top: 15px; */
 	background: transparent url('++resource++eea.ldapadmin-www/gears_background.gif') no-repeat scroll 190px 0px;
 }
 
@@ -1177,7 +1177,7 @@ vertical-align:top;
 	background-color: #f6f6f6;
 }
 
-#main-container {
+/* #main-container {
 	width: 100%;
 	position: relative;
 	margin: 0px auto;
@@ -1186,4 +1186,4 @@ vertical-align:top;
 	color: #333;
 	border-left: 1px solid #666666;
 	border-right: 1px solid #666666;
-}
+} */

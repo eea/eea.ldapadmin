@@ -3,7 +3,7 @@
 <link href="/++resource++eea.ldapadmin-www/selectize/css/selectize.default.css" rel="stylesheet"/>
 <script src="/++resource++eea.ldapadmin-www/selectize/js/standalone/selectize.min.js"></script>
 
-<div id="content">
+<div id="content-edit-member">
     <tal:block content="structure common/message_boxes"/>
     <p>
       You are updating the global profile of this Eionet member. The changes
@@ -81,19 +81,19 @@
                     value field/value" />
                 <textarea tal:condition="is_textarea"
                     class="account-textarea large"
-                    tal:attributes="id field_id; 
+                    tal:attributes="id field_id;
                     class python:' '.join(input_classes + ['account-textarea', 'large']);
                     name string:${field/name}:utf8:ustring"
                     tal:content="field/value">
                 </textarea>
                 <select tal:condition="is_select"
-                    tal:attributes="id field_id; 
+                    tal:attributes="id field_id;
                     name string:${field/name}:utf8:ustring"
                     >
                     <tal:def tal:define="choices python:field['widget'].values">
-                        <option 
-                            tal:repeat="ch choices" 
-                            tal:attributes="value python:ch[0]; selected python:ch[0] == field['value']" 
+                        <option
+                            tal:repeat="ch choices"
+                            tal:attributes="value python:ch[0]; selected python:ch[0] == field['value']"
                             tal:content="python: ch[1]">
                             1
                         </option>
