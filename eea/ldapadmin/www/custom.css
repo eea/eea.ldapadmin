@@ -31,3 +31,7 @@ table.account-table {
 .account-table select, .account-table textarea {
         width: auto;
 }
+
+.account-table #edit-organisation {
+    max-width: 30em;
+}
