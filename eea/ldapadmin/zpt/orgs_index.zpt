@@ -15,17 +15,19 @@
     /* ]]> */
   </script>
 
-  <div id="operations" tal:condition="common/can_edit_organisations">
-    <h2>Operations</h2>
+  <div id="operations" tal:condition="common/can_edit_organisations" class="portlet">
+    <header class="portletHeader operations-title">
+      <a href="#" class="operations-title tile">Operations</a>
+    </header>
     <ul>
-      <li>
-        <a tal:attributes="href string:${common/base_url}/create_organisation_html"
-          >Create organisation</a>
-      </li>
-      <li>
-        <a tal:attributes="href string:${common/base_url}/export_organisations"
-          >Export</a>
-      </li>
+        <li class="portletItem">
+            <a tal:attributes="href string:${common/base_url}/create_organisation_html" class="btn btn-primary" role="button"
+              >Create organisation</a>
+        </li>
+        <li class="portletItem">
+            <a tal:attributes="href string:${common/base_url}/export_organisations" class="btn btn-primary" role="button"
+              >Export</a>
+        </li>
     </ul>
   </div>
 

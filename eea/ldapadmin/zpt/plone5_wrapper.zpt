@@ -4,11 +4,12 @@
     <!-- <link rel="stylesheet" type="text/css" media="screen" href="/++resource++eea.ldapadmin&#45;www/jquery&#45;ui.min.css" /> -->
     <link rel="stylesheet" type="text/css" href="/++resource++eea.ldapadmin-www/jquery.ui.potato.menu.css" media="screen" />
 
-    <link rel="stylesheet" type="text/css" href="/++resource++eea.ldapadmin-www/datatables/jquery.dataTables.css" media="screen" />
+    <!-- <link rel="stylesheet" type="text/css" href="/++resource++eea.ldapadmin-www/datatables/jquery.dataTables.css" media="screen" /> -->
 
     <link rel="stylesheet" type="text/css" href="/++resource++eea.ldapadmin-www/jquery.tipsy.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="/++resource++eea.ldapadmin-www/datatables/ColVis.css" media="screen" />
+    <!-- <link rel="stylesheet" type="text/css" href="/++resource++eea.ldapadmin-www/datatables/ColVis.css" media="screen" /> -->
     <!-- <link rel="stylesheet" type="text/css" media="screen" href="/++resource++eea.ldapadmin&#45;www/style.css?v=11062013" /> -->
+    <link rel="stylesheet" type="text/css" media="screen" href="/++resource++eea.ldapadmin-www/custom.css" />
   </metal:block>
 
   <metal:block fill-slot="javascript_head_slot">
@@ -21,10 +22,7 @@
 
   <metal:block fill-slot="main">
     <tal:block content="structure options/body_html" />
-    <script type="text/javascript" src="/++resource++eea.ldapadmin-www/datatables/jquery.dataTables.min.js"></script>
-    <script src="/++resource++eea.ldapadmin-www/datatables/ColVis.min.js"></script>
+    <!-- <script type="text/javascript" src="/++resource++eea.ldapadmin-www/datatables/jquery.dataTables.min.js"></script> -->
+    <!-- <script src="/++resource++eea.ldapadmin-www/datatables/ColVis.min.js"></script> -->
   </metal:block>
 </metal:block>
-
-<!-- <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.18/datatables.min.css"/> -->
-<!-- <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.18/datatables.min.js"> </script> -->

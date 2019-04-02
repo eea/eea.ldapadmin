@@ -5,9 +5,9 @@
       console.log('filtering');
         var disabled_type = $("#filter_by_disabled").val();
         var is_disabled = $(aData[aData.length - 1]).text() !== '';
-        if (disabled_type === 'include_disabled') { 
+        if (disabled_type === 'include_disabled') {
             return true;
-        } else if ((disabled_type === 'no_disabled') && (!is_disabled)){ 
+        } else if ((disabled_type === 'no_disabled') && (!is_disabled)){
             return true;
         } else if ((disabled_type === 'only_disabled') && is_disabled) {
             return true;
@@ -50,14 +50,17 @@
     /* ]]> */
 </script>
 
-<div id="operations" tal:define="org_info options/organisation"  tal:condition="common/can_edit_organisation">
-  <h2>Operations</h2>
-  <ul>
-    <li>
-      <a tal:attributes="href string:${common/base_url}/add_members_html?id=${org_info/id}"
-         >Add members</a>
-    </li>
-  </ul>
+<div id="operations" tal:define="org_info options/organisation" tal:condition="common/can_edit_organisation" class="portlet">
+    <header class="portletHeader operations-title">
+        <a href="#" class="operations-title tile">Operations</a>
+    </header>
+    <ul>
+        <li class="portletItem">
+            <a tal:attributes="href string:${common/base_url}/add_members_html?id=${org_info/id}" class="btn btn-primary" role="button">
+                Add members
+            </a>
+        </li>
+    </ul>
 </div>
 
 <h1>
@@ -107,7 +110,7 @@
                         <a tal:condition="common/can_edit_organisation"
                             tal:attributes="href string:edit_member?user_id=${member/id}&org_id=${options/organisation/id}"
                             tal:content="string:${member/first_name} ${member/last_name}" />
-                        <tal:block condition="not:common/can_edit_organisation" 
+                        <tal:block condition="not:common/can_edit_organisation"
                             content="string:${member/first_name} ${member/last_name}"/>
                     </td>
                     <td><span tal:content="member/status" /></td>

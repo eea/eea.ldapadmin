@@ -1,0 +1,18 @@
+#content #operations {
+    display: none;
+}
+
+.operations-title {
+    color: #333;
+    font-weight: 600;
+    padding: 0;
+    background: 0 0;
+    font-size: 20px;
+    padding-bottom: 10px;
+}
+
+.portlet ul {
+    position: relative;
+    list-style: none;
+    padding: 0;
+}

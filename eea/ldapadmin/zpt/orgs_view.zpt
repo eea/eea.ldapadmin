@@ -1,26 +1,36 @@
 <div tal:define="org_editor options/context">
-    <div id="operations" class="right_portlet" tal:define="org_info options/organisation; ">
-        <h2>Operations</h2>
+    <div id="operations" class="right_portlet portlet" tal:define="org_info options/organisation; ">
+        <header class="portletHeader operations-title">
+          <a href="#" class="operations-title tile">Operations</a>
+        </header>
         <ul>
-            <li tal:condition="common/can_edit_organisation">
-                <a tal:attributes="href string:${common/base_url}/edit_organisation_html?id=${org_info/id}"
-                    >Edit</a>
+            <li class="portletItem">
+                <a tal:condition="common/can_edit_organisation" class="btn btn-primary" role="button"
+                   tal:attributes="href string:${common/base_url}/edit_organisation_html?id=${org_info/id}">
+                   Edit
+                </a>
             </li>
-            <li tal:condition="common/checkPermissionEditOrganisations">
-                <a tal:attributes="href string:${common/base_url}/rename_organisation_html?id=${org_info/id}"
-                    >Change id of <tal:block content="org_info/id"/></a>
+            <li class="portletItem">
+                <a tal:condition="common/checkPermissionEditOrganisations" class="btn btn-primary" role="button"
+                   tal:attributes="href string:${common/base_url}/rename_organisation_html?id=${org_info/id}">
+                   Change id of <tal:block content="org_info/id"/>
+                </a>
             </li>
-            <li tal:condition="common/can_edit_organisation">
-                <a tal:attributes="href string:${common/base_url}/delete_organisation_html?id=${org_info/id}"
-                    >Delete</a>
+            <li class="portletItem">
+                <a tal:condition="common/can_edit_organisation" class="btn btn-primary" role="button"
+                   tal:attributes="href string:${common/base_url}/delete_organisation_html?id=${org_info/id}">
+                   Delete
+                </a>
             </li>
-            <li>
-                <a tal:attributes="href string:${common/base_url}/members_html?id=${org_info/id}"
-                    >Members</a>
+            <li class="portletItem">
+                <a tal:attributes="href string:${common/base_url}/members_html?id=${org_info/id}" class="btn btn-primary" role="button">
+                    Members
+                </a>
             </li>
-            <li>
-                <a tal:attributes="href string:${common/base_url}/export_org?id=${org_info/id}"
-                    >Export</a>
+            <li class="portletItem">
+                <a tal:attributes="href string:${common/base_url}/export_org?id=${org_info/id}" class="btn btn-primary" role="button">
+                    Export
+                </a>
             </li>
         </ul>
     </div>
