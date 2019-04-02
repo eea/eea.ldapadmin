@@ -1,14 +1,14 @@
 <metal:block use-macro="context/main_template/macros/master">
 
   <metal:block fill-slot="style_slot">
-    <link rel="stylesheet" type="text/css" media="screen" href="/++resource++eea.ldapadmin-www/jquery-ui.min.css" />
+    <!-- <link rel="stylesheet" type="text/css" media="screen" href="/++resource++eea.ldapadmin&#45;www/jquery&#45;ui.min.css" /> -->
     <link rel="stylesheet" type="text/css" href="/++resource++eea.ldapadmin-www/jquery.ui.potato.menu.css" media="screen" />
 
     <link rel="stylesheet" type="text/css" href="/++resource++eea.ldapadmin-www/datatables/jquery.dataTables.css" media="screen" />
 
     <link rel="stylesheet" type="text/css" href="/++resource++eea.ldapadmin-www/jquery.tipsy.css" media="screen" />
     <link rel="stylesheet" type="text/css" href="/++resource++eea.ldapadmin-www/datatables/ColVis.css" media="screen" />
-    <link rel="stylesheet" type="text/css" media="screen" href="/++resource++eea.ldapadmin-www/style.css?v=11062013" />
+    <!-- <link rel="stylesheet" type="text/css" media="screen" href="/++resource++eea.ldapadmin&#45;www/style.css?v=11062013" /> -->
   </metal:block>
 
   <metal:block fill-slot="javascript_head_slot">
