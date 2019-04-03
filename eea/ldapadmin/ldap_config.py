@@ -30,19 +30,20 @@ def read_form(form, edit=False):
 
 
 def ldap_agent_with_config(config, bind=False, secondary=False):
-    db = UsersDB(ldap_server=config['ldap_server'],
+    db = UsersDB(ldap_server=config.get('ldap_server', defaults['ldap_server']),
                  # next is for bwd compat with objects created with v1.0.0
                  users_rdn=config.get('users_rdn', defaults['users_rdn']),
-                 users_dn=config['users_dn'],
-                 orgs_dn=config['orgs_dn'],
-                 roles_dn=config['roles_dn'])
+                 users_dn=config.get('users_dn', defaults['users_dn']),
+                 orgs_dn=config.get('orgs_dn', defaults['orgs_dn']),
+                 roles_dn=config.get('roles_dn', defaults['roles_dn']))
 
     if bind:
         if secondary:
             db.perform_bind(config['secondary_admin_dn'],
                             config['secondary_admin_pw'])
         else:
-            db.perform_bind(config['admin_dn'], config['admin_pw'])
+            db.perform_bind(config.get('admin_dn', config['browser_dn']),
+                            config.get('admin_pw', config['browser_pw']))
         legacy_ldap_server = config.get('legacy_ldap_server', None)
 
         if legacy_ldap_server:
