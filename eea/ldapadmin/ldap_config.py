@@ -42,8 +42,8 @@ def ldap_agent_with_config(config, bind=False, secondary=False):
             db.perform_bind(config['secondary_admin_dn'],
                             config['secondary_admin_pw'])
         else:
-            db.perform_bind(config.get('admin_dn', config['browser_dn']),
-                            config.get('admin_pw', config['browser_pw']))
+            db.perform_bind(config.get('admin_dn', config.get('browser_dn')),
+                            config.get('admin_pw', config.get('browser_pw')))
         legacy_ldap_server = config.get('legacy_ldap_server', None)
 
         if legacy_ldap_server:
