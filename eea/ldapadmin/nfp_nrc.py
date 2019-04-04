@@ -73,7 +73,9 @@ def logged_in_user(request):
 
     if _is_authenticated(request):
         user = request.get('AUTHENTICATED_USER', '')
-        user_id = user.id
+
+        if user:
+            user_id = user.getId()
 
     return user_id
 
@@ -677,8 +679,9 @@ class NfpNrc(SimpleItem, PropertyManager):
 
     security.declareProtected(eionet_access_nfp_nrc, 'edit_member')
 
-    def edit_member(self, REQUEST):
+    def edit_member_html(self, REQUEST, data=None, errors=None):
         """ Update profile of a member of the NRC role """
+
         agent = self._get_ldap_agent()
         user_id = REQUEST.form['user_id']
         role_id = REQUEST.form['role_id']
@@ -689,12 +692,9 @@ class NfpNrc(SimpleItem, PropertyManager):
         elif user_id not in agent.members_in_role(role_id)['users']:
             return None
 
-        raise NotImplementedError("Needs reimplementation with secure cookies")
-
-        errors = _session_pop(REQUEST, SESSION_FORM_ERRORS, {})
         user = agent.user_info(user_id)
         # message
-        form_data = _session_pop(REQUEST, SESSION_FORM_DATA, None)
+        form_data = data
 
         if form_data is None:
             form_data = user
@@ -739,7 +739,7 @@ class NfpNrc(SimpleItem, PropertyManager):
             'user': user,
             'form_data': form_data,
             'schema': schema,
-            'errors': errors,
+            'errors': errors or {},
             'role_id': role_id,
         }
 
@@ -758,8 +758,11 @@ class NfpNrc(SimpleItem, PropertyManager):
 
     security.declareProtected(eionet_access_nfp_nrc, 'edit_member_action')
 
-    def edit_member_action(self, REQUEST):
+    def edit_member(self, REQUEST):
         """ Edit a member: the action handler """
+
+        if REQUEST.method == 'GET':
+            return self.edit_member_html(REQUEST)
 
         agent = self._get_ldap_agent(bind=True)
         user_id = REQUEST.form['user_id']
@@ -780,13 +783,10 @@ class NfpNrc(SimpleItem, PropertyManager):
             for field_error in e.error.children:
                 errors[field_error.node.name] = field_error.msg
 
-            raise NotImplementedError("Needs secure cookies")
-            session = REQUEST.SESSION
-            session[SESSION_FORM_ERRORS] = errors
-            session[SESSION_FORM_DATA] = dict(REQUEST.form)
-
             msg = u"Please correct the errors below and try again."
             IStatusMessage(REQUEST).add(msg, type='error')
+
+            return self.edit_member_html(REQUEST, REQUEST.form, errors)
         else:
             old_info = agent.user_info(user_id)
 

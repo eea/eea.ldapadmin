@@ -18,7 +18,7 @@
         </div>
 
         <form tal:condition="is_enabled"
-            tal:attributes="action string:edit_member_action?user_id=${options/form_data/user_id}&role_id=${options/role_id}"
+            tal:attributes="action string:edit_member?user_id=${options/form_data/user_id}&role_id=${options/role_id}"
             method="post" name="edit-account">
             <table class="account-table">
                 <tr>
