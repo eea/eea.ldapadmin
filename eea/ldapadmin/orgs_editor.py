@@ -61,11 +61,6 @@ def get_template_macro(name):
     return load_template('zpt/orgs_macros.zpt').macros[name]
 
 
-SESSION_PREFIX = 'eea.ldapadmin.orgs_editor'
-SESSION_MESSAGES = SESSION_PREFIX + '.messages'
-SESSION_FORM_DATA = SESSION_PREFIX + '.form_data'
-SESSION_FORM_ERRORS = SESSION_PREFIX + '.form_errors'
-
 user_info_edit_schema = eea.usersdb.user_info_schema.clone()
 user_info_edit_schema['postal_address'].widget = deform.widget.TextAreaWidget()
 del user_info_edit_schema['first_name']

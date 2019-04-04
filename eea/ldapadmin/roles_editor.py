@@ -86,7 +86,9 @@ def logged_in_user(request):
 
     if _is_authenticated(request):
         user = request.get('AUTHENTICATED_USER', '')
-        user_id = str(user.id)
+
+        if user:
+            user_id = user.getId()
 
     return user_id
 
@@ -745,7 +747,7 @@ class RolesEditor(Folder):
 
     security.declareProtected(view, 'create_role_html')
 
-    def create_role_html(self, REQUEST):
+    def create_role_html(self, REQUEST, data=None):
         """ view """
         parent_role_id = REQUEST.form['parent_role_id']
 
@@ -757,12 +759,8 @@ class RolesEditor(Folder):
             'parent_id': parent_role_id,
         }
 
-        raise NotImplementedError
-        session = REQUEST.SESSION
-
-        if SESSION_FORM_DATA in session.keys():
-            options['form_data'] = session[SESSION_FORM_DATA]
-            del session[SESSION_FORM_DATA]
+        if data:
+            options['form_data'] = data
 
         self._set_breadcrumbs(self._role_parents_stack(parent_role_id) +
                               [("Create sub-role", '#')])
@@ -805,6 +803,10 @@ class RolesEditor(Folder):
 
     def create_role(self, REQUEST):
         """ add a role """
+
+        if REQUEST.method == 'GET':
+            return self.create_role_html(REQUEST)
+
         user_id = logged_in_user(REQUEST)
         agent = self._get_ldap_agent(bind=True)
         slug = REQUEST.form['slug']
@@ -823,12 +825,10 @@ class RolesEditor(Folder):
 
             for msg in e.messages:
                 msgs.add(msg, type='error')
-            REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                      '/create_role_html?parent_role_id=' +
-                                      (parent_role_id or ''))
+
             form_data = {'slug': slug, 'description': description}
-            raise NotImplementedError
-            REQUEST.SESSION[SESSION_FORM_DATA] = form_data
+
+            return self.create_role_html(REQUEST, form_data)
         else:
             msg = u'Created role %s' % role_id
 
@@ -855,8 +855,8 @@ class RolesEditor(Folder):
                     for owner_id in owners:
                         agent.add_role_owner(role_id, owner_id)
 
-            REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                      '/?role_id=' + role_id)
+            return REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                             '/?role_id=' + role_id)
 
     security.declareProtected(view, 'delete_role_html')
 
