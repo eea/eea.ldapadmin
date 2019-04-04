@@ -1,5 +1,3 @@
-<tal:block content="structure common/message_boxes"/>
-
 <h1>Add members to role <span tal:content="options/role_name" /></h1>
 
 <div class="account-links clear" tal:condition="options/role_id" tal:define="role_id options/role_id">
@@ -115,7 +113,7 @@
             <input type="hidden" name="user_id"
                    tal:attributes="value user_info/id" />
 
-            <input type="submit" value="Add" class="primary-button" /> 
+            <input type="submit" value="Add" class="primary-button" />
           </form>
         </td>
       </tr>

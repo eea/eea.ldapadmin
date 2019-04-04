@@ -1,48 +1,43 @@
-from AccessControl import ClassSecurityInfo
-from AccessControl.Permissions import view, view_management_screens
-from AccessControl.unauthorized import Unauthorized
-from OFS.PropertyManager import PropertyManager
-from OFS.SimpleItem import SimpleItem
-from Products.Five.browser import BrowserView
-#from Products.Five.browser.pagetemplatefile import PageTemplateFile
-from Products.PageTemplates.PageTemplateFile import PageTemplateFile
-from copy import deepcopy
-from datetime import datetime
-from deform.widget import SelectWidget
-from eea import usersdb
-from eea.ldapadmin.constants import NETWORK_NAME
-from eea.ldapadmin.countries import get_country
-from eea.ldapadmin.countries import get_country_options
-from eea.ldapadmin.help_messages import help_messages
-from eea.ldapadmin.logic_common import _session_pop
-from eea.ldapadmin.ui_common import NaayaViewPageTemplateFile
-from eea.ldapadmin.users_admin import _is_authenticated
-from eea.ldapadmin.users_admin import _send_email
-from eea.ldapadmin.users_admin import eionet_edit_users
-from eea.ldapadmin.users_admin import generate_password
-from eea.ldapadmin.users_admin import generate_user_id
-from eea.ldapadmin.users_admin import get_duplicates_by_name
-from eea.ldapadmin.users_admin import _transliterate
-from eea.ldapadmin.users_admin import user_info_add_schema
-from eea.usersdb.db_agent import NameAlreadyExists, EmailAlreadyExists
-from email.mime.text import MIMEText
-from logic_common import _get_user_id
-from persistent.mapping import PersistentMapping
-from ui_common import CommonTemplateLogic
-from ui_common import SessionMessages, TemplateRenderer  # load_template,
-from ui_common import extend_crumbs, TemplateRendererNoWrap
-from ui_common import get_role_name  # , roles_list_to_text
-from unidecode import unidecode
-import colander
-import deform
 import json
-import ldap
-import ldap_config
 import logging
 import operator
 import re
-import roles_leaders
+from copy import deepcopy
+from datetime import datetime
+from email.mime.text import MIMEText
 
+import colander
+import deform
+import ldap
+import ldap_config
+import roles_leaders
+from AccessControl import ClassSecurityInfo
+from AccessControl.Permissions import view, view_management_screens
+from AccessControl.unauthorized import Unauthorized
+from deform.widget import SelectWidget
+from eea import usersdb
+from eea.ldapadmin.constants import NETWORK_NAME
+from eea.ldapadmin.countries import get_country, get_country_options
+from eea.ldapadmin.help_messages import help_messages
+from eea.ldapadmin.ui_common import NaayaViewPageTemplateFile
+from eea.ldapadmin.users_admin import (_is_authenticated, _send_email,
+                                       _transliterate, eionet_edit_users,
+                                       generate_password, generate_user_id,
+                                       get_duplicates_by_name,
+                                       user_info_add_schema)
+from eea.usersdb.db_agent import EmailAlreadyExists, NameAlreadyExists
+from logic_common import _get_user_id
+from OFS.PropertyManager import PropertyManager
+from OFS.SimpleItem import SimpleItem
+from persistent.mapping import PersistentMapping
+from Products.Five.browser import BrowserView
+from Products.PageTemplates.PageTemplateFile import PageTemplateFile
+from Products.statusmessages.interfaces import IStatusMessage
+from ui_common import (CommonTemplateLogic, TemplateRenderer,
+                       TemplateRendererNoWrap, extend_crumbs)
+from unidecode import unidecode
+
+from ui_common import get_role_name  # load_template,; , roles_list_to_text
 
 log = logging.getLogger('nfp_nrc')
 
@@ -66,10 +61,6 @@ def manage_add_nfp_nrc(parent, id, REQUEST=None):
     if REQUEST is not None:
         REQUEST.RESPONSE.redirect(parent.absolute_url() + '/manage_workspace')
 
-SESSION_PREFIX = 'eea.ldapadmin.nfp_nrc'
-SESSION_MESSAGES = SESSION_PREFIX + '.messages'
-SESSION_FORM_DATA = SESSION_PREFIX + '.form_data'
-SESSION_FORM_ERRORS = SESSION_PREFIX + '.form_errors'
 
 user_info_edit_schema = usersdb.user_info_schema.clone()
 user_info_edit_schema['postal_address'].widget = deform.widget.TextAreaWidget()
@@ -77,12 +68,9 @@ del user_info_edit_schema['first_name']
 del user_info_edit_schema['last_name']
 
 
-def _set_session_message(request, msg_type, msg):
-    SessionMessages(request, SESSION_MESSAGES).add(msg_type, msg)
-
-
 def logged_in_user(request):
     user_id = ''
+
     if _is_authenticated(request):
         user = request.get('AUTHENTICATED_USER', '')
         user_id = user.id
@@ -107,6 +95,7 @@ class SimplifiedRole(object):
         r = re.match(
             r'^reportnet-awp-([^-]*)-reporter-([^-]*)$',
             role_id, re.IGNORECASE)
+
         if m:
             self.type = m.groups()[0].lower()
             self.country = m.groups()[3].lower()
@@ -119,6 +108,7 @@ class SimplifiedRole(object):
             self.description = description
         else:
             raise ValueError("Not a valid NFP/NRC/Reporter role")
+
         if not self.country or (m and self.type not in ('nfp', 'nrc')):
             raise ValueError("Not a valid NFP/NRC/Reporter role")
 
@@ -145,6 +135,7 @@ class SimplifiedRoleDict(dict):
         r = re.match(
             r'^reportnet-awp-([^-]*)-reporter-([^-]*)$',
             role_id, re.IGNORECASE)
+
         if m:
             self['type'] = m.groups()[0].lower()
             self['country'] = m.groups()[3].lower()
@@ -157,6 +148,7 @@ class SimplifiedRoleDict(dict):
             self['description'] = description
         else:
             raise ValueError("Not a valid NFP/NRC/Reporter role")
+
         if not self['country'] or (m and self['type'] not in ('nfp', 'nrc')):
             raise ValueError("Not a valid NFP/NRC/Reporter role")
 
@@ -192,6 +184,7 @@ def _get_roles_for_user(agent, user_id, prefix_dn):
     filterstr = ("(&(objectClass=groupOfUniqueNames)(uniqueMember=%s))" %
                  agent._user_dn(user_id))
     branch = ""
+
     if "eionet-nfp" in prefix_dn:
         branch = "eionet-nfp-*-*"
     elif "eionet-nrc" in prefix_dn:
@@ -284,6 +277,7 @@ def get_members(agent, country_code, dn_branch):
                 members = agent.members_in_role(role_id)
                 users = [agent.user_info(user_id) for user_id in
                          members['users']]
+
                 for user in users:
                     user['ldap_org'] = get_national_org(agent,
                                                         user['id'],
@@ -305,6 +299,7 @@ def get_national_org(agent, user_id, role_id):
     # test if the user is member of a national organisation
     # for that role
     country_code = role_id.split('-')[-1]
+
     if country_code == "eea":
         country_code = 'eu'
     user_orgs = agent._search_user_in_orgs(user_id)
@@ -312,6 +307,7 @@ def get_national_org(agent, user_id, role_id):
     for org_id in user_orgs:
         org_info = agent.org_info(org_id)
         org_country = org_info.get("country")
+
         if org_country == country_code:
             return org_info
 
@@ -320,6 +316,7 @@ def role_members(agent, role_id):
     """ Return the member and organisations for the given role
     """
     members = agent.members_in_role(role_id)
+
     return {
         'users': dict((user_id, agent.user_info(user_id))
                       for user_id in members['users']),
@@ -332,7 +329,6 @@ class NfpNrc(SimpleItem, PropertyManager):
     meta_type = 'Eionet NFP Admin'
     security = ClassSecurityInfo()
     icon = '++resource++eea.ldapadmin-www/eionet_nfp_admin.gif'
-    session_messages = SESSION_MESSAGES
 
     manage_options = (
         {'label': 'Configure', 'action': 'manage_edit'},
@@ -360,6 +356,7 @@ class NfpNrc(SimpleItem, PropertyManager):
     def breadcrumbtrail(self):
         crumbs_html = self.aq_parent.breadcrumbtrail(self.REQUEST)
         extra_crumbs = getattr(self.REQUEST, '_nfp_nrc', [])
+
         return extend_crumbs(crumbs_html, self.absolute_url(), extra_crumbs)
 
     security.declarePrivate('_allowed')
@@ -377,12 +374,13 @@ class NfpNrc(SimpleItem, PropertyManager):
                                        prefix_dn="cn=eionet-nfp,cn=eionet",
                                        filterstr=filterstr,
                                        attrlist=("description",))
+
         if not (bool(nfp_roles) or self.checkPermissionZopeManager()):
-            _set_session_message(
-                request, 'error',
-                "You are not allowed to manage NRC members for %s"
-                % code_to_name(country_code))
+            msg = u"You are not allowed to manage NRC members for %s" \
+                % code_to_name(country_code)
+            IStatusMessage(request).add(msg, type='error')
             request.RESPONSE.redirect(self.absolute_url())
+
             return False
         else:
             return True
@@ -406,18 +404,21 @@ class NfpNrc(SimpleItem, PropertyManager):
             agent._author = logged_in_user(self.REQUEST)
         except AttributeError:
             agent._author = "System user"
+
         return agent
 
     security.declareProtected(view, 'index_html')
 
     def index_html(self, REQUEST):
         """ view """
+
         if not _is_authenticated(REQUEST):
             return self._render_template('zpt/nfp_nrc/index.zpt')
         agent = self._get_ldap_agent()
         user_id = logged_in_user(REQUEST)
         nfps = get_nfp_roles(agent, user_id)
         options = {'nfps': nfps}
+
         return self._render_template('zpt/nfp_nrc/index.zpt', **options)
 
     def get_top_role_members(self, role_dn, country_code):
@@ -427,6 +428,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         top_role_id = agent._role_id(role_dn)
         filter_country = "%s-*-%s" % (top_role_id, country_code)
         roles = []
+
         for (role_dn, attr) in agent.conn.search_s(
                 role_dn,
                 ldap.SCOPE_SUBTREE,
@@ -444,10 +446,12 @@ class NfpNrc(SimpleItem, PropertyManager):
                 members = agent.members_in_role(role_id)
                 users = [agent.user_info(user_id) for user_id in
                          members['users']]
+
                 for user in users:
                     user['ldap_org'] = get_national_org(agent,
                                                         user['id'],
                                                         role_id)
+
                     if not user['ldap_org']:
                         has_problematic_users = True
                     del(user['createTimestamp'])
@@ -486,6 +490,7 @@ class NfpNrc(SimpleItem, PropertyManager):
                    'country_name': country_name or country_code,
                    }
         self._set_breadcrumbs([("Browsing NRC-s in %s" % country_name, '#')])
+
         return self._render_template('zpt/nfp_nrc/nrcs.zpt', **options)
 
     security.declareProtected(eionet_access_nfp_nrc, 'awps')
@@ -511,6 +516,7 @@ class NfpNrc(SimpleItem, PropertyManager):
                    }
         self._set_breadcrumbs([("Browsing reporter roles in %s" % country_name,
                                 '#')])
+
         return self._render_template('zpt/nfp_nrc/awps.zpt', **options)
 
     security.declareProtected(eionet_access_nfp_nrc, 'add_member_html')
@@ -523,6 +529,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         country_name = code_to_name(country_code)
         agent = self._get_ldap_agent()
         role_name = agent.role_info(role_id)['description']
+
         if not self._allowed(agent, REQUEST, country_code):
             return None
         search_name = REQUEST.form.get('name', '')
@@ -534,6 +541,7 @@ class NfpNrc(SimpleItem, PropertyManager):
             'search_name': search_name,
             'search_results': None,
         }
+
         if search_name:
             options['search_results'] = {
                 'users': agent.search_user(search_name, no_disabled=True)
@@ -547,6 +555,7 @@ class NfpNrc(SimpleItem, PropertyManager):
             self._set_breadcrumbs([("Browsing reporters in %s" % country_name,
                                     self.absolute_url() + '/awps?nfp=%s' %
                                     country_code), ("Add member", '#')])
+
         return self._render_template('zpt/nfp_nrc/add_member.zpt', **options)
 
     security.declareProtected(eionet_access_nfp_nrc, 'add_user')
@@ -561,6 +570,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         country_code = role_id.rsplit('-', 1)[-1]
         user_id = REQUEST.form['user_id']
         agent = self._get_ldap_agent(bind=True)
+
         if not self._allowed(agent, REQUEST, country_code):
             return None
 
@@ -572,13 +582,14 @@ class NfpNrc(SimpleItem, PropertyManager):
 
         # for NRC roles only, test if the added user is member of a national
         # organisation
+
         if '-nrc-' in role_id:
             if not get_national_org(agent, user_id, role_id):
                 msg += ("The user you added as an NRC does not have a "
                         "mandatory reference to an organisation for your "
                         "country. Please corect!")
 
-        _set_session_message(REQUEST, 'info', msg)
+        IStatusMessage(REQUEST).add(msg, type='info')
 
         log.info("%s ADDED USER %r TO ROLE %r",
                  logged_in_user(REQUEST), user_id, role_id_list)
@@ -602,6 +613,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         country_name = code_to_name(country_code)
         agent = self._get_ldap_agent()
         role_name = get_role_name(agent, role_id)
+
         if not self._allowed(agent, REQUEST, country_code):
             return None
         options = {
@@ -616,12 +628,13 @@ class NfpNrc(SimpleItem, PropertyManager):
             self._set_breadcrumbs([("Browsing NRC-s in %s" % country_name,
                                     self.absolute_url() + '/nrcs?nfp=%s' %
                                     country_code),
-                                  ("Remove members", "#")])
+                                   ("Remove members", "#")])
         elif '-awp-' in role_id:
             self._set_breadcrumbs([("Browsing reporters in %s" % country_name,
                                     self.absolute_url() + '/awps?nfp=%s' %
                                     country_code),
-                                  ("Remove members", "#")])
+                                   ("Remove members", "#")])
+
         return self._render_template('zpt/nfp_nrc/remove_members.zpt',
                                      **options)
 
@@ -634,6 +647,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         role_id = REQUEST.form['role_id']
         role_name = get_role_name(agent, role_id)
         country_code = role_id.rsplit('-', 1)[-1]
+
         if not self._allowed(agent, REQUEST, country_code):
             return None
         user_id_list = REQUEST.form.get('user_id_list', [])
@@ -649,12 +663,13 @@ class NfpNrc(SimpleItem, PropertyManager):
                              logged_in_user(REQUEST), user_id, roles_id_list)
 
             msg = "Users %r removed from role %s" % (user_id_list, role_name)
-            _set_session_message(REQUEST, 'info', msg)
+            IStatusMessage(REQUEST).add(msg, type='info')
 
         if '-nrc-' in role_id:
             REQUEST.RESPONSE.redirect(self.absolute_url() +
                                       '/nrcs?nfp=%s#role_%s' %
                                       (country_code, role_id))
+
         if '-awp-' in role_id:
             REQUEST.RESPONSE.redirect(self.absolute_url() +
                                       '/awps?nfp=%s#role_%s' %
@@ -668,14 +683,19 @@ class NfpNrc(SimpleItem, PropertyManager):
         user_id = REQUEST.form['user_id']
         role_id = REQUEST.form['role_id']
         country_code = role_id.rsplit('-', 1)[-1]
+
         if not self._allowed(agent, REQUEST, country_code):
             return None
         elif user_id not in agent.members_in_role(role_id)['users']:
             return None
+
+        raise NotImplementedError("Needs reimplementation with secure cookies")
+
         errors = _session_pop(REQUEST, SESSION_FORM_ERRORS, {})
         user = agent.user_info(user_id)
         # message
         form_data = _session_pop(REQUEST, SESSION_FORM_DATA, None)
+
         if form_data is None:
             form_data = user
             form_data['user_id'] = user['uid']
@@ -685,8 +705,10 @@ class NfpNrc(SimpleItem, PropertyManager):
                  'ldap': True} for k, v in orgs.items()]
 
         user_orgs = list(agent.user_organisations(user_id))
+
         if not user_orgs:
             org = form_data['organisation']
+
             if org:
                 orgs.append(
                     {'id': org, 'text': org, 'text_native': '', 'ldap': False})
@@ -697,6 +719,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         orgs.sort(lambda x, y: cmp(x['text'], y['text']))
 
         choices = [('', '-')]
+
         for org in orgs:
             if org['ldap']:
                 if org['text_native']:
@@ -719,6 +742,7 @@ class NfpNrc(SimpleItem, PropertyManager):
             'errors': errors,
             'role_id': role_id,
         }
+
         if '-nrc-' in role_id:
             self._set_breadcrumbs([(role_id,
                                     '%s/nrcs?nfp=%s' % (self.absolute_url(),
@@ -729,6 +753,7 @@ class NfpNrc(SimpleItem, PropertyManager):
                                     '%s/awps?nfp=%s' % (self.absolute_url(),
                                                         country_code)),
                                    (user_id, '#')])
+
         return self._render_template('zpt/nfp_nrc/edit_member.zpt', **options)
 
     security.declareProtected(eionet_access_nfp_nrc, 'edit_member_action')
@@ -740,6 +765,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         user_id = REQUEST.form['user_id']
         role_id = REQUEST.form['role_id']
         country_code = role_id.rsplit('-', 1)[-1]
+
         if not self._allowed(agent, REQUEST, country_code):
             return None
         elif user_id not in agent.members_in_role(role_id)['users']:
@@ -749,14 +775,18 @@ class NfpNrc(SimpleItem, PropertyManager):
         try:
             new_info = user_form.validate(REQUEST.form.items())
         except deform.ValidationFailure, e:
-            session = REQUEST.SESSION
             errors = {}
+
             for field_error in e.error.children:
                 errors[field_error.node.name] = field_error.msg
+
+            raise NotImplementedError("Needs secure cookies")
+            session = REQUEST.SESSION
             session[SESSION_FORM_ERRORS] = errors
             session[SESSION_FORM_DATA] = dict(REQUEST.form)
+
             msg = u"Please correct the errors below and try again."
-            _set_session_message(REQUEST, 'error', msg)
+            IStatusMessage(REQUEST).add(msg, type='error')
         else:
             old_info = agent.user_info(user_id)
 
@@ -774,13 +804,14 @@ class NfpNrc(SimpleItem, PropertyManager):
             with agent.new_action():
                 if not (new_org_id in user_orgs):
                     self._remove_from_all_orgs(agent, user_id)
+
                     if new_org_id_valid:
                         self._add_to_org(agent, new_org_id, user_id)
 
                 agent.set_user_info(user_id, new_info)
             when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            _set_session_message(REQUEST, 'message',
-                                 "Profile saved (%s)" % when)
+            IStatusMessage(REQUEST).add("Profile saved (%s)" % when,
+                                        type='info')
 
             log.info("%s EDITED USER %s as member of %s",
                      logged_in_user(REQUEST), user_id, role_id)
@@ -793,6 +824,7 @@ class NfpNrc(SimpleItem, PropertyManager):
             agent.add_to_org(org_id, [user_id])
         except ldap.INSUFFICIENT_ACCESS:
             ids = self.aq_parent.objectIds(["Eionet Organisations Editor"])
+
             if ids:
                 obj = self.aq_parent[ids[0]]
                 org_agent = obj._get_ldap_agent(bind=True)
@@ -802,6 +834,7 @@ class NfpNrc(SimpleItem, PropertyManager):
 
     def _remove_from_all_orgs(self, agent, user_id):
         orgs = agent.user_organisations(user_id)
+
         for org_dn in orgs:
             org_id = agent._org_id(org_dn)
             try:
@@ -810,6 +843,7 @@ class NfpNrc(SimpleItem, PropertyManager):
                 pass
             except ldap.INSUFFICIENT_ACCESS:
                 ids = self.aq_parent.objectIds(["Eionet Organisations Editor"])
+
                 if ids:
                     obj = self.aq_parent[ids[0]]
                     org_agent = obj._get_ldap_agent(bind=True)
@@ -829,6 +863,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         user_id = REQUEST.form['user_id']
         role_id = REQUEST.form['role_id']
         country_code = role_id.rsplit('-', 1)[-1]
+
         if not self._allowed(agent, REQUEST, country_code):
             return None
         elif user_id not in agent.members_in_role(role_id)['users']:
@@ -836,22 +871,27 @@ class NfpNrc(SimpleItem, PropertyManager):
         agent = self._get_ldap_agent(bind=True)
         leaders, alternates = agent.role_leaders(role_id)
         REQUEST.RESPONSE.setHeader('Content-Type', 'application/json')
+
         if user_id in leaders:
             # then we have to unset it
             agent.unset_role_leader(role_id, user_id)
+
             return json.dumps({'pcp': ''})
         else:
             agent.set_role_leader(role_id, user_id)
+
             return json.dumps({'pcp': user_id})
 
     def checkPermissionEditUsers(self):
         """ Returns True if user has permission to edit users"""
         user = self.REQUEST.AUTHENTICATED_USER
+
         return bool(user.has_permission(eionet_edit_users, self))
 
     def checkPermissionZopeManager(self):
         """ Returns True if user has the manager role in Zope"""
         user = self.REQUEST.AUTHENTICATED_USER
+
         return bool(user.has_permission(view_management_screens, self))
 
     security.declarePrivate('_find_duplicates')
@@ -873,10 +913,12 @@ class NfpNrc(SimpleItem, PropertyManager):
         uids_to_search = uids_by_name.difference(uids_by_mail)
 
         duplicate_records.extend(agent.search_users_by_uid(uids_to_search))
+
         return duplicate_records
 
     def find_duplicates(self, REQUEST):
         """ view """
+
         if self.REQUEST.AUTHENTICATED_USER.getUserName() == 'Anonymous User':
             raise Unauthorized
         fname = REQUEST.form.get('first_name', '')
@@ -919,6 +961,7 @@ class CreateUser(BrowserView):
         if self.nfp_has_access():
             requester = logged_in_user(self.request)
             info = agent.user_info(requester)
+
             for to in [info['email'], "helpdesk@eionet.europa.eu"]:
                 self._send_new_user_email(user_id, user_info, to)
 
@@ -926,6 +969,7 @@ class CreateUser(BrowserView):
         # (mainly sending of email)
         user_info['id'] = user_id
         user_info['password'] = password
+
         return user_id
 
     def _send_new_user_email(self, user_id, user_info, to=None):
@@ -967,6 +1011,7 @@ class CreateUser(BrowserView):
     def checkPermissionEditUsers(self):
         """ """
         user = self.request.AUTHENTICATED_USER
+
         return bool(user.has_permission(eionet_edit_users, self))
 
     def orgs_in_country(self, country):
@@ -979,10 +1024,13 @@ class CreateUser(BrowserView):
             orgs_by_id = agent.all_organisations()
         countries = dict(get_country_options(country=country))
         orgs = {}
+
         for org_id, info in orgs_by_id.iteritems():
             country_info = countries.get(info['country'])
+
             if country_info:
                 orgs[org_id] = info
+
         return orgs
 
     def __call__(self):
@@ -994,6 +1042,7 @@ class CreateUser(BrowserView):
         nfp_country = self.nfp_for_country()
         form_data = dict(self.request.form)
         errors = {}
+
         if not form_data.get('password', ''):
             form_data['password'] = generate_password()
 
@@ -1001,6 +1050,7 @@ class CreateUser(BrowserView):
         # hide user id, make password optional
         del schema['id']
         schema['password'].missing = None
+
         for children in schema.children:
             help_text = help_messages['create-user'].get(children.name, None)
             setattr(children, 'help_text', help_text)
@@ -1015,11 +1065,13 @@ class CreateUser(BrowserView):
         orgs = [{'id': k, 'text': v['name'], 'text_native': v['name_native'],
                  'ldap':True} for k, v in agent_orgs.items()]
         org = form_data.get('organisation')
+
         if org and not (org in agent_orgs):
             orgs.append({'id': org, 'text': org, 'text_native': '',
                          'ldap': False})
         orgs.sort(lambda x, y: cmp(x['text'], y['text']))
         choices = [('', '-')]
+
         for org in orgs:
             if org['ldap']:
                 if org['text_native']:
@@ -1051,7 +1103,7 @@ class CreateUser(BrowserView):
                 for field_error in e.error.children:
                     errors[field_error.node.name] = field_error.msg
                 msg = u"Please correct the errors below and try again."
-                _set_session_message(self.request, 'error', msg)
+                IStatusMessage(self.request).add(msg, type='error')
             else:
                 agent = self.context._get_ldap_agent(bind=True)
                 user_id = user_info['id'] = generate_user_id(
@@ -1077,6 +1129,7 @@ class CreateUser(BrowserView):
 
                         send_confirmation = ('send_confirmation' in
                                              form_data.keys())
+
                         if send_confirmation:
                             self.send_confirmation_email(user_info)
                             self.send_password_reset_email(user_info)
@@ -1084,7 +1137,7 @@ class CreateUser(BrowserView):
                         # self._send_new_account_email_to_nfps(user_id)
                         when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         msg = "User %s created (%s)" % (user_id, when)
-                        _set_session_message(self.request, 'info', msg)
+                        IStatusMessage(self.request).add(msg, type='info')
 
                         log.info("%s CREATED USER %s",
                                  logged_in_user(self.request),
@@ -1095,7 +1148,7 @@ class CreateUser(BrowserView):
                             self.context.absolute_url())
                     else:
                         msg = u"Please correct the errors below and try again."
-                        _set_session_message(self.request, 'error', msg)
+                        IStatusMessage(self.request).add(msg, type='error')
 
         options = {
             'common': CommonTemplateLogic(self.context),
@@ -1105,6 +1158,7 @@ class CreateUser(BrowserView):
             'nfp_access': self.nfp_has_access(),
             'schema': schema,
         }
+
         return self.index(**options)
 
     def send_confirmation_email(self, user_info):
@@ -1124,10 +1178,12 @@ class CreateUser(BrowserView):
 
     def confirmation_email(self, first_name, user_id, REQUEST=None):
         """ Returns body of confirmation email """
+
         if not self.checkPermissionEditUsers() and not self.nfp_has_access():
             raise Unauthorized
         options = {'first_name': first_name, 'user_id': user_id}
         options['site_title'] = self.context.unrestrictedTraverse('/').title
+
         return self.context._render_template.render(
             "zpt/users/email_account_created.zpt",
             **options)
@@ -1142,6 +1198,7 @@ class CreateUser(BrowserView):
 
     def nfp_has_access(self):
         """ """
+
         return bool(self.nfp_for_country())
         # and self.context.aq_parent.id == 'nfp-eionet'
 
@@ -1149,11 +1206,14 @@ class CreateUser(BrowserView):
         """ Return country code for which the current user has NFP role
         or None otherwise"""
         user_id = self.request.AUTHENTICATED_USER.getId()
+
         if user_id:
             ldap_groups = self.get_ldap_user_groups(user_id)
+
             for group in ldap_groups:
                 if ('eionet-nfp-mc-' in group[0] or
                         'eionet-nfp-cc-' in group[0]):
+
                     return group[0].rsplit('-', 1)[-1]
 
     def get_ldap_user_groups(self, user_id):
@@ -1161,4 +1221,5 @@ class CreateUser(BrowserView):
         agent = self.aq_parent._get_ldap_agent(bind=True, secondary=True)
         ldap_roles = sorted(
             agent.member_roles_info('user', user_id, ('description',)))
+
         return ldap_roles

@@ -47,8 +47,6 @@
 
 <tal:block content="structure python:common.buttons_bar('role', options['role_id'], len(options['role_members']['users']))"/>
 
-<tal:block content="structure common/message_boxes"/>
-
 <div class="clear"></div>
 
 <div class="search-form">
@@ -104,13 +102,13 @@
                         <td>
                             <tal:rep tal:repeat="owner python:role_infos[sub_role_id]['owner']" >
                                 <div tal:define="info python: options['get_user_info'](owner)" tal:on-error="string: ${owner} (${error/type})">
-                                    <a tal:attributes="href string:mailto:${info/email}" 
+                                    <a tal:attributes="href string:mailto:${info/email}"
                                         tal:content="info/full_name" />(<span tal:replace="info/id" />)
                                 </div>
                             </tal:rep>
                         </td>
                         <td>
-                            <div tal:repeat="sender python:role_infos[sub_role_id]['permittedSender']" 
+                            <div tal:repeat="sender python:role_infos[sub_role_id]['permittedSender']"
                                 tal:content="sender" />
                         </td>
                     </tal:cond>
@@ -133,11 +131,11 @@
         </tal:block>
     </tal:block>
 
-    <tal:block condition="python:is_authenticated and options['can_edit']" 
+    <tal:block condition="python:is_authenticated and options['can_edit']"
         tal:define="locations options/locations">
-        <button 
+        <button
             tal:condition="locations"
-            style="float:right; margin-top:20px;" 
+            style="float:right; margin-top:20px;"
             onclick="javascript:$('#location-tabs').accordion('destroy')">Expand all</button>
         <h2>Locations where <tt tal:content="python:role_name or '[ROOT]'" /> has permissions</h2>
         <div tal:condition="python: (not options['has_groupware']) and options['role_id']">
@@ -170,14 +168,14 @@
                         <tal:rep repeat="location locations/?role_id">
                             <tr tal:repeat="roleinfo location">
                                 <td tal:define="site python: roleinfo[1]['ob'].getSite()">
-                                    <a href="" 
-                                        tal:attributes="href site/absolute_url" 
+                                    <a href=""
+                                        tal:attributes="href site/absolute_url"
                                         tal:content="site/title_or_id" />
                                 </td>
                                 <td><span tal:content="python: roleinfo[0]" /></td>
                                 <td tal:define="obj python:roleinfo[1]['ob']">
-                                    <a href="" 
-                                        tal:attributes="href obj/absolute_url" 
+                                    <a href=""
+                                        tal:attributes="href obj/absolute_url"
                                         tal:content="python:'/'.join(obj.getPhysicalPath())"/>
                                 </td>
                             </tr>
@@ -193,7 +191,7 @@
         </tal:block>
     </tal:block>
 
-    <tal:block 
+    <tal:block
         condition="python:common.supports_mailing and is_authenticated and (options['role_info'].get('permittedSender') or options['role_info'].get('permittedPerson'))">
         <h2>Allowed e-mail senders for <tt tal:condition="not:is_authenticated" tal:content="string:${role_id}@roles.." />
             <tt tal:condition="is_authenticated" tal:content="string:${role_id}@roles.eea.eionet.europa.eu" /></h2>

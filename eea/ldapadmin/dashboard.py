@@ -2,13 +2,11 @@ import operator
 import os
 
 from AccessControl import ClassSecurityInfo, getSecurityManager
-from AccessControl.Permissions import view, view_management_screens
-from App.class_init import InitializeClass
+from AccessControl.Permissions import view  # , view_management_screens
 from App.config import getConfiguration
 from OFS.Folder import Folder
-# from Products.Five.browser.pagetemplatefile import PageTemplateFile
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
-from ui_common import CommonTemplateLogic, SessionMessages, TemplateRenderer
+from ui_common import CommonTemplateLogic, TemplateRenderer
 
 KNOWN_TYPES = {'Eionet Roles Editor': {
     'description': ('Browse Roles and Roles\' Members in LDAP'
@@ -44,11 +42,6 @@ KNOWN_TYPES = {'Eionet Roles Editor': {
                     '<br /><i>[available to any user]</i>')
 }
 }
-
-SESSION_PREFIX = 'eea.ldapadmin.dashboard'
-SESSION_MESSAGES = SESSION_PREFIX + '.messages'
-SESSION_FORM_DATA = SESSION_PREFIX + '.form_data'
-SESSION_FORM_ERRORS = SESSION_PREFIX + '.form_errors'
 
 # Permission
 eionet_access_ldap_explorer = 'Eionet access LDAP explorer'
@@ -113,7 +106,6 @@ class Dashboard(Folder):
     meta_type = 'Eionet LDAP Explorer'
     icon = '++resource++eea.ldapadmin-www/ldap_dashboard.gif'
     security = ClassSecurityInfo()
-    session_messages = SESSION_MESSAGES
 
     _render_template = TemplateRenderer(CommonTemplateLogic)
 
@@ -150,4 +142,5 @@ class Dashboard(Folder):
         for fake in FAKES:
             tools.append(FakeTool(*fake))
         tools.sort(key=operator.attrgetter('title'))
+
         return self._render_template("zpt/dashboard.zpt", **{'tools': tools})

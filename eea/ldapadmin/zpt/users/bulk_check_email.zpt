@@ -38,8 +38,6 @@
         });
     </script>
 
-    <tal:block content="structure common/message_boxes"/>
-
     <form action="" method="post" name="check-email">
         <p>Enter a list of look-up email addresses separated by spaces, commas or new lines:</p>
 

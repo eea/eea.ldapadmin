@@ -1,28 +1,27 @@
-from ldap import CONSTRAINT_VIOLATION, NO_SUCH_OBJECT, SCOPE_BASE
-from AccessControl import ClassSecurityInfo
-from AccessControl.Permissions import view, view_management_screens
-from App.class_init import InitializeClass
-from OFS.SimpleItem import SimpleItem
-from Products.PageTemplates.PageTemplateFile import PageTemplateFile
-from collections import namedtuple
-from datetime import datetime, timedelta
-from eea.ldapadmin import ldap_config
-from eea.ldapadmin import query
-from eea.ldapadmin.constants import NETWORK_NAME
-from eea.ldapadmin.ui_common import CommonTemplateLogic
-from eea.ldapadmin.ui_common import SessionMessages
-from eea.ldapadmin.ui_common import TemplateRenderer
-from eea.ldapadmin.ui_common import load_template
-from eea.ldapadmin.users_admin import eionet_edit_users
-from email.mime.text import MIMEText
-from persistent.mapping import PersistentMapping
-from zope.component import getUtility
-from zope.sendmail.interfaces import IMailDelivery
 import base64
 import hashlib
 import logging
 import random
+from collections import namedtuple
+from datetime import datetime, timedelta
+from email.mime.text import MIMEText
 
+from zope.component import getUtility
+from zope.sendmail.interfaces import IMailDelivery
+
+from AccessControl import ClassSecurityInfo
+from AccessControl.Permissions import view, view_management_screens
+from App.class_init import InitializeClass
+from eea.ldapadmin import ldap_config, query
+from eea.ldapadmin.constants import NETWORK_NAME
+from eea.ldapadmin.ui_common import (CommonTemplateLogic, TemplateRenderer,
+                                     load_template)
+from eea.ldapadmin.users_admin import eionet_edit_users
+from ldap import CONSTRAINT_VIOLATION, NO_SUCH_OBJECT, SCOPE_BASE
+from OFS.SimpleItem import SimpleItem
+from persistent.mapping import PersistentMapping
+from Products.PageTemplates.PageTemplateFile import PageTemplateFile
+from Products.statusmessages.interfaces import IStatusMessage
 
 log = logging.getLogger(__name__)
 
@@ -49,24 +48,20 @@ def _role_parents(role_id):
     if role_id is None:
         return []
     parents = [role_id]
+
     while '-' in role_id:
         role_id = role_id.rsplit('-', 1)[0]
         parents.append(role_id)
+
     return reversed(parents)
 
-SESSION_PREFIX = 'eea.ldapadmin.pwreset_tool'
-SESSION_MESSAGES = SESSION_PREFIX + '.messages'
-SESSION_FORM_DATA = SESSION_PREFIX + '.form_data'
-
-
-def _set_session_message(request, msg_type, msg):
-    SessionMessages(request, SESSION_MESSAGES).add(msg_type, msg)
 
 TokenData = namedtuple('TokenData', 'user_id timestamp')
 
 
 def random_token():
     bits = hashlib.sha1(str(datetime.now()) + str(random.random())).digest()
+
     return base64.urlsafe_b64encode(bits).replace('-', '')[:20]
 
 
@@ -74,7 +69,6 @@ class PasswordResetTool(SimpleItem):
     meta_type = 'Eionet Password Reset Tool'
     security = ClassSecurityInfo()
     icon = '++resource++eea.ldapadmin-www/eionet_password_reset_tool.gif'
-    session_messages = SESSION_MESSAGES
 
     manage_options = (
         {'label': 'Configure', 'action': 'manage_edit'},
@@ -107,6 +101,7 @@ class PasswordResetTool(SimpleItem):
         new_config['legacy_ldap_server'] = form.get('legacy_ldap_server', '')
         new_config['legacy_admin_dn'] = form.get('legacy_admin_dn', '')
         new_config['legacy_admin_pw'] = form.get('legacy_admin_pw', '')
+
         if not new_config['legacy_admin_pw']:
             del new_config['legacy_admin_pw']  # don't overwrite
 
@@ -126,11 +121,13 @@ class PasswordResetTool(SimpleItem):
         """ view """
         email = REQUEST.get('email', '')
         options = {'email': email}
+
         return self._render_template('zpt/pwreset_index.zpt', **options)
 
     def _new_token(self, user_id):
         token = random_token()
         self._tokens[token] = TokenData(user_id, datetime.utcnow())
+
         return token
 
     def _send_token_email(self, addr_to, token, user_info):
@@ -168,21 +165,25 @@ class PasswordResetTool(SimpleItem):
     def ask_for_password_reset(self, REQUEST=None, email=None,
                                on_create=False):
         """ view """
+
         if REQUEST is None:
             REQUEST = self.REQUEST
+
         if not email:
             email = REQUEST.form['email']
 
         agent = self._get_ldap_agent()
         users = agent.search_user_by_email(email)   # , no_disabled=True)
+        msgs = IStatusMessage(REQUEST)
 
         if users:
             # some people have multiple accounts; send mail for each account.
+
             for user_info in users:
                 if user_info['status'] == 'disabled':
-                    msg = "This email: %s belongs to a disabled account" % \
+                    msg = u"This email: %s belongs to a disabled account" % \
                         user_info['email']
-                    _set_session_message(REQUEST, 'error', msg)
+                    msgs.add(msg, type='error')
                     location = (
                         self.absolute_url() +
                         '/messages_html?msg=email-disabled')
@@ -199,8 +200,8 @@ class PasswordResetTool(SimpleItem):
         else:
             log.info("Requested password recovery with invalid email %r.",
                      email)
-            msg = "Email address not found in database."
-            _set_session_message(REQUEST, 'error', msg)
+            msg = u"Email address not found in database."
+            msgs.add(msg, type='error')
             location = self.absolute_url() + '/'
 
         if REQUEST and not on_create:
@@ -213,21 +214,25 @@ class PasswordResetTool(SimpleItem):
         options = {
             'message-name': REQUEST.form['msg'],
         }
+
         return self._render_template('zpt/pwreset_message.zpt', **options)
 
     def _say_token_expired(self, REQUEST):
-        msg = ("Password reset link is invalid, perhaps it has "
-               "expired. Please try again.")
-        _set_session_message(REQUEST, 'error', msg)
+        msgs = IStatusMessage(REQUEST)
+        msg = (u"Password reset link is invalid, perhaps it has "
+               u"expired. Please try again.")
+        msgs.add(msg, type='error')
         location = self.absolute_url() + '/'
         REQUEST.RESPONSE.redirect(location)
 
     def _expire_tokens(self):
         expired = []
         cutoff_time = datetime.utcnow() - timedelta(days=1)
+
         for token, token_data in self._tokens.iteritems():
             if token_data.timestamp < cutoff_time:
                 expired.append(token)
+
         for token in expired:
             log.info('Token %r expired.', token)
             del self._tokens[token]
@@ -248,6 +253,7 @@ class PasswordResetTool(SimpleItem):
             'token': token,
             'user_id': token_data.user_id,
         }
+
         return self._render_template('zpt/pwreset_new_password.zpt', **options)
 
     def reset_password(self, REQUEST):
@@ -261,8 +267,10 @@ class PasswordResetTool(SimpleItem):
             return self._say_token_expired(REQUEST)
 
         new_password = REQUEST.form['password']
+        msgs = IStatusMessage(REQUEST)
+
         if new_password != REQUEST.form['password-confirm']:
-            _set_session_message(REQUEST, 'error', "Passwords do not match.")
+            msgs.add("Passwords do not match.", type='error')
             location = self.absolute_url() + '/confirm_email?token=' + token
 
         else:
@@ -272,6 +280,8 @@ class PasswordResetTool(SimpleItem):
             try:
                 agent.set_user_password(token_data.user_id, None, new_password)
             except CONSTRAINT_VIOLATION, e:
+                message = ''
+
                 if e.message['info'] in [
                         'Password fails quality checking policy']:
                     try:
@@ -286,10 +296,10 @@ class PasswordResetTool(SimpleItem):
                         message = e.message['info']
                 else:
                     message = e.message['info']
-                _set_session_message(REQUEST, 'error', message)
-                location = (self.absolute_url() +
-                            '/confirm_email?token=' +
-                            token)
+
+                msgs.add(message, type='error')
+                location = '%s/confirm_email?token=%s' % (self.absolute_url(),
+                                                          token)
             else:
                 del self._tokens[token]
                 location = (self.absolute_url() +
@@ -301,6 +311,8 @@ class PasswordResetTool(SimpleItem):
 
     def can_edit_users(self):
         user = self.REQUEST.AUTHENTICATED_USER
+
         return bool(user.has_permission(eionet_edit_users, self))
+
 
 InitializeClass(PasswordResetTool)

@@ -22,8 +22,6 @@
 
 <tal:block content="structure python:common.buttons_bar('edit_owners', options['role_id'])"/>
 
-<tal:block content="structure common/message_boxes"/>
-
 <tal:block define="role_id options/role_id;
                    role_owners options/role_owners">
     <h2>Owners in <tt tal:content="python:role_id or '[ROOT]'" /></h2>
@@ -37,11 +35,11 @@
                     <input type="checkbox" class="selectall user_id_list" name="selectall"
                            onclick="selectAll('user_id_list:list', 'remove-owners-table');"/>
                 </td>
-                
+
                 <td>
                     Name
                 </td>
-                
+
                 <td>
                     User ID
                 </td>
@@ -117,7 +115,7 @@
                         <input type="checkbox" class="selectall user_id_list" name="selectall"
                                onclick="selectAll('user_id_list:list', 'add-owners-table');"/>
                     </td>
-                    
+
                     <td>
                         Name
                     </td>

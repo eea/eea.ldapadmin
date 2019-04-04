@@ -7,7 +7,6 @@
     </h1>
 
     <div id="content-edit" tal:define="is_enabled python:options['user']['status'] != 'disabled'">
-        <tal:block content="structure common/message_boxes"/>
         <p>
             You are updating the global profile of this Eionet member. The changes
             will be reflected in all pages referencing this member.

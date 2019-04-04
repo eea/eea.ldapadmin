@@ -1,7 +1,5 @@
 <h1>NFP Administration</h1>
 
-<tal:block content="structure common/message_boxes"/>
-
 <tal:block condition="not: common/is_authenticated">
     <p class="not-logged-in">
         You must be authenticated and you must have an NFP Role assigned.

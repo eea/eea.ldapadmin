@@ -53,8 +53,6 @@
 
 <tal:block content="structure python:common.buttons_bar('role_all_members', options['role_id'], options['members_count'])"/>
 
-<tal:block content="structure common/message_boxes"/>
-
 <tal:block define="users options/users;
                    is_authenticated common/is_authenticated">
     <div id="role-mailing-list"  tal:define="rich_view python:True">

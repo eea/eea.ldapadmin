@@ -13,8 +13,6 @@
 
     <h1>Create account</h1>
 
-    <tal:block content="structure common/message_boxes"/>
-
     <script type="text/javascript">
         $(document).ready(function(){
         $('label[title!=""]').tipsy({
@@ -141,19 +139,19 @@
                         name string:${field/name}:utf8:ustring"
                         tal:content="field/value"></textarea>
                     <select tal:condition="is_select"
-                        tal:attributes="id field_id; 
+                        tal:attributes="id field_id;
                         name string:${field/name}:utf8:ustring"
                         >
                         <tal:def tal:define="choices python:field['widget'].values">
-                            <option 
-                                tal:repeat="ch choices" 
-                                tal:attributes="value python:ch[0]; selected python:ch[0] == field['value']" 
+                            <option
+                                tal:repeat="ch choices"
+                                tal:attributes="value python:ch[0]; selected python:ch[0] == field['value']"
                                 tal:content="python: ch[1]">1</option>
                         </tal:def>
                     </select>
                     <tal:def define="errors python: isinstance(field['error'], list) and field['error'] or [field['error']]">
                         <tal:rep tal:repeat="error errors">
-                            <p class="error-hint" 
+                            <p class="error-hint"
                                 tal:attributes="id string:error-${field_id}"
                                 tal:condition="error"
                                 tal:content="error" />

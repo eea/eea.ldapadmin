@@ -35,7 +35,7 @@
         #advanced_edit_form, #save_advanced_members {
             display: none;
         }
-        td .actions { 
+        td .actions {
             display: none;
         }
         #current_members table {
@@ -55,14 +55,12 @@
 
     <h1>Edit the current members of <span metal:use-macro="context/@@extended_management_menu/macros/breadcrumb" /></h1>
 
-    <tal:block content="structure common/message_boxes"/>
-
     <div metal:use-macro="context/@@extended_management_menu/macros/menu" />
 
     <div class="form-container">
-        <form 
+        <form
             id="current_members"
-            action="" style="float:left" 
+            action="" style="float:left"
             tal:attributes="action string:${context/absolute_url}/@@edit_members_of_one_role?role_id=${options/role_id}" method="post">
 
             <input type="hidden" name="role_id" tal:attributes="value options/role_id" />
@@ -71,8 +69,8 @@
                 <div class="floated_left_box" id="target_widget">
 
                     <div id="advanced_edit_form">
-                        <textarea 
-                            name="users:utf8:ustring" 
+                        <textarea
+                            name="users:utf8:ustring"
                             tal:content="python:'\n'.join([x.split('-')[0] for x in options['form_data']['users']])">
                         </textarea>
                         <button id="save_advanced_members"><span class="fa fa-save"></span> Save</button>

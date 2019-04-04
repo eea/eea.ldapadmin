@@ -51,8 +51,6 @@
 </div>
 
 <div id="content-edit">
-    <tal:block content="structure common/message_boxes"/>
-
     <form tal:attributes="action string:edit_user_action?id=${options/form_data/id}" method="post" name="edit-account">
 
     <table class="account-table">

@@ -4,7 +4,6 @@
 <script src="/++resource++eea.ldapadmin-www/selectize/js/standalone/selectize.min.js"></script>
 
 <div id="content-edit-member">
-    <tal:block content="structure common/message_boxes"/>
     <p>
       You are updating the global profile of this Eionet member. The changes
       will be reflected in all pages referencing this member.
@@ -12,7 +11,7 @@
     <p>
       <a tal:attributes="href string:members_html?id=${options/org_id}">Back to member listing.</a>
     </p>
-    <form tal:attributes="action string:edit_member_action?user_id=${options/form_data/user_id}&org_id=${options/org_id}" method="post" name="edit-account">
+    <form tal:attributes="action string:edit_member?user_id=${options/form_data/user_id}&org_id=${options/org_id}" method="post" name="edit-account">
 
     <table class="account-table">
       <tr>

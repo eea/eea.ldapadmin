@@ -68,8 +68,6 @@
   (<tt tal:content="options/organisation/id"/>)
 </h1>
 
-<tal:block content="structure common/message_boxes"/>
-
 <form method="post" tal:condition="options/org_members"
     tal:attributes="action string:${common/base_url}/remove_members">
 

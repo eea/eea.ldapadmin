@@ -6,19 +6,19 @@
         <ul>
             <li class="portletItem">
                 <a tal:condition="common/can_edit_organisation" class="btn btn-primary" role="button"
-                   tal:attributes="href string:${common/base_url}/edit_organisation_html?id=${org_info/id}">
+                   tal:attributes="href string:${common/base_url}/edit_organisation?id=${org_info/id}">
                    Edit
                 </a>
             </li>
             <li class="portletItem">
                 <a tal:condition="common/checkPermissionEditOrganisations" class="btn btn-primary" role="button"
-                   tal:attributes="href string:${common/base_url}/rename_organisation_html?id=${org_info/id}">
+                   tal:attributes="href string:${common/base_url}/rename_organisation?id=${org_info/id}">
                    Change id of <tal:block content="org_info/id"/>
                 </a>
             </li>
             <li class="portletItem">
                 <a tal:condition="common/can_edit_organisation" class="btn btn-primary" role="button"
-                   tal:attributes="href string:${common/base_url}/delete_organisation_html?id=${org_info/id}">
+                   tal:attributes="href string:${common/base_url}/delete_organisation?id=${org_info/id}">
                    Delete
                 </a>
             </li>
@@ -39,8 +39,6 @@
         <tal:block content="options/organisation/name"/>
         (<tt tal:content="options/organisation/id"/>)
     </h1>
-
-    <tal:block content="structure common/message_boxes"/>
 
     <table tal:define="org_info options/organisation">
 
@@ -106,6 +104,7 @@
 
     </table>
 
-    <div tal:condition="common/can_edit_organisation" tal:content="structure python:browserview(options['context'], name='org_changelog')()" />
+    <div tal:condition="common/can_edit_organisation"
+      tal:content="structure python:browserview(options['context'], name='org_changelog')()" />
 
 </div>

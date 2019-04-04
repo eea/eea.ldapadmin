@@ -1,12 +1,11 @@
 from AccessControl import ClassSecurityInfo
-from OFS.SimpleItem import SimpleItem
 from OFS.PropertyManager import PropertyManager
-#from Products.Five.browser.pagetemplatefile import PageTemplateFile
+from OFS.SimpleItem import SimpleItem
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
-
-from ui_common import TemplateRenderer
+from ui_common import CommonTemplateLogic, TemplateRenderer
 
 manage_add_query_html = PageTemplateFile('zpt/query_manage_add.zpt', globals())
+
 
 def manage_add_query(parent, id, title, pattern, REQUEST=None):
     """ Create a new Query object """
@@ -18,9 +17,9 @@ def manage_add_query(parent, id, title, pattern, REQUEST=None):
 
     if REQUEST is not None:
         url = parent.absolute_url() + '/manage_workspace'
+
         return REQUEST.RESPONSE.redirect(url)
 
-import roles_editor
 
 class Query(SimpleItem, PropertyManager):
     meta_type = 'Eionet Roles Editor Query'
@@ -28,19 +27,21 @@ class Query(SimpleItem, PropertyManager):
     icon = '++resource++eea.ldapadmin-www/roles_query.gif'
 
     manage_options = PropertyManager.manage_options + (
-        {'label':'View', 'action':''},
+        {'label': 'View', 'action': ''},
     ) + SimpleItem.manage_options
 
     _properties = (
-        {'id':'title', 'type': 'string', 'mode':'w', 'label': 'Title'},
-        {'id':'pattern', 'type': 'string', 'mode':'w', 'label': 'Pattern'},
+        {'id': 'title', 'type': 'string', 'mode': 'w', 'label': 'Title'},
+        {'id': 'pattern', 'type': 'string', 'mode': 'w', 'label': 'Pattern'},
     )
 
-    _render_template = TemplateRenderer(roles_editor.CommonTemplateLogic)
+    _render_template = TemplateRenderer(CommonTemplateLogic)
 
     def _get_ldap_agent(self):
         return self.aq_parent._get_ldap_agent()
 
     def index_html(self, REQUEST):
         """ view """
-        return self.aq_parent._filter_results(self.pattern, 'Predefined search query - ' + self.title)
+
+        return self.aq_parent._filter_results(
+            self.pattern, 'Predefined search query - ' + self.title)

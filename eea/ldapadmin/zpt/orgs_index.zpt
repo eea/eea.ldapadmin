@@ -21,7 +21,7 @@
     </header>
     <ul>
         <li class="portletItem">
-            <a tal:attributes="href string:${common/base_url}/create_organisation_html" class="btn btn-primary" role="button"
+            <a tal:attributes="href string:${common/base_url}/create_organisation" class="btn btn-primary" role="button"
               >Create organisation</a>
         </li>
         <li class="portletItem">
@@ -32,8 +32,6 @@
   </div>
 
   <h1>Organisations</h1>
-
-  <tal:block content="structure common/message_boxes"/>
 
   <div class="organisation-listing">
     <table class="account-datatable dataTable">

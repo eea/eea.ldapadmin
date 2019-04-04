@@ -4,8 +4,6 @@
 
 <tal:block content="structure python:common.buttons_bar('edit_leaders', options['role_id'])"/>
 
-<tal:block content="structure common/message_boxes"/>
-
 <tal:block define="role_id options/role_id;
                    role_members options/members">
     <h2>Members of <tt tal:content="python:role_id or '[ROOT]'" /></h2>

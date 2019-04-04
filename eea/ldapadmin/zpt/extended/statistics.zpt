@@ -5,8 +5,6 @@
 
     <div metal:use-macro="context/@@extended_management_menu/macros/menu" />
 
-    <tal:block content="structure common/message_boxes"/>
-
     <style>
         .highlight {
             background-color:#FF7E80;

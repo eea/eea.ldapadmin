@@ -1,7 +1,5 @@
 <h1 tal:content="string:Reset ${common/network_name} account password"></h1>
 
-<tal:block content="structure common/message_boxes"/>
-
 <p tal:condition="not:common/can_edit_users" >If you have lost the password to your <span tal:replace="common/network_name" />
 account, you can reset it here. Simply enter your e-mail address below and click "Reset password". You will receive an e-mail message with a private link.</p>
 

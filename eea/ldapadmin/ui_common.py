@@ -5,8 +5,6 @@ from constants import NETWORK_NAME
 from eea.ldapadmin import roles_leaders
 from eea.ldapadmin.countries import get_country
 from logic_common import _get_user_id, _is_authenticated
-from persistent.list import PersistentList
-from persistent.mapping import PersistentMapping
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from z3c.pt.pagetemplate import PageTemplateFile as ChameleonTemplate
@@ -68,35 +66,6 @@ def load_template(name, context=None, _memo={}):
     return _memo[name]
 
 
-class SessionMessages(object):
-    def __init__(self, request, name):
-        self.request = request
-        self.name = name
-
-    def add(self, msg_type, msg):
-        session = self.request.SESSION
-
-        if self.name not in session.keys():
-            session[self.name] = PersistentMapping()
-        messages = session[self.name]
-
-        if msg_type not in messages:
-            messages[msg_type] = PersistentList()
-        messages[msg_type].append(msg)
-
-    def html(self):
-        session = self.request.SESSION
-
-        if self.name in session.keys():
-            messages = dict(session[self.name])
-            del session[self.name]
-        else:
-            messages = {}
-        tmpl = load_template('zpt/session_messages.zpt')
-
-        return tmpl(messages=messages)
-
-
 zope2_wrapper = PageTemplateFile('zpt/zope2_wrapper.zpt', globals())
 plone5_wrapper = PageTemplateFile('zpt/plone5_wrapper.zpt', globals())
 
@@ -105,9 +74,9 @@ class TemplateRenderer(Implicit):
     def __init__(self, common_factory=lambda ctx: {}):
         self.common_factory = common_factory
 
-    def render(self, name, **options):
+    def render(self, template_name, **options):
         context = self.aq_parent
-        template = load_template(name, context)
+        template = load_template(template_name, context)
 
         try:
             namespace = template.pt_getContext((), options)
@@ -154,12 +123,12 @@ class TemplateRenderer(Implicit):
 
         return tmpl(main_page_macro=main_page_macro, body_html=body_html)
 
-    def __call__(self, name, **options):
+    def __call__(self, template_name, **options):
         if 'context' not in options:
             options['context'] = self.aq_parent
         options['request'] = self.REQUEST
 
-        return self.wrap(self.render(name, **options))
+        return self.wrap(self.render(template_name, **options))
 
 
 class TemplateRendererNoWrap(Implicit):
@@ -190,10 +159,6 @@ class CommonTemplateLogic(object):
 
     def site_url(self):
         return self.context.unrestrictedTraverse("/").absolute_url()
-
-    def message_boxes(self):
-        return SessionMessages(self._get_request(),
-                               self.context.session_messages).html()
 
     def _get_request(self):
         return self.context.REQUEST

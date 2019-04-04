@@ -1,7 +1,5 @@
 <h1>Change organisation ID</h1>
 
-<tal:block content="structure common/message_boxes"/>
-
 <form tal:attributes="action string:${common/base_url}/rename_organisation"
       name="rename_organisation"
       method="post">

@@ -7,8 +7,6 @@
 
     <div id="content-users-reset">
 
-        <tal:block content="structure common/message_boxes"/>
-
         <form tal:define="user options/user"
             tal:attributes="action string:@@reset_user"
             method="post">

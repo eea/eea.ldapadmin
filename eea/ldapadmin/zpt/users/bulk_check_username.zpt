@@ -3,9 +3,6 @@
 <div id="content-bulk-username">
     <h1>Bulk verify usernames</h1>
 
-    <tal:block content="structure common/message_boxes"/>
-
-
     <form action="" method="post" name="check-username">
     <p>Enter a list of look-up usernames separated by spaces, commas or new lines:</p>
     <p>

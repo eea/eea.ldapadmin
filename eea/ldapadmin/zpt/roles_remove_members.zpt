@@ -22,8 +22,6 @@
 
 <tal:block content="structure python:common.buttons_bar('remove_members', options['role_id'])"/>
 
-<tal:block content="structure common/message_boxes"/>
-
 <tal:block define="role_id options/role_id;
                    role_members options/role_members">
     <tal:block condition="role_members/users">
@@ -39,17 +37,17 @@
                     <input type="checkbox" class="selectall user_id_list" name="selectall"
                            onclick="selectAll('user_id_list:list');"/>
                 </td>
-                
+
                 <td>
                     Name
                 </td>
-                
+
                 <td>
                     User ID
                 </td>
             </tr>
         </thead>
-        
+
         <tbody>
             <tal:block tal:repeat="user_id python:sorted(role_members['users'])">
                 <tr tal:define="user_info python:role_members['users'][user_id]">
@@ -60,7 +58,7 @@
                     <td>
                         <span tal:content="user_info/full_name|string:User doesn't exist anymore"/>
                     </td>
-                    
+
                     <td>
                         <span tal:content="user_id"/>
                     </td>

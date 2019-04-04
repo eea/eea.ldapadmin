@@ -16,8 +16,6 @@
 <div id="content-users-accounts">
   <h1>User accounts</h1>
 
-  <tal:block content="structure common/message_boxes"/>
-
   <div class="search-form">
     <form name="search-form">
       <label for="search-query">

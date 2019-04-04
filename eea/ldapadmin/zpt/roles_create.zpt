@@ -5,8 +5,6 @@
 
 <tal:block content="structure python:common.buttons_bar('create_role', options.get('parent_id') or '')"/>
 
-<tal:block content="structure common/message_boxes"/>
-
 <script type="text/javascript">
     $(document).ready(function(){
         $('#name').tipsy({
@@ -25,7 +23,7 @@
             Role ID:
           </label>
         </td>
-        
+
         <td>
           <tt tal:condition="options/parent_id"
               tal:content="string:${options/parent_id}-" />
@@ -35,7 +33,7 @@
            tal:attributes="value options/form_data/slug|nothing"/>
         </td>
       </tr>
-      
+
       <tr>
         <td>
           <label for="description">
@@ -43,14 +41,14 @@
             <small>(description)</small>:
           </label>
         </td>
-        
+
         <td>
           <input type="text" name="description:utf8:ustring" id="description"
                  class="text-input medium"
            tal:attributes="value options/form_data/description|nothing"/>
         </td>
       </tr>
-      
+
       <tr>
         <td align="center" colspan="2">
           <input tal:condition="options/parent_id"

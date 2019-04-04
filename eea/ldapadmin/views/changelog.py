@@ -1,9 +1,11 @@
-from DateTime.DateTime import DateTime
-from Products.Five import BrowserView
 from zope.component import getMultiAdapter
-from zope.interface import Interface, Attribute, implements
-from Products.LDAPUserFolder.LDAPUserFolder import LDAPUserFolder
+from zope.interface import Attribute, Interface, implements
+
+from DateTime.DateTime import DateTime
 from eea.usersdb import factories
+from eea.usersdb.db_agent import UserNotFound
+from Products.Five import BrowserView
+from Products.LDAPUserFolder.LDAPUserFolder import LDAPUserFolder
 
 
 class IActionDetails(Interface):
@@ -27,22 +29,29 @@ class BaseActionDetails(BrowserView):
 
     def details(self, entry):
         self.entry = entry
+
         return self.index()
 
     def author(self, entry):
         if entry['author'] == 'unknown user':
             return entry['author']
 
-        user_info = self.base._get_ldap_agent().user_info(entry['author'])
+        try:
+            user_info = self.base._get_ldap_agent().user_info(entry['author'])
+        except UserNotFound:
+            return entry['author']
+
         return u"%s (%s)" % (user_info['full_name'], entry['author'])
 
     def _get_ldap_agent(self):
         # without the leading slash, since it will match the root acl
         user_folder = self.context.restrictedTraverse("acl_users")
         # Plone compatibility
+
         if not isinstance(user_folder, LDAPUserFolder):
             user_folder = self.context.restrictedTraverse(
                 "acl_users/ldap-plugin/acl_users")
+
         return factories.agent_from_uf(user_folder)
 
 
@@ -132,15 +141,19 @@ class OrganisationChangelog(BrowserView):
             entry['view'] = view
 
         output = []
+
         for entry in log_entries:
             if output:
                 last_entry = output[-1]
                 check = ['author', 'action', 'timestamp']
                 flag = True
+
                 for k in check:
                     if last_entry[k] != entry[k]:
                         flag = False
+
                         break
+
                 if flag:
                     last_entry['data'].append(entry['data'])
                 else:
