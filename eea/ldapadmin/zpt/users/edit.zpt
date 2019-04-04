@@ -51,7 +51,7 @@
 </div>
 
 <div id="content-edit">
-    <form tal:attributes="action string:edit_user_action?id=${options/form_data/id}" method="post" name="edit-account">
+    <form tal:attributes="action string:edit_user?id=${options/form_data/id}" method="post" name="edit-account">
 
     <table class="account-table">
 

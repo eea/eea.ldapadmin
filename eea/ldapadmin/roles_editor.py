@@ -1381,6 +1381,9 @@ class RolesEditor(Folder):
 
     def edit_leaders(self, REQUEST):
         """ Action on form in edit_leaders_html """
+
+        # TODO: should be reimplemented to make edit_leaders_html only render
+        # html
         role_id = REQUEST.form.get('role_id')
 
         if not self.can_edit_members(role_id, REQUEST.AUTHENTICATED_USER):

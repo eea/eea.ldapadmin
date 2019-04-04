@@ -613,7 +613,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template_no_wrap('zpt/users/find_duplicates.zpt',
                                              **options)
 
-    def edit_user(self, REQUEST):
+    def edit_user_html(self, REQUEST, data=None, errors=None):
         """
         View for editing profile information for a given user
         with id passed through GET
@@ -621,17 +621,16 @@ class UsersAdmin(SimpleItem, PropertyManager):
         """
         user_id = REQUEST.form['id']
         agent = self._get_ldap_agent(bind=True)
-        raise NotImplementedError
-        errors = _session_pop(REQUEST, SESSION_FORM_ERRORS, {})
         user = agent.user_info(user_id)
 
         if not (self.checkPermissionEditUsers() or
                 self.nfp_has_edit_access(user=user)):
             raise Unauthorized
         # message
-        form_data = _session_pop(REQUEST, SESSION_FORM_DATA, None)
 
-        if form_data is None:
+        if data:
+            form_data = data
+        else:
             form_data = user
 
         try:
@@ -706,17 +705,21 @@ class UsersAdmin(SimpleItem, PropertyManager):
         options = {'user': user,
                    'form_data': form_data,
                    'schema': schema,
-                   'errors': errors,
+                   'errors': errors or {},
                    'forum_url': FORUM_URL,
                    }
         self._set_breadcrumbs([(user_id, '#')])
 
         return self._render_template('zpt/users/edit.zpt', **options)
 
-    security.declareProtected(eionet_edit_users, 'edit_user_action')
+    security.declareProtected(eionet_edit_users, 'edit_user')
 
-    def edit_user_action(self, REQUEST):
+    def edit_user(self, REQUEST):
         """ view """
+
+        if REQUEST.method == 'GET':
+            return self.edit_user_html(REQUEST)
+
         user_id = REQUEST.form['id']
 
         schema = user_info_edit_schema.clone()
@@ -738,13 +741,10 @@ class UsersAdmin(SimpleItem, PropertyManager):
             for field_error in e.error.children:
                 errors[field_error.node.name] = field_error.msg
 
-            raise NotImplementedError
-            session = REQUEST.SESSION
-            session[SESSION_FORM_ERRORS] = errors
-            session[SESSION_FORM_DATA] = dict(REQUEST.form)
-
             msg = u"Please correct the errors below and try again."
             msgs.add(msg, type='error')
+
+            return self.edit_user_html(REQUEST, REQUEST.form, errors)
         else:
             agent = self._get_ldap_agent(bind=True)
 
@@ -775,7 +775,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
             log.info("%s EDITED USER %s as member of %s",
                      logged_in_user(REQUEST), user_id, new_org_id)
 
-        REQUEST.RESPONSE.redirect(
+        return REQUEST.RESPONSE.redirect(
             self.absolute_url() + '/edit_user?id=' + user_id)
 
     def _add_to_org(self, agent, org_id, user_id):
