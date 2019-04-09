@@ -8,7 +8,7 @@
     <metal:block use-macro="options/form_macro" />
 
     <tr>
-      <td colspan="2"><input type="submit" value="Create organisation" class="primary-button" /></td>
+      <td colspan="2"><input class="btn btn-primary" type="submit" value="Create organisation" /></td>
     </tr>
 
   </table>

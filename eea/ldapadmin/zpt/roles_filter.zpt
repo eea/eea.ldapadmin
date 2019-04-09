@@ -2,7 +2,7 @@
 
 <div class="account-links clear">
   <div class="left-position">
-    <a tal:attributes="href string:${common/base_url}" class="button"
+    <a tal:attributes="href string:${common/base_url}" class="btn btn-secondary"
        title="Back to roles">
       <img src="/++resource++eea.ldapadmin-www/back.png"
           class="middle-image image12"

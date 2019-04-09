@@ -1,21 +1,23 @@
-<div id="role-name">
+<div class="right-position">
+  <a tal:attributes="href string:mailto:${options/role_id}@roles.eea.eionet.europa.eu"
+  tal:condition="python: common.supports_mailing and options['role_id'] and common.is_authenticated()"
+  title="Send mail to group" class="mailing-link">
+  MAILING: <tt tal:content="string:${options/role_id}@roles.eea.eionet.europa.eu"/>
+</a>
+</div>
+
+<div id="role-name" class="left-position">
     <h1 tal:define="name python:(options['role_info']['description'].strip()
         or 'Role %s' % options['role_id'])"
-        tal:content="name" class="left-position" />
+        tal:content="name" class="left-position"/>
     <img tal:condition="python:options.get('role_id') and options['can_edit_members']"
         src="/++resource++eea.ldapadmin-www/edit.gif" id="edit-role-description-arrow" />
 </div>
 <div id="role-name-edit" tal:condition="python:options.get('role_id') and options['can_edit_members']">
     <input type="hidden" name="role_id" tal:attributes="value options/role_id" />
     <input type="text" name="role_name" tal:attributes="value options/role_info/description" class="role_name" />
-    <input type="submit" name="submit" value="Save" />
+    <input class="btn btn-primary" type="submit" name="submit" value="Save" />
 </div>
-
-<a tal:attributes="href string:mailto:${options/role_id}@roles.eea.eionet.europa.eu"
-   tal:condition="python: common.supports_mailing and options['role_id'] and common.is_authenticated()"
-   title="Send mail to group" class="right-position mailing-link">
-    MAILING: <tt tal:content="string:${options/role_id}@roles.eea.eionet.europa.eu"/>
-</a>
 
 <script type="text/javascript">
     $(document).ready(function(){

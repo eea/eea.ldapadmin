@@ -6,12 +6,12 @@
 <form name="search-users"
       tal:attributes="action string:${common/base_url}/add_members_html">
   <input type="hidden" name="id" tal:attributes="value options/org_id"/>
-  <label>
+  <label for="search-user">
     Name of user:
-    <input type="search" name="search_query:utf8:ustring" autofocus="autofocus"
-           tal:attributes="value options/search_query"/>
   </label>
-  <input type="submit" value="Search"/>
+  <input id="search-user" class="text-input large" type="search" name="search_query:utf8:ustring" autofocus="autofocus"
+  tal:attributes="value options/search_query"/>
+  <input class="btn btn-primary" type="submit" value="Search"/>
 </form>
 
 <form name="add-members" method="post" tal:condition="options/found_users"

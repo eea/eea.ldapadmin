@@ -67,7 +67,7 @@
         </tbody>
     </table>
     <br />
-    <input type="submit" value="Remove users" class="primary-button" />
+    <input type="submit" value="Remove users" class="btn btn-primary" />
     </form>
     </tal:block>
     <tal:block condition="not:role_members/users">

@@ -16,9 +16,10 @@
   <br />
   <input id="search-roles-input" type="search" name="pattern:utf8:ustring"
          class="text-input large" autofocus="autofocus"
-         tal:attributes="value options/pattern|nothing"/>
+         tal:attributes="value options/pattern|nothing"
+         placeholder="Search"/>
   <input type="submit" value="Search roles"
-         class="primary-button" />
+         class="btn btn-primary" />
 
   <p>
     Use our
@@ -60,7 +61,7 @@
         <td>
           Query name
         </td>
-        
+
         <td>
           Query pattern
         </td>

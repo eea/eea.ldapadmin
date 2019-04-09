@@ -11,14 +11,14 @@
         <label for="is_extended">Enable extended management?</label>
         <input type='checkbox' name="is_extended" tal:attributes="checked options/is_extended" />
         <input type="hidden" name="role_id" tal:attributes="value options/role_id" />
-        <input type="submit" name="enable_extended_management" value="Set extended status" class="primary-button" />
+        <input type="submit" name="enable_extended_management" value="Set extended status" class="btn btn-primary" />
 
         <h2>Empty this role</h2>
         <p style="color:Red"><strong>Warning</strong>: this is a destructive operation</p>
         <p>All users that have roles and subroles in this branch will have those roles removed.</p>
 
-        <input type="submit" name="export2xls" value="Export to Excel" class="primary-button" />
-        <input type="submit" id="empty_branch" name="empty_branch" value="Empty branch" class="primary-button" />
+        <input type="submit" name="export2xls" value="Export to Excel" class="btn btn-primary" />
+        <input type="submit" id="empty_branch" name="empty_branch" value="Empty branch" class="btn btn-primary" />
 
     </form>
     <script>
@@ -29,4 +29,3 @@
         });
     </script>
 </div>
-

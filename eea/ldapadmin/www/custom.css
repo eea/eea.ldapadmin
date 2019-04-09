@@ -2,15 +2,6 @@
     display: none;
 }
 
-.operations-title {
-    color: #333;
-    font-weight: 600;
-    padding: 0;
-    background: 0 0;
-    font-size: 20px;
-    padding-bottom: 10px;
-}
-
 .portlet ul {
     position: relative;
     list-style: none;
@@ -29,9 +20,805 @@ table.account-table {
 .account-table input[type=text], .account-table input[type=time],
 .account-table input[type=url], .account-table input[type=week],
 .account-table select, .account-table textarea {
-        width: auto;
+  width: auto;
 }
 
 .account-table #edit-organisation {
-    max-width: 30em;
+  max-width: 30em;
+}
+
+#main-container ul.potato-menu-vertical li {
+  display: block;
+  float: none;
+}
+
+#operations .btn {
+  display: block;
+  white-space: normal;
+}
+
+/* #main-container #manage-role {
+  display: inline-block;
+  padding: 6px 12px;
+} */
+
+#main-container #manage-role a,
+#main-container #manage-role a:hover {
+  color: #333;
+}
+
+#operations .portletItem:not(:last-child) .btn {
+  margin-bottom: 0.5em;
+}
+
+.btn {
+  display: inline-block;
+  margin-bottom: 0;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
+.btn:hover {
+  text-decoration: none;
+}
+
+.link-https {
+  background: none !important;
+  padding: 0 0.3em 0 0 !important;
+}
+
+/* style.css */
+
+.clear{
+	clear: both;
+	width: 2px;
+}
+
+.middle-image {
+	vertical-align: middle;
+	margin-top: -4px;
+}
+
+.left-position {
+	float: left;
+}
+
+.right-position {
+	float: right;
+}
+
+#content-core .image12 {
+	height: 12px;
+}
+
+.image16 {
+	height: 16px;
+}
+
+.image24 {
+	height: 24px;
+}
+
+.image32 {
+	height: 32px;
+}
+
+.image48 {
+	height: 48px;
+}
+
+a.account-link {
+	text-decoration: none;
+	color: #00446A;
+}
+
+a.button.last-button {
+	margin-right: 3px;
+}
+
+/**
+ * Form`s table
+*/
+
+table.account-table {
+	border-collapse: collapse;
+	margin: 0 auto;
+}
+
+table.account-table label {
+	vertical-align: middle;
+	float: right;
+}
+
+table.account-table tr:last-child,
+tr.no-border {
+	border: none !important;
+}
+
+
+/**
+ * Messages
+*/
+
+.error-msg {
+	border: 1px solid #B50000 !important;
+	background-color: #FFCECE !important;
+	color: #333333 !important;
+	font-weight: bold;
+	padding: 0.5em 0em 0.5em 1em !important;
+	margin: 0 0 1em 0 !important;
+}
+
+.system-msg {
+	border: 1px solid #FFAE00 !important;
+	background-color: #FFF5CE !important;
+	color: #333333 !important;
+	font-weight: bold;
+	padding: 0.5em 0em 0.5em 0.3em !important;
+	margin: 0 0 1em 0 !important;
+}
+
+.system-msg, .error-msg {
+	text-indent: 1em;
+}
+
+/**
+ * Account Datatable
+*/
+
+/*f8 -> f6*/
+
+table.account-datatable thead td {
+	text-align: left;
+}
+
+.paging_full_numbers a.paginate_button {
+    font: 12px "lucida grande", "lucida sans", "luxi sans", "lucida sans unicode", arial, sans-serif;
+    padding: 5px !important;
+    background: #E3E3E3;
+    background: -moz-linear-gradient(whiteSmoke, #E3E3E3);
+    background: -webkit-gradient( linear, 0 0, 0 100%, color-stop(0, whiteSmoke), color-stop(0.98, #E3E3E3), color-stop(1, white) );
+    filter: progid:DXImageTransform.Microsoft.Gradient( StartColorStr='whiteSmoke', EndColorStr='#E3E3E3', GradientType=0) !important;
+    border-bottom: 1px solid #CCC;
+    -webkit-border-radius: 2px !important;
+       -moz-border-radius: 2px !important;
+            border-radius: 2px !important;
+    color: #000 !important;
+}
+
+.paging_full_numbers a.paginate_button:hover {
+    background: #E3E3E3;
+    background: -moz-linear-gradient(#E3E3E3, whiteSmoke);
+    background: -webkit-gradient( linear, 0 0, 0 100%, color-stop(0, #E3E3E3), color-stop(0.98, whiteSmoke), color-stop(1, white) );
+    filter: progid:DXImageTransform.Microsoft.Gradient( StartColorStr='#E3E3E3', EndColorStr='whiteSmoke', GradientType=0) !important;
+    color: #000 !important;
+}
+
+
+.organisation-listing table tr td.firstcol{
+	width: 200px;
+}
+
+.organisation-listing select {
+  margin: 0.5em 0;
+}
+
+/**
+ * More actions
+*/
+
+div.more-actions {
+	width: 100%;
+}
+
+div.more-actions a {
+	display: block;
+	padding-left: 0.5em;
+	margin: 0.3em;
+	text-decoration: none;
+}
+
+div.more-actions a:hover {
+	text-decoration: underline;
+}
+
+
+div.operation-title {
+	padding: 0.5em;
+}
+
+div#operations:hover {
+	cursor: pointer !important;
+}
+
+div.operation-title a.account-link {
+	text-decoration: none;
+	color: #333333 !important;
+	font-weight: bold !important;
+}
+
+div.separator-div {
+	width: 100%;
+	height: 1px;
+	background-color: #E2E2E2;
+	margin-bottom: 0.7em;
+}
+
+/**
+ * Filter section
+*/
+
+div.filter-section {
+	border-bottom: 1px solid #EAEAEA;
+	width: 100%;
+}
+
+div.filter-section:hover {
+	background-color: #EFFBFF;
+}
+
+div.filter-section table.account-table {
+	background: none !important;
+}
+
+div.filter-section table.account-table:hover {
+	background-color: #EFFBFF !important;
+}
+
+.hidden-loading {
+	display: none;
+}
+
+.search-form table {
+	margin-bottom: 15px;
+}
+
+.search-help-text {
+	font-size: 12px;
+}
+
+.search-help-text span {
+	font-style: italic;
+}
+
+.checkbox-td {
+	width: 10px;
+}
+
+.account-links {
+	padding-bottom: 9px !important;
+}
+
+.role-parents {
+	font-size: 12px;
+}
+
+.role-parents a:hover {
+	text-decoration: none;
+}
+
+.search-message {
+	text-align: center;
+}
+
+.roles-tree-arrow {
+	background-image: url('/++resource++eea.ldapadmin-www/arrows.gif');
+	background-repeat: no-repeat;
+	border: 0 none;
+	height: 18px;
+	width: 16px;
+	margin: 0;
+	padding: 0;
+	position: relative;
+	top: 0;
+}
+
+.arrow-blank {
+	background-image: none;
+}
+
+.arrow-normal {
+}
+
+.arrow-normal:hover {
+	background-position: -32px 0;
+}
+
+.arrow-down {
+	background-position: -16px 0;
+	display: inline;
+}
+
+.arrow-down:hover {
+	background-position: -48px 0;
+}
+
+div.filter-section table.account-table {
+	background: none !important;
+}
+
+div.filter-section table.account-table:hover {
+	background-color: #EFFBFF !important;
+}
+
+/**
+ * Form`s table
+*/
+
+table.account-table {
+	font-size: 0.9em;
+	border-collapse: collapse;
+	width: 100%;
+}
+
+table.account-table label {
+	font-weight: bold;
+	text-align: right !important;
+	vertical-align: middle;
+  margin-right: 1em;
+}
+
+table.account-table th {
+	text-align: left;
+}
+
+table.account-table tr {
+	border-top: 1px solid #EAEAEA;
+}
+
+tr.no-border {
+	border: none !important;
+}
+
+table.account-table td {
+	padding: 0.5em 0 0.5em 0.5em;
+}
+
+table.account-table td.fixed-width-label {
+	max-width: 100px !important;
+}
+
+td.top {
+	vertical-align: top !important;
+}
+
+td.right-td {
+	text-align: right !important;
+}
+
+/**
+ * Form fields
+*/
+
+label {
+	cursor: pointer;
+}
+
+select.account-select.medium {
+	max-width: 200px !important;
+}
+
+textarea.account-textarea.large {
+	width: 350px !important;
+	height: 100px;
+	font-size: 1em !important;
+}
+
+input[type="search"] {
+  margin: 0.5em 0;
+  border-radius: 20px !important;
+}
+
+input.text-input.small {
+	width: 100px;
+}
+
+input.text-input.medium {
+	width: 200px;
+}
+
+input.text-input.large {
+	width: 350px;
+}
+
+input.error {
+	border: 1px solid #B50000;
+}
+
+p.error-hint {
+	border: none;
+	background-color: transparent;
+	color: #B50000;
+	font-size: 100%;
+}
+
+.search-form select {
+  display: block;
+}
+
+.search-form .btn-primary {
+  margin: 0.5em 0;
+}
+
+/**
+ * Fields events
+*/
+input.text-input:focus,
+textarea.account-textarea:focus {
+	background-color: #FFFAD6;
+}
+
+div.account-links {
+  background-color: transparent;
+	width: 100%;
+  padding: 1em 0;
+}
+
+/**
+ * Messages
+*/
+
+.error-msg {
+	border: 1px solid #B50000 !important;
+	background-color: #FFCECE !important;
+	color: #333333 !important;
+	font-size: 0.9em !important;
+	font-weight: bold;
+	padding: 0.5em 0em 0.5em 1em !important;
+	margin: 1em 0em 0em 0.5em !important;
+	width: 98%;
+	line-height: 18px;
+}
+
+.system-msg {
+	border: 1px solid #FFAE00 !important;
+	background-color: #FFF5CE !important;
+	color: #333333 !important;
+	font-size: 0.9em !important;
+	font-weight: bold;
+	padding: 0.5em 0em 0.5em 1em !important;
+	margin: 1em 0em 0.5em 0em !important;
+	width: 98%;
+}
+
+.system-msg, .error-msg {
+	text-indent: 2em;
+}
+
+/*** Central Dashboard ***/
+.eionet_tool {
+	padding: 10px;
+	border: 1px solid #e2ecef;
+	float: left;
+	background: transparent url('++resource++eea.ldapadmin-www/gears_background.gif') no-repeat scroll 190px 0px;
+}
+
+.eionet_tool .tool_title {
+	font-weight: bold;
+}
+
+/*** Users-Admin ***/
+.item_list {
+	border-bottom: 1px solid #CCCCCC;
+}
+
+.item_list textarea, #id_usernames, #id_emails{
+	width: 80%;
+	height: 100px;
+}
+
+#confirmation_email_label{
+	float: none;
+	text-align: left !important;
+}
+
+#confirmation_email{
+	display: none;
+	text-align: left;
+	width: 800px;
+}
+
+/*** Roles-editor ***/
+.account-links .low-row {
+	padding-top:15px;
+}
+
+.potato-menu:after {
+  clear: none;
+  display: inherit;
+}
+
+input.shortcut_country {
+	width: 3em;
+}
+
+div#role-name-edit {
+	display: none;
+}
+
+img#edit-role-description-arrow {
+	margin: 35px 0 0 6px;
+	cursor: pointer;
+}
+
+div#role-name-edit input.role_name {
+	width: 500px;
+}
+
+#expand-all-button,
+#collapse-all-button {
+	background: none !important;
+	font-size: 11px !important;
+	float: right;
+	padding: 2px !important;
+	padding-left: 20px !important;
+  border-bottom: none;
+}
+
+#right-side-buttons {
+	float: right;
+	text-align: right;
+	padding-right: 10px;
+}
+
+#senders_tokens textarea {
+	font-family: arial, sans-serif;
+	background-color: #FFFFFF;
+	border: 1px solid #A5CED1;
+	font-size: 0.9em !important;
+	padding: 0.5em;
+	width: 90%;
+	margin: 10px auto;
+	height: 60px;
+}
+
+#senders_tokens textarea:focus {
+	background-color: #FFFAD6;
+}
+
+/*** NFP_NRC ***/
+
+div.nrc-action-buttons {
+	display: inline-block;
+	float: right;
+}
+
+div.nrc-action-buttons a.button {
+	padding: 2px;
+}
+
+ul.organisations {
+    width: 670px;
+}
+
+#loading img {
+    vertical-align: middle;
+}
+
+#loading {
+    display: none;
+}
+
+#readonly-alert {
+	padding-left: 15px;
+	padding-right: 15px;
+	margin-bottom: 10px;
+	border: 2px dashed #FF4800;
+}
+
+#readonly-alert p {
+	line-height: 18px;
+	font-size: 13px;
+}
+
+
+/* Data tables */
+
+.paging_full_numbers {
+  line-height: 1 !important;
+}
+
+.dataTables_paginate {
+  float: none !important;
+  position: relative;
+}
+
+.dataTables_info {
+  float: none !important;
+  clear: none !important;
+}
+
+.paging_full_numbers a.paginate_active {
+  background: none !important;
+  border: none !important;
+  font-weight: bold !important;
+}
+
+.ColVis {
+  float: none;
+}
+
+.ColVis_Button {
+  margin-left: 10px;
+  padding: 1px 5px;
+  height: 22px;
+}
+
+/** Leader / Alternate feature **/
+
+.alternate_container,
+.leader_container {
+  background-color: #383;
+  line-height: 21px;
+  font-size: 10px;
+  display: inline-block;
+  height: 21px;
+  color: white;
+  font-weight: bold;
+  padding-left: 8px;
+  padding-right: 8px;
+  -moz-border-radius: 8px;
+  border-radius: 8px;
+}
+
+.alternate_container {
+  background-color: #333;
+}
+
+/** Eionet Profile **/
+.eionet-profile .roles {
+	display: none;
+}
+
+#content-core #manage-role ul {
+	background-color: #E4E5E5;
+}
+
+.pagination .paginate_button  > a,
+.pagination .paginate_button  > span {
+	line-height: 2;
+}
+
+.pagination li a {
+  color: #069;
+  font-weight: 600;
+}
+
+.pagination li.active > span,
+.pagination li.active > a,
+.pagination li.active > a:hover,
+.pagination li.active > a:focus {
+  color: #fff;
+}
+
+
+/* Taken from eionet */
+.operations {
+  background-color: white;
+	margin: 0;
+}
+
+.operations h2 {
+  background-color: transparent;
+}
+
+.operations ul {
+	list-style: none;
+	list-style-image: none;
+	margin: 0;
+	padding: 0;
+}
+
+.operations li a {
+	display:block;
+	font-weight: bold;
+	color: #455b6b;
+	text-decoration: none;
+	background: url('button_right.gif') no-repeat;
+	padding: 5px 0px 0px 10px;
+	border-bottom: none;
+	width: 170px;
+	height: 22px;
+}
+
+.operations li a:hover {
+	color: #b20d00;
+	background-color: transparent;
+}
+
+.operations li a:active {
+	color: #b20d00;
+	background: url('button_right.gif') no-repeat;
+}
+
+.operations li.help a {
+	background: url('button_right.gif') no-repeat;
+}
+
+.operations li.help a:active {
+	background: url('button_right.gif') no-repeat;
+}
+
+/* The .operations is for the buttons to the right of the page */
+
+#operations li.help a {
+	background: url('button_right.gif') no-repeat;
+}
+#operations li.help a:active {
+	background: url('button_right.gif') no-repeat;
+}
+
+/* Sortable table columns */
+.sortable {
+	color: #666666;
+	font-size: 0.9em;
+	line-height:normal;
+}
+.sortable tbody tr {
+}
+
+.sortable tr.zebraeven {
+	background-color: #f6f6f6;
+}
+
+.sortable td {
+  padding: 0.3em 0.4em;
+  vertical-align:top;
+  border-bottom: 1px dotted #b6b6b6;
+}
+.sortable th {
+	background: #a5ced1;
+	border: 2px outset #678484;
+	margin: 0;
+	padding: 0;
+	white-space: nowrap;
+	vertical-align: top;
+}
+
+.sortable th a:link,
+.sortable th a:visited,
+.sortable th span {
+	display:block;
+	text-decoration: none;
+	font-weight: bold;
+	color: black;
+	padding:0.3em 0.5em;
+}
+
+#main-container .sortable thead th a:hover {
+	background: #799aa5;
+	text-decoration: none;
+}
+
+#content-core h2,
+#content-core h3,
+#content-core h4 {
+	font-weight: bold;
+	padding: 0.2em 0.4em;
+	background-color: rgb(240, 244, 245);
+	color: #000000;
+	border-top: 1px solid rgb(224, 231, 215);
+}
+
+#content-core ul {
+	line-height: 1.5em;
+	margin: 0.5em 0 0 1.5em;
+	padding: 0;
+	list-style-image: url(bullet.gif);
+	list-style-type: square;
+}
+
+#content-core ol {
+	line-height: 1.5em;
+	margin: 0.5em 0 0 2.5em;
+	padding: 0;
+	list-style-image: none;
+}
+
+#content-core li.zebraeven {
+	background-color: #f6f6f6;
 }

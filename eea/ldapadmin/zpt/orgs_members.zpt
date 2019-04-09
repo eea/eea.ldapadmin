@@ -115,6 +115,6 @@
                 </tr>
             </tbody>
         </table>
-        <input type="submit" value="Remove" tal:condition="common/can_edit_organisation" />
+        <input class="btn btn-primary" type="submit" value="Remove" tal:condition="common/can_edit_organisation" />
     </div>
 </form>

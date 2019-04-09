@@ -48,7 +48,7 @@
         <textarea id="emails" name="emails" class="" tal:content="emails"></textarea>
       </li>
     </ul>
-    <input type="submit" value="Save changes" class="primary-button" />
+    <input type="submit" value="Save changes" class="btn btn-primary" />
     </form>
     <h2>Permitted Users</h2>
     <tal:block condition="persons">
@@ -107,7 +107,7 @@
         </tbody>
     </table>
     <br />
-    <input type="submit" value="Remove selected persons" class="primary-button" />
+    <input type="submit" value="Remove selected persons" class="btn btn-primary" />
     </form>
     </tal:block>
     <tal:block condition="not: persons">
@@ -130,7 +130,7 @@
              class="text-input large"
              tal:attributes="value options/search_name|nothing"/>
 
-      <input type="submit" value="Search" class="primary-button" />
+      <input type="submit" value="Search" class="btn btn-primary" />
       <div class="clear">&nbsp;</div>
     </form>
     </div>
@@ -176,7 +176,7 @@
             </tbody>
         </table>
         <br />
-        <input type="submit" value="Allow selected to email the group" class="primary-button" />
+        <input type="submit" value="Allow selected to email the group" class="btn btn-primary" />
         </form>
         </tal:block>
         <p class="search-message" tal:condition="not:options/results">

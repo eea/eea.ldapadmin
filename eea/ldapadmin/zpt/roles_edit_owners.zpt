@@ -76,7 +76,7 @@
         </tbody>
     </table>
     <br />
-    <input type="submit" value="Remove selected owners" class="primary-button" />
+    <input type="submit" value="Remove selected owners" class="btn btn-primary" />
     </form>
     </tal:block>
     <tal:block condition="not: role_owners">
@@ -98,7 +98,7 @@
              class="text-input large"
              tal:attributes="value options/search_name|nothing"/>
 
-      <input type="submit" value="Search" class="primary-button" />
+      <input type="submit" value="Search" class="btn btn-primary" />
       <div class="clear">&nbsp;</div>
     </form>
     </div>
@@ -143,7 +143,7 @@
             </tbody>
         </table>
         <br />
-        <input type="submit" value="Add selected as owners" class="primary-button" />
+        <input type="submit" value="Add selected as owners" class="btn btn-primary" />
         </form>
         </tal:block>
         <tal:block condition="not:options/results">

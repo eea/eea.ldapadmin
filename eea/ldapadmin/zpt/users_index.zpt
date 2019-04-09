@@ -22,7 +22,7 @@
           Search for:
       </label>
       <input type="search" name="name:ustring:utf8" id="search-query"
-             class="text-input medium"
+             class="text-input large"
              tal:attributes="value options/search_name|string:"/>
       <label for="lookup">
         in
@@ -35,7 +35,7 @@
                                 selected python:(field in options['lookup']) and 'selected' or ''"
                 tal:content="python:'%s (%s)' % (options['search_fields'][field]['label'], field)"/>
       </select>
-      <input type="submit" value="Search" class="primary-button" />
+      <input type="submit" value="Search" class="btn btn-primary" />
       <div class="clear">&nbsp;</div>
     </form>
   </div>

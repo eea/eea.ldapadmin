@@ -54,7 +54,7 @@
           <input tal:condition="options/parent_id"
                   type="hidden" name="parent_role_id"
                   tal:attributes="value options/parent_id"/>
-          <input type="submit" value="Create role" class="primary-button"/>
+          <input type="submit" value="Create role" class="btn btn-primary"/>
         </td>
       </tr>
     </tbody>

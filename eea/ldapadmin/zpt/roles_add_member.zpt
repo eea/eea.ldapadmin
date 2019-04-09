@@ -19,7 +19,7 @@
 <div class="search-form">
   <form name="search-form">
     <input type="hidden" name="role_id" tal:attributes="value options/role_id"/>
-    
+
     <label for="search-query">
       Name of user:
     </label>
@@ -27,8 +27,8 @@
     <input type="search" name="name:ustring:utf8" id="search-query"
            class="text-input large"
            tal:attributes="value options/search_name"/>
-  
-    <input type="submit" value="Search" class="primary-button" />
+
+    <input type="submit" value="Search" class="btn btn-primary" />
     <div class="clear">&nbsp;</div>
   </form>
 </div>
@@ -54,19 +54,19 @@
         <td>
           Name / Email
         </td>
-        
+
         <td>
           User ID
         </td>
-        
+
         <td>
           Tel/Fax
         </td>
-        
+
         <td>
           Organisation
         </td>
-        
+
         <td>
           Add as member
         </td>
@@ -78,7 +78,7 @@
         <td>
           <span tal:content="user_info/full_name" />
           <br />
-          
+
           <a tal:condition="user_info/email"
                   tal:attributes="href string:mailto:${user_info/email}"
                   tal:content="user_info/email"
@@ -107,7 +107,7 @@
             <input type="hidden" name="user_id"
                    tal:attributes="value user_info/id" />
 
-            <input type="submit" value="Add" class="primary-button" />
+            <input type="submit" value="Add" class="btn btn-primary" />
           </form>
         </td>
       </tr>
