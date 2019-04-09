@@ -677,7 +677,7 @@ class NfpNrc(SimpleItem, PropertyManager):
                                       '/awps?nfp=%s#role_%s' %
                                       (country_code, role_id))
 
-    security.declareProtected(eionet_access_nfp_nrc, 'edit_member')
+    security.declareProtected(eionet_access_nfp_nrc, 'edit_member_html')
 
     def edit_member_html(self, REQUEST, data=None, errors=None):
         """ Update profile of a member of the NRC role """
@@ -756,7 +756,7 @@ class NfpNrc(SimpleItem, PropertyManager):
 
         return self._render_template('zpt/nfp_nrc/edit_member.zpt', **options)
 
-    security.declareProtected(eionet_access_nfp_nrc, 'edit_member_action')
+    security.declareProtected(eionet_access_nfp_nrc, 'edit_member')
 
     def edit_member(self, REQUEST):
         """ Edit a member: the action handler """
