@@ -7,8 +7,8 @@ cfg.environment.update(os.environ)
 
 # constant defined in env
 NETWORK_NAME = getattr(cfg, 'environment', {}).get('NETWORK_NAME', 'Eionet')
-LDAP_DISK_STORAGE = getattr(cfg, 'environment', {}).get('LDAP_DISK_STORAGE',
-                            os.environ.get('LDAP_DISK_STORAGE', ''))
+LDAP_DISK_STORAGE = getattr(cfg, 'environment', {}).get(
+    'LDAP_DISK_STORAGE', os.environ.get('LDAP_DISK_STORAGE', ''))
 
 SPARQL_QUERY = """
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>

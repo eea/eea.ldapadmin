@@ -30,12 +30,13 @@ def read_form(form, edit=False):
 
 
 def ldap_agent_with_config(config, bind=False, secondary=False):
-    db = UsersDB(ldap_server=config.get('ldap_server', defaults['ldap_server']),
-                 # next is for bwd compat with objects created with v1.0.0
-                 users_rdn=config.get('users_rdn', defaults['users_rdn']),
-                 users_dn=config.get('users_dn', defaults['users_dn']),
-                 orgs_dn=config.get('orgs_dn', defaults['orgs_dn']),
-                 roles_dn=config.get('roles_dn', defaults['roles_dn']))
+    db = UsersDB(
+        ldap_server=config.get('ldap_server', defaults['ldap_server']),
+        # next is for bwd compat with objects created with v1.0.0
+        users_rdn=config.get('users_rdn', defaults['users_rdn']),
+        users_dn=config.get('users_dn', defaults['users_dn']),
+        orgs_dn=config.get('orgs_dn', defaults['orgs_dn']),
+        roles_dn=config.get('roles_dn', defaults['roles_dn']))
 
     if bind:
         if secondary:

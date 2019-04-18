@@ -6,6 +6,7 @@ from naaya.ldapdump import main
 
 log = logging.getLogger(__name__)
 
+
 def dump_ldap(ldap_logging_path):
     """ Perform a dump of an LDAP database according to the config file. """
     naaya_ldap_cfg = os.path.join(ldap_logging_path, 'config.yaml')
