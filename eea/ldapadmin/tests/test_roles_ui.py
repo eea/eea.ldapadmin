@@ -1,29 +1,34 @@
 # encoding: utf-8
 import unittest
 import re
-import sys
 import logging
 from copy import deepcopy
 import csv
 from StringIO import StringIO
 from mock import Mock, patch
-import lxml.cssselect, lxml.html.soupparser
-from eea.ldapadmin.roles_editor import RolesEditor, CommonTemplateLogic
+import lxml.cssselect
+import lxml.html.soupparser
+from eea.ldapadmin.roles_editor import RolesEditor
+from eea.ldapadmin.roles_editor import CommonTemplateLogic
 from eea.ldapadmin.ui_common import TemplateRenderer
 from eea import usersdb
-from eea.ldapadmin import roles_editor
+
 
 def plaintext(element):
     return re.sub(r'\s\s+', ' ', element.text_content()).strip()
 
+
 def css(target, selector):
     return lxml.cssselect.CSSSelector(selector)(target)
+
 
 def csstext(target, selector):
     return ' '.join(e.text_content() for e in css(target, selector)).strip()
 
+
 def parse_html(html):
     return lxml.html.soupparser.fromstring(html)
+
 
 def stubbed_renderer():
     renderer = TemplateRenderer(CommonTemplateLogic)
@@ -39,10 +44,12 @@ class StubbedRolesEditor(RolesEditor):
     def absolute_url(self):
         return "URL"
 
+
 def mock_request():
     request = Mock()
     request.SESSION = {}
     return request
+
 
 user_map_fixture = {
     'jsmith': {
@@ -78,10 +85,10 @@ org_map_fixture = {
 
 user_info_fixture = user_map_fixture['jsmith']
 
-from test_orgs_ui import org_info_fixture
 
 def session_messages(request):
     return request.SESSION.get('eea.ldapadmin.roles_editor.messages')
+
 
 class BrowseTest(unittest.TestCase):
     def setUp(self):
@@ -93,7 +100,8 @@ class BrowseTest(unittest.TestCase):
         self.ui.REQUEST = self.request
         user = self.request.AUTHENTICATED_USER
         user.getRoles.return_value = ['Authenticated']
-        self.mock_agent.members_in_role.return_value = {'users':[], 'orgs':[]}
+        self.mock_agent.members_in_role.return_value = {'users': [],
+                                                        'orgs': []}
         self.mock_agent.role_names_in_role.return_value = {}
         self.mock_agent.mail_group_info.return_value = {
             'owner': [],
@@ -136,11 +144,13 @@ class BrowseTest(unittest.TestCase):
         self.mock_agent.members_in_role.assert_called_once_with('places')
         self.mock_agent.user_info.assert_called_once_with('jsmith')
 
-        cells = page.xpath('table[@class="account-datatable dataTable"]/tbody/tr/td')
+        cells = page.xpath(
+            'table[@class="account-datatable dataTable"]/tbody/tr/td')
         self.assertEqual(plaintext(cells[0]), user_info_fixture['full_name'])
         self.assertEqual(plaintext(cells[1]), 'jsmith')
         self.assertEqual(plaintext(cells[2]), user_info_fixture['email'])
-        self.assertEqual(plaintext(cells[4]), user_info_fixture['organisation'])
+        self.assertEqual(plaintext(cells[4]),
+                         user_info_fixture['organisation'])
 
     def test_missing_role(self):
         exc = usersdb.RoleNotFound("no-such-role")
@@ -164,6 +174,7 @@ class CreateDeleteRolesTest(unittest.TestCase):
         user = self.request.AUTHENTICATED_USER
         user.getRoles.return_value = ['Authenticated']
         self.ui.REQUEST = self.request
+
         def agent_role_id(role_dn):
             assert role_dn.startswith('test-dn:')
             return role_dn[len('test-dn:'):]
@@ -188,7 +199,8 @@ class CreateDeleteRolesTest(unittest.TestCase):
         self.handler.close()
 
     def test_link_from_browse(self):
-        self.mock_agent.members_in_role.return_value = {'users':[], 'orgs':[]}
+        self.mock_agent.members_in_role.return_value = {'users': [],
+                                                        'orgs': []}
         self.mock_agent.role_names_in_role.return_value = {}
         self.mock_agent.role_info.return_value = {
             'description': "Various places",
@@ -228,7 +240,7 @@ class CreateDeleteRolesTest(unittest.TestCase):
                              'description': "Shiny new role"}
 
         self.ui.create_role(self.request)
-    
+
         self.mock_agent.create_role.assert_called_once_with(
             'places-shiny', "Shiny new role")
         self.mock_agent.add_role_owner.assert_called_once_with(
@@ -267,7 +279,6 @@ class CreateDeleteRolesTest(unittest.TestCase):
         self.assertEqual(session_messages(self.request), {'error': [msg]})
 
         self.request.form = {'parent_role_id': 'places'}
-        #print self.ui.create_role_html(self.request)
         page = parse_html(self.ui.create_role_html(self.request))
 
         role_id_xp = '//form//input[@name="slug:utf8:ustring"]'
@@ -297,16 +308,19 @@ class CreateDeleteRolesTest(unittest.TestCase):
     def test_delete_role(self, logged_user):
         logged_user.return_value = "John Doe"
         self.request.form = {'role_id': 'places-bank'}
-        self.mock_agent.members_in_role_and_subroles.return_value = {'users': []}
+        self.mock_agent.members_in_role_and_subroles.return_value = {
+            'users': []}
 
         self.ui.delete_role(self.request)
 
         self.mock_agent.delete_role.assert_called_once_with('places-bank')
-        self.mock_agent.members_in_role_and_subroles.assert_called_once_with('places-bank')
+        self.mock_agent.members_in_role_and_subroles.assert_called_once_with(
+            'places-bank')
         self.request.RESPONSE.redirect.assert_called_with(
             'URL/?role_id=places')
         logmsg = "John Doe DELETED ROLE places-bank\n"
         self.assertEqual(self.stream.getvalue(), logmsg)
+
 
 class AddRemoveRoleMembersTest(unittest.TestCase):
     def setUp(self):
@@ -338,7 +352,8 @@ class AddRemoveRoleMembersTest(unittest.TestCase):
         self.handler.close()
 
     def test_links(self):
-        self.mock_agent.members_in_role.return_value = {'users':[], 'orgs':[]}
+        self.mock_agent.members_in_role.return_value = {
+            'users': [], 'orgs': []}
         self.mock_agent.role_names_in_role.return_value = {}
         self.mock_agent.role_info.return_value = {
             'description': "Various places",
@@ -404,13 +419,14 @@ class AddRemoveRoleMembersTest(unittest.TestCase):
         self.request.RESPONSE.redirect.assert_called_with(
             'URL/?role_id=places-bank')
         msg = "User 'jsmith' added to roles Various places, Various places."
-        logmsg = "John Doe ADDED USER jsmith to ROLE(S) ['places', 'places-bank']\n"
+        logmsg = ("John Doe ADDED USER jsmith to ROLE(S) "
+                  "['places', 'places-bank']\n")
         self.assertEqual(session_messages(self.request), {'info': [msg]})
         self.assertEqual(self.stream.getvalue(), logmsg)
 
     def test_remove_users_html(self):
-        self.mock_agent.members_in_role.return_value = {'users':['jsmith'],
-                                                        'orgs':[]}
+        self.mock_agent.members_in_role.return_value = {
+            'users': ['jsmith'], 'orgs': []}
         self.mock_agent.role_names_in_role.return_value = {}
         self.mock_agent.role_info.return_value = {
             'description': "Various places",
@@ -459,6 +475,7 @@ class AddRemoveRoleMembersTest(unittest.TestCase):
             'URL/?role_id=places')
         self.assertEqual(session_messages(self.request), None)
 
+
 class UserSearchTest(unittest.TestCase):
     def setUp(self):
         self.ui = StubbedRolesEditor()
@@ -489,7 +506,8 @@ class UserSearchTest(unittest.TestCase):
         page = parse_html(self.ui.search_users(self.request))
 
         form = page.xpath('//form[@name="search-users"]')[0]
-        self.assertEqual(len(form.xpath('.//input[@name="name:ustring:utf8"]')), 1)
+        self.assertEqual(
+            len(form.xpath('.//input[@name="name:ustring:utf8"]')), 1)
 
     def test_results(self):
         self.request.form = {'name': 'smith'}
@@ -552,12 +570,14 @@ class UserSearchTest(unittest.TestCase):
         self.mock_agent.remove_from_role.assert_called_once_with(
             'places', 'user', 'jsmith')
         self.request.RESPONSE.redirect.assert_called_with(
-             'URL/search_users?user_id=jsmith')
+            'URL/search_users?user_id=jsmith')
         msg = ("User 'jsmith' removed from roles "
                "'places-bank', 'places-bank-central'.")
-        logmsg = "John Doe REMOVED USER 'jsmith' FROM ROLE(S) ['places-bank', 'places-bank-central']\n"
+        logmsg = ("John Doe REMOVED USER 'jsmith' FROM ROLE(S) ['places-bank',"
+                  " 'places-bank-central']\n")
         self.assertEqual(session_messages(self.request), {'info': [msg]})
         self.assertEqual(self.stream.getvalue(), logmsg)
+
 
 class FilterTest(unittest.TestCase):
     def setUp(self):
@@ -575,7 +595,8 @@ class FilterTest(unittest.TestCase):
                             'orgs': sorted(org_map_fixture.keys())},
             'places-shiny': {'users': [], 'orgs': []},
         }
-        self.mock_agent.filter_roles.return_value = [(x, {}) for x in role_membership.keys()]
+        self.mock_agent.filter_roles.return_value = [
+            (x, {}) for x in role_membership.keys()]
         self.mock_agent.members_in_role.side_effect = role_membership.get
         self.mock_agent.user_info.side_effect = deepcopy(user_map_fixture).get
         self.mock_agent.org_info.side_effect = deepcopy(org_map_fixture).get
@@ -609,6 +630,7 @@ class FilterTest(unittest.TestCase):
         self.assertEqual(plaintext(page.cssselect('p.search-message')[0]),
                          "No roles found matching places-*.")
 
+
 class UserInfoTest(unittest.TestCase):
 
     def setUp(self):
@@ -636,8 +658,6 @@ class UserInfoTest(unittest.TestCase):
         self.mock_agent.filter_roles.side_effect = lambda *args, **kw: \
             [(x, {}) for x in self.role_membership.keys()]
         self.mock_agent.members_in_role.side_effect = self.role_membership.get
-        #self.mock_agent.user_info.side_effect = deepcopy(user_map_fixture).get
-        #self.mock_agent.org_info.side_effect = deepcopy(org_map_fixture).get
 
     def _get_fields(self, name):
         page = parse_html(getattr(self.ui, name)(self.request))
@@ -650,7 +670,6 @@ class UserInfoTest(unittest.TestCase):
         return data
 
         self.assertEqual(data)
-
 
     def test_not_logged_in(self):
         # not-logged-in users can see just the name
@@ -684,14 +703,15 @@ class UserInfoTest(unittest.TestCase):
         assert_full_info(self._get_fields('filter'))
 
     def test_filter_users_csv(self):
-        self.users['confucius'] = {'id': 'confucius',
+        self.users['confucius'] = {
+            'id': 'confucius',
             'full_name': u"孔子", 'organisation': u"儒家",
             'email': "", 'phone': "", 'fax': ""}
         self.role_membership['places-china'] = {
             'users': ['confucius'], 'orgs': []}
         self.request.form = {'pattern': 'places-*'}
         expected_rows = [
-            ['Role','Name', 'User ID', 'Email', 'Tel/Fax', 'Organisation'],
+            ['Role', 'Name', 'User ID', 'Email', 'Tel/Fax', 'Organisation'],
             ["places-bank", "Joe Smith", "jsmith", "jsmith@example.com",
              "555 1234, 555 6789", "My company"],
             ["places-china", u"孔子".encode('utf-8'), "confucius",

@@ -7,7 +7,6 @@ from eea.ldapadmin.orgs_editor import OrganisationsEditor, CommonTemplateLogic
 from eea.ldapadmin.orgs_editor import validate_org_info, VALIDATION_ERRORS
 from eea.ldapadmin.ui_common import TemplateRenderer
 from eea import usersdb
-from eea.ldapadmin import roles_editor
 
 org_info_fixture = {
     'name': u"Ye olde bridge club",
@@ -23,8 +22,10 @@ org_info_fixture = {
     'locality': u"K\xf8benhavn",
 }
 
+
 def parse_html(html):
     return fromstring(html)
+
 
 class StubbedOrganisationsEditor(OrganisationsEditor):
     def __init__(self, id):
@@ -35,10 +36,12 @@ class StubbedOrganisationsEditor(OrganisationsEditor):
     def absolute_url(self):
         return "URL"
 
+
 def mock_request():
     request = Mock()
     request.SESSION = {}
     return request
+
 
 validation_errors_fixture = {
     'id': [u"invalid ID"],
@@ -46,6 +49,7 @@ validation_errors_fixture = {
     'fax': [u"invalid FAX"],
     'postal_code': [u"invalid POSTAL CODE"],
 }
+
 
 def session_messages(request):
     return request.SESSION.get('eea.ldapadmin.orgs_editor.messages')
@@ -78,7 +82,6 @@ class OrganisationsUITest(unittest.TestCase):
     def test_create_org_form(self):
         page = parse_html(self.ui.create_organisation_html(self.request))
 
-        #txt = lambda xp: page.xpath(xp)[0].text.strip()
         exists = lambda xp: len(page.xpath(xp)) > 0
         self.assertTrue(exists('//form//input[@name="id"]'))
         self.assertTrue(exists('//form//input[@name="name:utf8:ustring"]'))
@@ -88,11 +91,11 @@ class OrganisationsUITest(unittest.TestCase):
         self.assertTrue(exists('//form//input[@name="street:utf8:ustring"]'))
         self.assertTrue(exists('//form//input[@name="po_box:utf8:ustring"]'))
         self.assertTrue(exists('//form//input'
-                                    '[@name="postal_code:utf8:ustring"]'))
+                               '[@name="postal_code:utf8:ustring"]'))
         self.assertTrue(exists('//form//input[@name="locality:utf8:ustring"]'))
         self.assertTrue(exists('//form//select[@name="country:utf8:ustring"]'))
         self.assertTrue(exists('//form//textarea'
-                                    '[@name="postal_address:utf8:ustring"]'))
+                               '[@name="postal_address:utf8:ustring"]'))
 
     @patch('eea.ldapadmin.orgs_editor.logged_in_user')
     def test_create_org_submit(self, logged_user):
@@ -125,13 +128,15 @@ class OrganisationsUITest(unittest.TestCase):
             if name != 'id':
                 name += ':utf8:ustring'
             if name == 'country:utf8:ustring':
-                form_input = form.xpath('.//select[@name="%s"]/option[@value="denmark"]' % name)
+                form_input = form.xpath(
+                    './/select[@name="%s"]/option[@value="denmark"]' % name)
                 value = value.lower()
             else:
                 form_input = form.xpath('.//input[@name="%s"]' % name)
 
             self.assertEqual(form_input[0].attrib['value'], value)
-        form_input = form.xpath('.//textarea[@name="postal_address:utf8:ustring"]')
+        form_input = form.xpath(
+            './/textarea[@name="postal_address:utf8:ustring"]')
         self.assertEqual(form_input[0].text, org_info['postal_address'])
 
     @patch('eea.ldapadmin.orgs_editor.validate_org_info')
@@ -251,6 +256,7 @@ class OrganisationsUITest(unittest.TestCase):
         self.assertTrue("Ye olde bridge club" in org_h1.text_content())
 
         org_table = page.xpath('//table')[0]
+
         def html_value(label):
             xp = '//tr[td[text()="%s"]]/td[2]' % label
             return org_table.xpath(xp)[0].text
@@ -356,6 +362,7 @@ class OrganisationsUITest(unittest.TestCase):
         logmsg = "John Doe DELETED ORGANISATION bridge_club\n"
         self.assertEqual(self.stream.getvalue(), logmsg)
 
+
 class OrganisationsUIMembersTest(unittest.TestCase):
     def setUp(self):
         self.ui = StubbedOrganisationsEditor('organisations')
@@ -367,8 +374,10 @@ class OrganisationsUIMembersTest(unittest.TestCase):
         self.ui.REQUEST = self.request
 
         user_list = {
-            'anne': {'id': 'anne', 'first_name': "Anne", 'last_name': "Tester"},
-            'jsmith': {'id': 'jsmith', 'first_name': "Joe", 'last_name': "Smith"},
+            'anne': {
+                'id': 'anne', 'first_name': "Anne", 'last_name': "Tester"},
+            'jsmith': {
+                'id': 'jsmith', 'first_name': "Joe", 'last_name': "Smith"},
         }
         self.mock_agent.members_in_org.return_value = sorted(user_list.keys())
         self.mock_agent.user_info.side_effect = user_list.get
@@ -426,7 +435,8 @@ class OrganisationsUIMembersTest(unittest.TestCase):
         page = parse_html(self.ui.members_html(self.request))
         self.assertEqual(page.xpath('//div[@class="system-msg"]')[0].text,
                          'Removed 1 members from organisation "bridge_club".')
-        logmsg = "John Doe REMOVED MEMBERS ['jsmith'] FROM ORGANISATION bridge_club\n"
+        logmsg = ("John Doe REMOVED MEMBERS ['jsmith'] FROM ORGANISATION "
+                  "bridge_club\n")
         self.assertEqual(self.stream.getvalue(), logmsg)
 
     def test_add_members_html(self):
@@ -496,10 +506,10 @@ class OrganisationsValidationTest(unittest.TestCase):
         self._test_good_values(name, good_values)
 
     def test_phone_number(self):
-        self._test_phone('phone',VALIDATION_ERRORS['phone'])
+        self._test_phone('phone', VALIDATION_ERRORS['phone'])
 
     def test_fax_number(self):
-        self._test_phone('fax',VALIDATION_ERRORS['fax'])
+        self._test_phone('fax', VALIDATION_ERRORS['fax'])
 
     def test_postcode(self):
         bad_values = ['123 456', 'DK_1234 33', u'DK 123\xf8456']
