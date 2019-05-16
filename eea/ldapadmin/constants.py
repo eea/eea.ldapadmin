@@ -30,3 +30,10 @@ SPARQL_QUERY = """
          OPTIONAL { <http://rdfdata.eionet.europa.eu/eea/countries/EIONET> skos:member ?ucountry, ?eionetmember }
         }"""
 SPARQL_ENDPOINT = 'http://semantic.eea.europa.eu/sparql'
+
+USER_INFO_KEYS = [
+    'status', 'last_name', 'uid', 'reasonToCreate', 'full_name', 'id',
+    'first_name', 'organisation', 'department', 'email', 'metadata', 'dn',
+    'fax', 'postal_address', 'phone', 'employeeNumber', 'modifyTimestamp',
+    'mobile', 'full_name_native', 'pwdChangedTime', 'url', 'createTimestamp',
+    'job_title', 'search_helper']

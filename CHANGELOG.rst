@@ -1,5 +1,6 @@
 1.5.28 (unreleased)
 ------------------------
+* fix for organisations member listing in case of deleted users [dumitval]
 * remove unused method to get authenticated user's password [dumitval]
 
 1.5.27 (2019-03-07)
