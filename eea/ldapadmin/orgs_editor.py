@@ -770,8 +770,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                 deleted_user_info['full_name'] = 'Former Eionet member'
                 deleted_user_info['uid'] = user_id
                 deleted_user_info['id'] = user_id
-                deleted_user_info['dn'] = (
-                    'uid=%s,ou=Users,o=EIONET,l=Europe' % user_id)
+                deleted_user_info['status'] = 'disabled'
+                deleted_user_info['dn'] = agent._user_dn(user_id)
                 org_members.append(deleted_user_info)
 
         org_members.sort(key=operator.itemgetter('first_name'))
