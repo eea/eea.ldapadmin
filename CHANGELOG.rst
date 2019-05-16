@@ -1,5 +1,6 @@
 1.5.28 (unreleased)
 ------------------------
+* fix for organisations member listing in case of deleted users [dumitval]
 
 1.5.27 (2019-03-07)
 ------------------------

@@ -7,11 +7,13 @@ from OFS.SimpleItem import SimpleItem
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from StringIO import StringIO
 from constants import NETWORK_NAME
+from constants import USER_INFO_KEYS
 from countries import get_country, get_country_options
 from datetime import datetime
 from deform.widget import SelectWidget
 from email.mime.text import MIMEText
 from ldap import NO_SUCH_OBJECT
+from ldap import INVALID_DN_SYNTAX
 from logic_common import _session_pop
 from persistent.mapping import PersistentMapping
 from ui_common import extend_crumbs, CommonTemplateLogic
@@ -57,6 +59,7 @@ def manage_add_orgs_editor(parent, id, REQUEST=None):
 
 def get_template_macro(name):
     return load_template('zpt/orgs_macros.zpt').macros[name]
+
 
 SESSION_PREFIX = 'eea.ldapadmin.orgs_editor'
 SESSION_MESSAGES = SESSION_PREFIX + '.messages'
@@ -709,8 +712,16 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         for user_id in members:
             try:
                 org_members.append(agent.user_info(user_id))
-            except (NO_SUCH_OBJECT, eea.usersdb.UserNotFound):
-                pass
+            except (NO_SUCH_OBJECT, INVALID_DN_SYNTAX,
+                    eea.usersdb.UserNotFound):
+                deleted_user_info = dict((prop, '') for prop in USER_INFO_KEYS)
+                deleted_user_info['first_name'] = 'Former'
+                deleted_user_info['last_name'] = 'Eionet member'
+                deleted_user_info['full_name'] = 'Former Eionet member'
+                deleted_user_info['uid'] = user_id
+                deleted_user_info['id'] = user_id
+                deleted_user_info['dn'] = agent._user_dn(user_id)
+                org_members.append(deleted_user_info)
 
         org_members.sort(key=operator.itemgetter('first_name'))
         options = {
@@ -757,7 +768,6 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
     def demo_members(self, REQUEST):
         """ view """
-        from ldap import NO_SUCH_OBJECT
 
         format = REQUEST.form.get('format', 'html')
         agent = self._get_ldap_agent()
@@ -843,15 +853,22 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             assert type(user_id) is str
 
         agent = self._get_ldap_agent(bind=True)
-        with agent.new_action():
-            agent.remove_from_org(org_id, user_id_list)
+        try:
+            with agent.new_action():
+                agent.remove_from_org(org_id, user_id_list)
+            _set_session_message(REQUEST, 'info',
+                                 'Removed %d members from organisation "%s".' %
+                                 (len(user_id_list), org_id))
 
-        _set_session_message(REQUEST, 'info',
-                             'Removed %d members from organisation "%s".' %
-                             (len(user_id_list), org_id))
+            log.info("%s REMOVED MEMBERS %s FROM ORGANISATION %s",
+                     logged_in_user(REQUEST), user_id_list, org_id)
 
-        log.info("%s REMOVED MEMBERS %s FROM ORGANISATION %s",
-                 logged_in_user(REQUEST), user_id_list, org_id)
+        except (NO_SUCH_OBJECT, INVALID_DN_SYNTAX,
+                eea.usersdb.UserNotFound):
+            _set_session_message(
+                REQUEST, 'error',
+                ("Deleted users cannot be removed from orgsnisations yet "
+                 "(will be implemented)"))
 
         REQUEST.RESPONSE.redirect(self.absolute_url() +
                                   '/members_html?id=' + org_id)
@@ -1123,6 +1140,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                                                     user_id,
                                                     ('description',)))
         return ldap_roles
+
 
 InitializeClass(OrganisationsEditor)
 
