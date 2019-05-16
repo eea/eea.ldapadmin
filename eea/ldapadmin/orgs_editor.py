@@ -921,13 +921,14 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
             msg = 'Removed %d members from organisation "%s".' % \
                 (len(user_id_list), org_id)
+            msgs.add(msg, type='info')
             log.info("%s REMOVED MEMBERS %s FROM ORGANISATION %s",
                      logged_in_user(REQUEST), user_id_list, org_id)
         except (NO_SUCH_OBJECT, INVALID_DN_SYNTAX,
                 eea.usersdb.UserNotFound):
             msg = ('Deleted users cannot be removed from orgsnisations yet '
                    '(will be implemented)')
-        msgs.add(msg, type='info')
+            msgs.add(msg, type='error')
 
         REQUEST.RESPONSE.redirect(self.absolute_url() +
                                   '/members_html?id=' + org_id)
