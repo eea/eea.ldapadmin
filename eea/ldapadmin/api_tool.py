@@ -45,6 +45,7 @@ class ApiTool(SimpleItem):
         self.title = title
 
     security.declareProtected(view_management_screens, 'update_countries')
+
     def update_countries(self, REQUEST=None, RESPONSE=None):
         """ Wrapper for update_countries.
         """
@@ -54,6 +55,7 @@ class ApiTool(SimpleItem):
         )
 
     security.declareProtected(view_management_screens, 'dump_ldap')
+
     def dump_ldap(self, REQUEST=None, RESPONSE=None):
         """ """
         dump_ldap(LDAP_DISK_STORAGE)
@@ -63,9 +65,11 @@ class ApiTool(SimpleItem):
         )
 
     security.declareProtected(view, 'index_html')
+
     def index_html(self, REQUEST=None, RESPONSE=None):
         """ view """
         RESPONSE.setStatus(404)
         return RESPONSE
+
 
 InitializeClass(ApiTool)

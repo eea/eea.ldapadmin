@@ -20,9 +20,11 @@ from AccessControl.Permissions import view, view_management_screens
 from AccessControl.unauthorized import Unauthorized
 from App.class_init import InitializeClass
 from constants import NETWORK_NAME
+from constants import USER_INFO_KEYS
 from countries import get_country, get_country_options
 from deform.widget import SelectWidget
 from ldap import NO_SUCH_OBJECT
+from ldap import INVALID_DN_SYNTAX
 from OFS.PropertyManager import PropertyManager
 from OFS.SimpleItem import SimpleItem
 from persistent.mapping import PersistentMapping
@@ -760,8 +762,17 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         for user_id in members:
             try:
                 org_members.append(agent.user_info(user_id))
-            except (NO_SUCH_OBJECT, eea.usersdb.UserNotFound):
-                pass
+            except (NO_SUCH_OBJECT, INVALID_DN_SYNTAX,
+                    eea.usersdb.UserNotFound):
+                deleted_user_info = dict((prop, '') for prop in USER_INFO_KEYS)
+                deleted_user_info['first_name'] = 'Former'
+                deleted_user_info['last_name'] = 'Eionet member'
+                deleted_user_info['full_name'] = 'Former Eionet member'
+                deleted_user_info['uid'] = user_id
+                deleted_user_info['id'] = user_id
+                deleted_user_info['status'] = 'disabled'
+                deleted_user_info['dn'] = agent._user_dn(user_id)
+                org_members.append(deleted_user_info)
 
         org_members.sort(key=operator.itemgetter('first_name'))
         options = {
@@ -904,15 +915,20 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             assert type(user_id) is str
 
         agent = self._get_ldap_agent(bind=True)
-        with agent.new_action():
-            agent.remove_from_org(org_id, user_id_list)
+        try:
+            with agent.new_action():
+                agent.remove_from_org(org_id, user_id_list)
 
-        msg = 'Removed %d members from organisation "%s".' % \
-            (len(user_id_list), org_id)
-        msgs.add(msg, type='info')
-
-        log.info("%s REMOVED MEMBERS %s FROM ORGANISATION %s",
-                 logged_in_user(REQUEST), user_id_list, org_id)
+            msg = 'Removed %d members from organisation "%s".' % \
+                (len(user_id_list), org_id)
+            msgs.add(msg, type='info')
+            log.info("%s REMOVED MEMBERS %s FROM ORGANISATION %s",
+                     logged_in_user(REQUEST), user_id_list, org_id)
+        except (NO_SUCH_OBJECT, INVALID_DN_SYNTAX,
+                eea.usersdb.UserNotFound):
+            msg = ('Deleted users cannot be removed from orgsnisations yet '
+                   '(will be implemented)')
+            msgs.add(msg, type='error')
 
         REQUEST.RESPONSE.redirect(self.absolute_url() +
                                   '/members_html?id=' + org_id)

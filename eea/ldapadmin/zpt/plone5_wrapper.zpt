@@ -25,4 +25,20 @@
     <!-- <script type="text/javascript" src="/++resource++eea.ldapadmin-www/datatables/jquery.dataTables.min.js"></script> -->
     <!-- <script src="/++resource++eea.ldapadmin-www/datatables/ColVis.min.js"></script> -->
   </metal:block>
+
+  <metal:block fill-slot="column_one_slot">
+      <aside id="portal-column-one" tal:condition="sl">
+        <metal:portlets define-slot="portlets_one_slot">
+          <tal:block replace="structure provider:plone.leftcolumn" />
+        </metal:portlets>
+      </aside>
+  </metal:block>
+  <metal:block fill-slot="column_two_slot">
+      <aside id="portal-column-two">
+        <metal:portlets define-slot="portlets_two_slot">
+          <tal:block replace="structure provider:plone.rightcolumn" />
+        </metal:portlets>
+      </aside>
+  </metal:block>
+
 </metal:block>

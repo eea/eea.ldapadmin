@@ -11,10 +11,12 @@ from eea.ldapadmin.pwreset_tool import PasswordResetTool, CommonTemplateLogic
 from eea.ldapadmin.ui_common import TemplateRenderer
 import eea.usersdb
 
+
 def stubbed_renderer():
     renderer = TemplateRenderer(CommonTemplateLogic)
     renderer.wrap = lambda html: "<html>%s</html>" % html
     return renderer
+
 
 class StubbedPasswordResetTool(PasswordResetTool):
     def __init__(self):
@@ -23,6 +25,7 @@ class StubbedPasswordResetTool(PasswordResetTool):
 
     def absolute_url(self):
         return "http://test"
+
 
 def decode_form(request):
     form = {}
@@ -34,6 +37,7 @@ def decode_form(request):
             name = name[:-(len(':utf8:ustring'))]
         form[name] = value
     return form
+
 
 class WsgiApp(object):
     def __init__(self, ui):
@@ -61,18 +65,22 @@ class WsgiApp(object):
             else:
                 return Response(body)
 
+
 def parse_email(mimetext):
     from email.parser import Parser
     return Parser().parsestr(mimetext)
+
 
 def csstext(target, selector):
     from lxml.cssselect import CSSSelector
     return ' '.join(e.text_content() for e in
                     CSSSelector(selector)(target)).strip()
 
+
 def parse_html(html):
     from lxml.html.soupparser import fromstring
     return fromstring(html)
+
 
 def extract_link_from_email(email, url_base):
     url_piece = url_base + '/confirm_email?token='
@@ -80,6 +88,7 @@ def extract_link_from_email(email, url_base):
                       email.get_payload())
     assert match is not None
     return match.group()
+
 
 class BrowseTest(unittest.TestCase):
     def setUp(self):
@@ -101,7 +110,6 @@ class BrowseTest(unittest.TestCase):
         gsm.registerUtility(self.mail_delivery, IMailDelivery, "Mail")
 
         app = WsgiApp(self.ui)
-        #self._session = app.session
 
         import wsgi_intercept.mechanize_intercept
         wsgi_intercept.add_wsgi_intercept('test', 80, lambda: app)
@@ -257,7 +265,7 @@ class BrowseTest(unittest.TestCase):
 
         self.assertTrue(token in self.ui._tokens)
 
-        page = parse_html(br.open(link).read())
+        parse_html(br.open(link).read())
         br.select_form(name='new-password')
         br['password:utf8:ustring'] = "NeWpAsS"
         br['password-confirm:utf8:ustring'] = "NeWpAsS"

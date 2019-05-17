@@ -36,6 +36,7 @@ def naming(role_id):
             'generic_pl': 'maintainers'
         }
 
+
 def leaders_enabled(role_id):
     """
     Featured disabled by request for any non-NRC/NFP role
@@ -47,6 +48,7 @@ def leaders_enabled(role_id):
     if re.match('eionet-nrc-[^-]+-[mc]c-[^-]+', role_id):
         return True
     return False
+
 
 def alternates_enabled(role_id):
     """
