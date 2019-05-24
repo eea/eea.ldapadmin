@@ -2,7 +2,7 @@ Hello Helpdesk,
 
 This is an automated email from <span tal:replace="options/site_title"></span>!
 
-The following users has been sent messages that their account will be disabled if they don't login in a month:
+Following users have been sent messages that their account will be disabled if they don't login in a month:
 
 <span tal:repeat="user options/users_predisable" tal:omit-tag=""><span tal:replace="user/id"></span></span>
 
