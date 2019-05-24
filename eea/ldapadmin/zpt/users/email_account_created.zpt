@@ -18,6 +18,7 @@ These services may have their own access restrictions.
 If you lose your password, you can reset it using <span tal:replace="string:${common/site_url}/password-reset" /> and your email box.
 If you have open questions which you couldn’t solve by consulting our online help service http://forum.eionet.europa.eu/help, please don't hesitate to contact <span tal:replace="common/network_name"></span> Helpdesk: helpdesk@eionet.europa.eu.
 
+Your personal data is processed in the Eionet User Directory in accordance with the European General Data Protection Regulation. For a more detailed description, please access <span tal:replace="string:${common/site_url}/about/privacy-statement" />
 
 Welcome to Eionet - the partnership network of the European Environment Agency (EEA) and its member and cooperating countries
 Your NFP (National Focal Point)
