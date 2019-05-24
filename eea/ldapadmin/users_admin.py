@@ -19,7 +19,6 @@ from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.help_messages import help_messages
 from eea.ldapadmin.logic_common import _session_pop
 from eea.ldapadmin.ui_common import NaayaViewPageTemplateFile
-from eea.usersdb import factories
 from eea.usersdb.db_agent import NameAlreadyExists, EmailAlreadyExists
 from eea.usersdb.db_agent import UserNotFound
 from email.mime.text import MIMEText
@@ -104,6 +103,7 @@ def process_url(url):
         return 'http://' + url
     return url
 
+
 eionet_edit_users = 'Eionet edit users'
 
 manage_add_users_admin_html = PageTemplateFile('zpt/users_manage_add',
@@ -168,6 +168,7 @@ def get_duplicates_by_name(name):
             records.append(user['dn'])
 
     return records
+
 
 SESSION_PREFIX = 'eea.ldapadmin.users_admin'
 SESSION_MESSAGES = SESSION_PREFIX + '.messages'
@@ -447,7 +448,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         email = form_data.get('email')
         if email:
             email = email.strip()
-            validity_status = validate_email(email, verify=True, verbose=True)
+            validity_status = validate_email(email, verify=False, verbose=True)
             if validity_status is not True:
                 email_node = schema['email']
                 pos = schema.children.index(email_node)
@@ -629,7 +630,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         email = form_data.get('email')
         if email:
             email = email.strip()
-            validity_status = validate_email(email, verify=True, verbose=True)
+            validity_status = validate_email(email, verify=False, verbose=True)
             if validity_status is not True:
                 email_node = schema['email']
                 pos = schema.children.index(email_node)
@@ -1129,6 +1130,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                                                     ('description',)))
         return ldap_roles
 
+
 InitializeClass(UsersAdmin)
 
 
@@ -1157,7 +1159,7 @@ class BulkUserImporter(BrowserView):
         "Job Title",
         "URL",
         "Postal Address",
-        "Telephone Number*",
+        "Telephone Number",
         "Mobile Telephone Number",
         "Fax Number",
         "Organisation*",
@@ -1634,7 +1636,7 @@ def auto_disable_users():
 
 
 def check_valid_email(node, value):
-    validity_status = validate_email(value, verify=True, verbose=True)
+    validity_status = validate_email(value, verify=False, verbose=True)
     if validity_status is not True:
         if validity_status != INCORRECT_EMAIL:  # avoid a double error message
             raise colander.Invalid(

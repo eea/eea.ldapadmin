@@ -1,5 +1,6 @@
 1.5.29 (unreleased)
 ------------------------
+* remove mail server dialogue from email validation [dumitval]
 
 1.5.28 (2019-05-16)
 ------------------------
@@ -310,7 +311,7 @@
 
 1.4.68 (2015-03-04)
 ------------------------
-* Bug fix: send a notification email to helpdesk when an account has been created by buk import
+* Bug fix: send a notification email to helpdesk when an account has been created by bulk import
   [tiberich #21233]
 
 1.4.67 (2015-02-13)
