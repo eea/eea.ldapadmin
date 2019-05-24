@@ -472,7 +472,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         if email:
             email = email.strip()
-            validity_status = validate_email(email, verify=True, verbose=True)
+            validity_status = validate_email(email, verify=False, verbose=True)
 
             if validity_status is not True:
                 email_node = schema['email']
@@ -668,7 +668,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         if email:
             email = email.strip()
-            validity_status = validate_email(email, verify=True, verbose=True)
+            validity_status = validate_email(email, verify=False, verbose=True)
 
             if validity_status is not True:
                 email_node = schema['email']
@@ -1251,7 +1251,7 @@ class BulkUserImporter(BrowserView):
         "Job Title",
         "URL",
         "Postal Address",
-        "Telephone Number*",
+        "Telephone Number",
         "Mobile Telephone Number",
         "Fax Number",
         "Organisation*",
@@ -1753,7 +1753,7 @@ def auto_disable_users():
 
 
 def check_valid_email(node, value):
-    validity_status = validate_email(value, verify=True, verbose=True)
+    validity_status = validate_email(value, verify=False, verbose=True)
 
     if validity_status is not True:
         if validity_status != INCORRECT_EMAIL:  # avoid a double error message
