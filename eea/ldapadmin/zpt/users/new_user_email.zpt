@@ -4,4 +4,4 @@ A new user has been created by <span tal:replace="options/author" />:
 * User id: <span tal:replace="options/user_id"></span>,
 * Member of organisation: <span tal:replace="options/organisation"></span>.
 
-This message is an automated message sent by <span tal:replace="common/network_name"></span>
+This message was sent automatically by <span tal:replace="common/network_name"></span>.
