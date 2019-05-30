@@ -43,6 +43,18 @@ class BaseActionDetails(BrowserView):
 
         return u"%s (%s)" % (user_info['full_name'], entry['author'])
 
+    def author_email(self, entry):
+        if entry['author'] == 'unknown user':
+            return ''
+
+        try:
+            user_info = self.base._get_ldap_agent().user_info(entry['author'])
+        except UserNotFound:
+            return ''
+
+        return user_info['email']
+
+
     def _get_ldap_agent(self):
         # without the leading slash, since it will match the root acl
         user_folder = self.context.restrictedTraverse("acl_users")
