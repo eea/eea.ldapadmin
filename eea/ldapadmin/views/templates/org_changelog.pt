@@ -16,10 +16,13 @@
           <span tal:content="python:entry['timestamp']" />
         </td>
         <td tal:content="view/action_title" />
-        <td>
-          <a href="" 
-            tal:content="python: view.author(entry)" 
-            tal:attributes="href string:?uid=${entry/author}">Author</a>
+        <td tal:define="email python: view.author_email(entry)">
+          <a tal:condition="python: email not in ['', None]"
+             tal:attributes="href string:mailto:${email}"
+             tal:content="python: view.author(entry)"
+             class="user-email"></a>
+          <span tal:condition="python: email in ['', None]"
+                tal:content="python: view.author(entry)">Author</span>
         </td>
         <td tal:content="structure python: view.details(entry)" ></td>
       </tal:def>
