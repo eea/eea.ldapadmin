@@ -9,7 +9,7 @@
     <textarea id="id_usernames" name="usernames" tal:content="python:' '.join(options['usernames'])" class="large"></textarea>
     </p>
     <p>
-    <input type="submit" value="Check for availability" name="submit" class="primary-button" />
+    <input type="submit" value="Check for availability" name="submit" class="btn btn-primary" />
     </p>
     </form>
 

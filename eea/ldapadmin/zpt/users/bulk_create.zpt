@@ -17,7 +17,7 @@
         </p>
 
         <p>
-            <input type="submit" name="bulk_create" value="Create Accounts"/>
+            <input type="submit" name="bulk_create" class="btn btn-primary" value="Create Accounts"/>
         </p>
     </form>
 </div>
