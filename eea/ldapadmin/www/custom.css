@@ -822,3 +822,8 @@ ul.organisations {
 #content-core li.zebraeven {
 	background-color: #f6f6f6;
 }
+
+label.required {
+	background: url(/++resource++eea.ldapadmin-www/mandatory.gif) center right no-repeat;
+	padding-right: 12px;
+}
