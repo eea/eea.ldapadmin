@@ -44,7 +44,7 @@
         </option>
     </select>
     <input type="submit" value="Go" id="shortcut_queries"
-         class="primary-button" />
+         class="btn btn-primary" />
   </div>
 
   <tal:block condition="options/predefined_filters|nothing">

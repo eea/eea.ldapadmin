@@ -59,7 +59,7 @@
             <textarea id="id_emails" name="emails" tal:content="python:' '.join(options['emails'])" class="large"></textarea>
         </p>
         <p>
-            <input type="submit" value="Check for availability" name="submit" class="primary-button" />
+            <input type="submit" value="Check for availability" name="submit" class="btn btn-primary" />
         </p>
     </form>
 
