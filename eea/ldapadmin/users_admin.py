@@ -1474,10 +1474,17 @@ class ResetUser(BrowserView):
             return self.request.RESPONSE.redirect(url)
 
         user = agent.user_info(user_id)
+        roles = []
+        ldap_roles = agent.member_roles_info(
+            'user', user_id, ('description', ))
+        for (role_id, attrs) in ldap_roles:
+            roles.append((role_id,
+                          attrs.get('description', ('', ))[0].decode('utf8')))
         options = {
             'common': CommonTemplateLogic(self.context),
             'context': self.context,
             'user': user,
+            'roles': roles,
         }
 
         return self.index(**options)
