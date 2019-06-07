@@ -13,28 +13,6 @@
         <a tal:attributes="href string:/password-reset?email=${options/user/email}"
              class="btn btn-primary" role="button">Reset password</a>
     </li>
-    <li class="portletItem">
-          <a tal:attributes="href string:eionet_profile?id=${options/user/id}"
-             class="btn btn-primary" role="button">In Eionet services</a>
-    </li>
-
-    <li class="portletItem">
-          <a tal:attributes="href string:${options/forum_url}/profile_overview?user=${options/user/id}"
-             class="btn btn-primary" role="button">Forum Profile overview</a>
-    </li>
-
-    <li class="portletItem">
-          <a tal:attributes="href string:http://projects.eionet.europa.eu/profile_overview?user=${options/user/id}"
-             class="btn btn-primary" role="button">Projects Profile overview</a>
-    </li>
-
-    <li class="portletItem">
-          <a tal:attributes="href string:http://archives.eionet.europa.eu/profile_overview?user=${options/user/id}"
-             class="btn btn-primary" role="button">Archives Profile overview</a>
-    </li>
-  </ul>
-  <hr />
-  <ul>
     <li tal:condition="not:disabled_user" class="portletItem">
           <a tal:attributes="href string:${common/base_url}/disable_user?id=${options/user/id}"
              class="btn btn-primary" role="button">Disable account</a>

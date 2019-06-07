@@ -1,4 +1,5 @@
-<tal:def define="common options/common | common">
+<tal:def define="common options/common | common;
+                 user options/user">
     <h1>
         Reset all roles for user
         <tt tal:content="options/user/full_name" />
@@ -7,7 +8,7 @@
 
     <div id="content-users-reset">
 
-        <form tal:define="user options/user"
+        <form
             tal:attributes="action string:@@reset_user"
             method="post">
 
@@ -26,4 +27,33 @@
 
         </form>
     </div>
+    <tal:block condition="options/roles">
+      <p>
+        This member belongs to the following Roles:</p>
+
+      <table class="account-datatable sub-roles">
+          <thead>
+              <tr>
+                  <th>
+                      Role ID
+                  </th>
+                  <th>
+                      Role name
+                  </th>
+              </tr>
+          </thead>
+          <tbody>
+              <tal:block repeat="role options/roles">
+                  <tr>
+                      <td tal:content="python: role[0]" nowrap="nowrap" />
+                      <td tal:content="python: role[1]" />
+                  </tr>
+              </tal:block>
+          </tbody>
+      </table>
+    </tal:block>
+
+<p tal:condition="not:options/roles">
+  This member does not belong to any Roles.</p>
+
 </tal:def>
