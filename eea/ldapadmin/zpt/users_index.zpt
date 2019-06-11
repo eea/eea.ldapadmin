@@ -60,7 +60,7 @@
                 tal:attributes="class python:'odd' if repeat['user'].odd() else 'even'">
                 <td>
                     <a tal:content="user/full_name"
-                       tal:attributes="href python:options['base_url'] + 'edit_user?id=%s'%user['id']"></a>
+                       tal:attributes="href python:options['base_url'] + '?uid=%s'%user['id']"></a>
                     <span tal:content="string:(${user/id})"></span>
                 </td>
 

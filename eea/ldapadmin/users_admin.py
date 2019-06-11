@@ -8,17 +8,18 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 
+import colander
+import jellyfish
 import requests
+import xlrd
 from dateutil import parser
+from unidecode import unidecode
 from zope.component import getUtility
 from zope.sendmail.interfaces import IMailDelivery
 
-import colander
 import deform
-import jellyfish
 import ldap
 import ldap_config
-import xlrd
 from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
 from AccessControl.unauthorized import Unauthorized
@@ -45,7 +46,6 @@ from Products.statusmessages.interfaces import IStatusMessage
 from transliterate import get_available_language_codes, translit
 from ui_common import CommonTemplateLogic  # load_template,
 from ui_common import TemplateRenderer, TemplateRendererNoWrap, extend_crumbs
-from unidecode import unidecode
 from validate_email import INCORRECT_EMAIL, validate_email
 
 try:
@@ -292,15 +292,15 @@ class UsersAdmin(SimpleItem, PropertyManager):
         search_name = REQUEST.form.get('name', '')
         lookup = REQUEST.form.get('lookup', '')
 
-        base_url = REQUEST.ACTUAL_URL
+        base_url = self.portal_url()
 
-        if not REQUEST.ACTUAL_URL.endswith('/'):
-            base_url += '/'
+        # if not REQUEST.ACTUAL_URL.endswith('/'):
+        #     base_url += '/'
 
         options.update({
             'search_name': search_name,
             'lookup': lookup,
-            'base_url': base_url,
+            'base_url': base_url + '/directory/user',
         })
 
         if search_name:
@@ -1477,6 +1477,7 @@ class ResetUser(BrowserView):
         roles = []
         ldap_roles = agent.member_roles_info(
             'user', user_id, ('description', ))
+
         for (role_id, attrs) in ldap_roles:
             roles.append((role_id,
                           attrs.get('description', ('', ))[0].decode('utf8')))
