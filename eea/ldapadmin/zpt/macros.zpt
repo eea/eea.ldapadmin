@@ -118,11 +118,13 @@
         </tal:block>
     </tbody>
   </table>
+
   <script>
-      jQuery(document).ready(function(){
-        window.data_table.fnDraw();
-      });
+    requirejs(["datatables.net"], function() {
+      window.data_table.fnDraw();
+    });
   </script>
+
 </metal:block>
 
 <!-- Not used! -->

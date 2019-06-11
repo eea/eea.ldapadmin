@@ -20,6 +20,17 @@
 </div>
 
 <script type="text/javascript">
+    requirejs(["datatables.net"], function() {
+      window.data_table = $('.dataTable').dataTable({
+          'aaSorting': [[0, "asc"]],
+          'sPaginationType': 'full_numbers',
+          "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+          "oLanguage": {
+              "sSearch": "Apply filter _INPUT_ to table"
+          }
+      });
+    });
+
     $(document).ready(function(){
         $('.help-tooltip').tipsy({
             gravity: 'se'
@@ -28,14 +39,6 @@
             gravity: 'se'
         });
 
-        window.data_table = $('.dataTable').dataTable({
-            'aaSorting': [[0, "asc"]],
-            'sPaginationType': 'full_numbers',
-            "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
-            "oLanguage": {
-                "sSearch": "Apply filter _INPUT_ to table"
-            }
-        });
         $("#location-tabs").accordion({heightStyle:'content'});
     });
 </script>
