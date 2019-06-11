@@ -4,6 +4,9 @@
 * remove mail server dialogue from email validation [dumitval]
 * fix for organisations member listing in case of deleted users [dumitval]
 * remove unused method to get authenticated user's password [dumitval]
+* In users editor, link to directory/users page instead of the builtin user
+  view page, as the directory has more tools on it.
+  [tiberich]
 
 1.5.27 (2019-03-07)
 ------------------------
