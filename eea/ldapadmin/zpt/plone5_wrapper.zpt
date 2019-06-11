@@ -18,6 +18,8 @@
     <script type="text/javascript" src="/++resource++eea.ldapadmin-www/jquery.tipsy.js"></script>
 
     <script src="/++resource++eea.ldapadmin-www/account.js"></script>
+
+    <script src="/++resource++eea.ldapadmin-www/jquery-migrate-1.2.1.js"></script>
   </metal:block>
 
   <metal:block fill-slot="main">

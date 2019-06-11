@@ -536,6 +536,10 @@ input.shortcut_country {
 	width: 3em;
 }
 
+#manage-role {
+  list-style-type: none;
+}
+
 div#role-name-edit {
 	display: none;
 }
