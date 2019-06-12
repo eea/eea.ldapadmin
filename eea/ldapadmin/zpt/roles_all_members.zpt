@@ -22,16 +22,18 @@
         return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
     }
 
+    requirejs(["datatables.net"], function() {
+      window.data_table = $('#role-mailing-list table.account-datatable').dataTable({
+          'aaSorting': [[1, "asc"]],
+          'sPaginationType': 'full_numbers',
+          'sDom': 'lCfrtip',
+          "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
+      });
+    });
+
     $(document).ready(function(){
         $('.help-tooltip').tipsy({
             gravity: 'se'
-        });
-
-        window.data_table  = $('#role-mailing-list table.account-datatable').dataTable({
-            'aaSorting': [[1, "asc"]],
-            'sPaginationType': 'full_numbers',
-            'sDom': 'lCfrtip',
-            "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
         });
 
         var $search_widget = $("#DataTables_Table_0_filter");

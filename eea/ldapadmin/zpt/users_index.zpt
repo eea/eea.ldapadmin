@@ -1,7 +1,7 @@
 <tal:block content="structure common/admin_menu" />
 
 <script type="text/javascript">
-    $(document).ready(function(){
+    requirejs(["datatables.net"], function() {
         window.data_table = $('.dataTable').dataTable({
             'aaSorting': [[0, "asc"]],
             'sPaginationType': 'full_numbers',

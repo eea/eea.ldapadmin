@@ -1,6 +1,6 @@
 <script type="text/javascript">
     /* <![CDATA[ */
-    $(document).ready(function(){
+    requirejs(["datatables.net"], function() {
       $.fn.dataTableExt.afnFiltering.push(function(oSettings, aData, iDataIndex){
       console.log('filtering');
         var disabled_type = $("#filter_by_disabled").val();
@@ -15,21 +15,23 @@
         return false;
       });
 
-        window.data_table = $('.dataTable').dataTable({
-            'aaSorting': [[1, "asc"]],
-            'sPaginationType': 'full_numbers',
-            "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
-            "oLanguage": {
-                "sSearch": "Apply filter _INPUT_ to table"
-            },
-            "aoColumnDefs": [
-                {
-                    "bSortable": false,
-                    "aTargets": [0]
-                }
-            ]
-        });
+      window.data_table = $('.dataTable').dataTable({
+          'aaSorting': [[1, "asc"]],
+          'sPaginationType': 'full_numbers',
+          "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+          "oLanguage": {
+              "sSearch": "Apply filter _INPUT_ to table"
+          },
+          "aoColumnDefs": [
+              {
+                  "bSortable": false,
+                  "aTargets": [0]
+              }
+          ]
+      });
+    });
 
+    $(document).ready(function() {
       $("#filter_by_disabled").detach().insertBefore('.dataTable').on('change', function(){
         window.data_table.fnDraw();
       });

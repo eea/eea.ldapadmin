@@ -652,9 +652,23 @@ ul.organisations {
   height: 22px;
 }
 
+#role-mailing-list table ul {
+  margin-bottom: 0;
+  padding-left: 20px;
+}
+
+#role-mailing-list .account-datatable>tbody>tr td:first-child,
+#role-mailing-list .account-datatable>tbody>tr th:first-child,
 .account-datatable.sub-roles>tbody>tr td:first-child,
 .account-datatable.sub-roles>tbody>tr th:first-child {
   white-space: nowrap;
+}
+
+.dataTable tr.odd {
+  background-color: #fff;
+}
+.dataTable tr.even {
+  background-color: #fbfbfb;
 }
 
 /** Leader / Alternate feature **/
