@@ -8,8 +8,8 @@
     <header class="portletHeader operations-title">
       <a href="#" class="operations-title tile">Operations</a>
     </header>
-  <ul tal:condition="not:disabled_user">
-    <li class="portletItem">
+  <ul>
+    <li class="portletItem" tal:condition="not:disabled_user">
         <a tal:attributes="href string:/password-reset?email=${options/user/email}"
              class="btn btn-primary" role="button">Reset password</a>
     </li>
