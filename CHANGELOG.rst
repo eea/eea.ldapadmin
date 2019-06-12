@@ -1,5 +1,6 @@
 1.5.28 (unreleased)
 ------------------------
+* bugfix - show enable button for disabled users [dumitval]
 * add role listing in the roles_reset page [dumitval]
 * remove mail server dialogue from email validation [dumitval]
 * fix for organisations member listing in case of deleted users [dumitval]
