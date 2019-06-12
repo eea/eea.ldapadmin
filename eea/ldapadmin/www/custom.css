@@ -652,6 +652,11 @@ ul.organisations {
   height: 22px;
 }
 
+.account-datatable.sub-roles>tbody>tr td:first-child,
+.account-datatable.sub-roles>tbody>tr th:first-child {
+  white-space: nowrap;
+}
+
 /** Leader / Alternate feature **/
 
 .alternate_container,

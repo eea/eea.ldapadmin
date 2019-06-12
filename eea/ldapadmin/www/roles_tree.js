@@ -62,10 +62,10 @@ function subrole_collapse_all(){
 }
 
 function fetch_subroles(tr) {
-    var a = $('a', tr);
+    var a = tr.children().first().find('a');
     var href = a.attr('href');
     var name = a.text();
-    var loading_td = $('<'+'td colspan="2">').text("Loading "+name+" ...");
+    var loading_td = $('<'+'td colspan="2">').text("Loading " + name + " ...");
     var loading_tr = $('<'+'tr>').append(loading_td).insertAfter(tr);
     tr.data('subroles-box', loading_tr);
 
