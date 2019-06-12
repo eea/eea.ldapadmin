@@ -1,5 +1,6 @@
 1.5.28 (unreleased)
 ------------------------
+* fix sending various emails when creating/editing users [dumitval]
 * handle None value in phone field (bulk create users) [dumitval]
 * bugfix - show enable button for disabled users [dumitval]
 * add role listing in the roles_reset page [dumitval]

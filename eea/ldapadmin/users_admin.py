@@ -16,6 +16,7 @@ from dateutil import parser
 from unidecode import unidecode
 from zope.component import getUtility
 from zope.sendmail.interfaces import IMailDelivery
+from plone import api
 
 import deform
 import ldap
@@ -429,10 +430,11 @@ class UsersAdmin(SimpleItem, PropertyManager):
     def confirmation_email(self, first_name, user_id, REQUEST=None):
         """ Returns body of confirmation email """
 
+        site = api.portal.get()
         if not self.checkPermissionEditUsers() and not self.nfp_has_access():
             raise Unauthorized
         options = {'first_name': first_name, 'user_id': user_id}
-        options['site_title'] = self.unrestrictedTraverse('/').title
+        options['site_title'] = site.title
 
         return self._render_template.render(
             "zpt/users/email_registration_confirmation.zpt",
@@ -1156,8 +1158,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
     def send_password_reset_email(self, user_info):
         """ """
-        pwreset_tool = self.restrictedTraverse('/').objectValues(
-            'Eionet Password Reset Tool')[0]
+        site = api.portal.get()
+        pwreset_tool = site.objectValues('Eionet Password Reset Tool')[0]
         email = user_info['email']
         pwreset_tool.ask_for_password_reset(email=email, on_create=True)
 
@@ -1667,6 +1669,7 @@ class AutomatedUserDisabler(BrowserView):
         )
 
     def send_disable_notification_email(self, user):
+        site = api.portal.get()
         addr_from = "no-reply@eea.europa.eu"
         addr_to = user['email']
 
@@ -1675,7 +1678,7 @@ class AutomatedUserDisabler(BrowserView):
         message['To'] = addr_to
 
         options = deepcopy(user)
-        options['site_title'] = self.context.unrestrictedTraverse('/').title
+        options['site_title'] = site.title
 
         body = self.context._render_template.render(
             "zpt/users/email_auto_disabled.zpt",
@@ -1686,6 +1689,7 @@ class AutomatedUserDisabler(BrowserView):
         _send_email(addr_from, addr_to, message)
 
     def send_predisable_notification_email(self, user):
+        site = api.portal.get()
         addr_from = "no-reply@eea.europa.eu"
         addr_to = user['email']
 
@@ -1694,7 +1698,7 @@ class AutomatedUserDisabler(BrowserView):
         message['To'] = addr_to
 
         options = deepcopy(user)
-        options['site_title'] = self.context.unrestrictedTraverse('/').title
+        options['site_title'] = site.title
 
         body = self.context._render_template.render(
             "zpt/users/email_auto_predisabled.zpt",
@@ -1705,6 +1709,7 @@ class AutomatedUserDisabler(BrowserView):
         _send_email(addr_from, addr_to, message)
 
     def send_admin_report_email(self, users_to_predisable, users_to_disable):
+        site = api.portal.get()
         addr_from = "no-reply@eea.europa.eu"
         addr_to = 'helpdesk@eea.europa.eu'
 
@@ -1715,7 +1720,7 @@ class AutomatedUserDisabler(BrowserView):
         options = {}
         options['users_predisable'] = users_to_predisable
         options['users_disable'] = users_to_disable
-        options['site_title'] = self.context.unrestrictedTraverse('/').title
+        options['site_title'] = site.title
         options['days'] = (self.DISABLE_DELTA + self.ONE_MONTH).days
 
         body = self.context._render_template.render(
