@@ -1318,6 +1318,8 @@ class BulkUserImporter(BrowserView):
                                               agent, id_list)
             id_list.append(row_data['id'])
             row_data['url'] = process_url(row_data['url'])
+            if row_data['phone'] is None:
+                row_data['phone'] = ''
             result.append(row_data)
 
         return result
