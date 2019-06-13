@@ -181,15 +181,7 @@ def get_duplicates_by_name(name):
 
 
 def logged_in_user(request):
-    user_id = ''
-
-    if _is_authenticated(request):
-        user = request.get('AUTHENTICATED_USER', '')
-
-        if user:
-            user_id = user.id
-
-    return user_id
+    return api.user.get_current().id
 
 
 # this class should be called UsersEditor, similar to OrganisationsEditor
