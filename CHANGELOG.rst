@@ -1,4 +1,7 @@
-1.5.29 (unreleased)
+1.5.30 (unreleased)
+------------------------
+
+1.5.29 (2019-06-19)
 ------------------------
 * remove mail server dialogue from email validation [dumitval]
 
