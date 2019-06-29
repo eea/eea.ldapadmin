@@ -1,5 +1,6 @@
 1.5.28 (unreleased)
 ------------------------
+* fix for the edit role name [dumitval]
 * fix for getting the authenticated user id [dumitval]
 * fix sending various emails when creating/editing users [dumitval]
 * handle None value in phone field (bulk create users) [dumitval]
