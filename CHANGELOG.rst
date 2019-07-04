@@ -1,5 +1,8 @@
 1.5.28 (unreleased)
 ------------------------
+* various fixes in the extended management [dumitval]
+* fix underscore link [dumitval]
+* replace selectize by select2 (already in plonesaas) [dumitval]
 * fix for the edit role name [dumitval]
 * fix for getting the authenticated user id [dumitval]
 * fix sending various emails when creating/editing users [dumitval]
