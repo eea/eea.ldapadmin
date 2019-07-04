@@ -82,7 +82,7 @@
                             <tr>
                                 <th>&nbsp;</th>
                                 <th>Username</th>
-                                <th>Full name</th>
+                                <th>Full naame</th>
                                 <th>&nbsp;</th>
                             </thead>
                             <tbody tal:define="members options/form_data/users">
@@ -110,14 +110,11 @@
                     </div>
                 </div>
 
-
             <div class="floated_left_box" id="source_widget">
-                <div id="search_tabs">
-                    <ul>
-                        <li><a href="#filter-members">Role members</a></li>
-                        <li><a href="#search-eionet">Eionet members</a></li>
-                    </ul>
-                    <div id="filter-members">
+                <div id="search_tabs" class="pat-autotoc autotabs"
+                    data-pat-autotoc="section:fieldset;levels:legend;">
+                    <fieldset id="fieldset-default">
+                        <legend>Role members</legend>
                         <div class="filter_bar">
                             <label>Filter members of <span tal:content="options/extended_role_id">Role ID</span></label>
                             <br />
@@ -148,9 +145,10 @@
                                 </tal:rep>
                             </tbody>
                         </table>
-                    </div>
+                    </fieldset>
 
-                    <div id="search-eionet">
+                    <fieldset id="fieldset-eionet">
+                        <legend>Eionet members</legend>
                         <div class="filter_bar">
                             <label>Search Eionet members</label>
                             <br/>
@@ -169,7 +167,7 @@
                             <tbody>
                             </tbody>
                         </table>
-                    </div>
+                    </fieldset>
 
                 </div>
 
@@ -182,13 +180,13 @@
         </form>
 
     </div>
-    <script src="http://documentcloud.github.com/underscore/underscore-min.js"> </script>
+    <script src="https://underscorejs.org/underscore-min.js"> </script>
     <script src="/++resource++eea.ldapadmin-www/extended_assign_members_to_role.js"
         tal:attributes="src string:${context/absolute_url}/++resource++eea.ldapadmin-www/extended_assign_members_to_role.js"></script>
     <script tal:content="string:
 
     jQuery(document).ready(function(){
-        $$('#search_tabs').tabs();
+        $('#search_tabs').tabs();
 
         var members_editor = new MembersEditor('${context/absolute_url}/@@search_eionet');
     });"></script>

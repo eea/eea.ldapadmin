@@ -1,7 +1,4 @@
 <div>
-    <link href="/++resource++eea.ldapadmin-www/selectize/css/selectize.default.css" rel="stylesheet"/>
-    <script src="/++resource++eea.ldapadmin-www/selectize/js/standalone/selectize.min.js"></script>
-
     <h1>Editing user data for
         <span tal:content="python:'%s (%s)'%(options['user']['full_name'], options['user']['id'])"></span>
     </h1>
@@ -58,7 +55,7 @@
                 </tr>
             </table>
             <script>
-                $(document).ready(function() { $("#edit-organisation").selectize({create:false}); });
+                $(document).ready(function() { $("#edit-organisation").addClass('pat-select2'); });
             </script>
         </form>
     </div>

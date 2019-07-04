@@ -1,8 +1,5 @@
 <tal:def define="common options/common | common">
 
-    <link href="/++resource++eea.ldapadmin-www/selectize/css/selectize.default.css" rel="stylesheet"/>
-    <script src="/++resource++eea.ldapadmin-www/selectize/js/standalone/selectize.min.js"></script>
-
     <style>
         .floated_right_box {
             float: right;
@@ -44,6 +41,8 @@
 
     <div metal:use-macro="context/@@extended_management_menu/macros/menu" />
 
+      <p>This page allows setting multiple roles for a selected user, from the subroles of the current leaf (<strong>if any</strong>). Add roles from the right column by clicking on the "+" button that appears next to each role on mouseover (or copy/paste the role id on a new line in the left text box). To remove existing roles, delete them from the text box. Don't forget to conclude the action with a click on the "Save changes" button.</p>
+
     <form
         action="" id="edit-member-form"
         tal:attributes="action string:${context/absolute_url}/@@edit_roles_of_one_member?role_id=${options/role_id}"
@@ -53,7 +52,7 @@
 
         <div id="member_select">
             <label>Select a member:</label> <br/>
-            <select name="member" id="member-select" style="width:400px">
+            <select name="member" id="member-select" class="pat-select2">
                 <option tal:repeat="member options/all_possible_members"
                     tal:attributes="value python:member[0]; selected python:member[0] == options['selected_member'];"
                     tal:content="python:member[1]">Member</option>
@@ -63,25 +62,33 @@
             </div>
         </div>
         <div class="floated_left_box">
-            <label>Set the roles for this member:</label> <br/>
+          <label>Set the roles for this member:<br/>(copy/paste the role id, one each line)</label><br />
             <textarea id="member_roles" name="member_roles" tal:content="options/selected_member_roles"></textarea>
             <div class="padded-top">
                 <input type="submit" value="Save changes" name="save" class="primary-button" />
             </div>
         </div>
 
-        <div class="floated_left_box">
-            <label>Filter possible subroles (<a href="#" id="globs-help" title="You can use *-subpart-* as filter">globs allowed</a>):</label>
-            <br />
-            <input type="text" id="roles_filter" value="" />
-            <button id="roles_filter_btn" value="Apply" >Apply filter (<span id="roles_counter">0</span>)</button>
-            <br />
-            <ul id="all_roles">
-                <li tal:repeat="role options/all_possible_roles">
-                    <a href="" tal:attributes="href string:${context/absolute_url}/@@edit_roles_of_one_member?role_id=${role}" tal:content="role">Role</a>
-                </li>
-            </ul>
-        </div>
+        <tal:block define="all_possible_roles options/all_possible_roles">
+          <div class="floated_left_box" tal:condition="python:len(all_possible_roles) > 0">
+              <label>Filter possible subroles (<a href="#" id="globs-help" title="You can use *-subpart-* as filter">globs allowed</a>):</label>
+              <br />
+              <input type="text" id="roles_filter" value="" />
+              <button id="roles_filter_btn" value="Apply" >Apply filter (<span id="roles_counter">0</span>)</button>
+              <br />
+              <ul id="all_roles">
+                  <li tal:repeat="role all_possible_roles">
+                      <a href="" tal:attributes="href string:${context/absolute_url}/@@edit_roles_of_one_member?role_id=${role}" tal:content="role">Role</a>
+                      <button class="actions btn_add" style="display: none;">
+                        <i class="fa fa-plus"></i>
+                      </button>
+                  </li>
+              </ul>
+          </div>
+          <div class="floated_left_box" tal:condition="python:len(all_possible_roles) == 0">
+            <p>There are no subroles for this leaf</p>
+          </div>
+        </tal:block>
     </form>
 
     <script>
@@ -106,12 +113,38 @@
             return s.match(reg);
         }
 
-        jQuery(document).ready(function(){
 
-            $("#member-select").selectize({});
+        function insert_link(){
+          $('#body_text').val($('#body_text').val()+' '+$('#url').val());
+        };
+
+        function textarea_to_usernames(textarea){
+          return _.filter(
+                  _.map(
+                      textarea.val().split('\n'),
+                      function(s){ return s.trim(); }
+                      ),
+                  function(s) { return s.length > 0; }
+              );
+        };
+
+        jQuery(document).ready(function(){
 
             var counter = $("#roles_counter");
             counter.html($("#all_roles li").length.toString());
+            $('#all_roles li').mouseenter(function(event){
+                $('.actions', $(event.target).parent()).show();
+              })
+            $('#all_roles li').mouseleave(function(event){
+                $('.actions', $(event.target).parent()).hide();
+              })
+            $('.btn_add').click(function(){
+              var username = $(this).prev().text();
+              var usernames = textarea_to_usernames($('#member_roles'));
+              var to_save = _.union(usernames, [username]);
+              $('#member_roles').val(to_save.join('\n'));
+              return false;
+            })
 
             $("#roles_filter_btn").click(function(){
                 var c = 0;

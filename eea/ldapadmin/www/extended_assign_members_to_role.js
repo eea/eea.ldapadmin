@@ -94,6 +94,9 @@ MembersEditor.prototype = {
     handle_add_member: function(event){
         var $btn = $(event.target);
         var username = $btn.parents('tr').find('.user_id').html().toString();
+        var usernames = this._textarea_to_usernames(this.members_textarea);
+        var to_save = _.union(usernames, [username]);
+        this.members_textarea.html(to_save.join('\n'));
         this._add_users_to_table(this.target_widget, [username], this.$tpl_button_delete);
         return false;
     },
@@ -101,6 +104,10 @@ MembersEditor.prototype = {
     handle_delete_member: function(event){
         var $btn = $(event.target);
         var username = $btn.parents('tr').find('.user_id').html().toString();
+        var usernames = this._textarea_to_usernames(this.members_textarea);
+        var to_save = _.difference(usernames, [username]);
+        this.members_textarea.html(to_save.join('\n'));
+
         this._remove_users_from_table(this.target_widget, [username]);
         return false;
     },
