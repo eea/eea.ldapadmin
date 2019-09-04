@@ -22,7 +22,7 @@
   <browser:page
     name="create_user"
     for=".nfp_nrc.NfpNrc"
-    permission="zope.Public"
+    permission="zope2.View"
     class=".nfp_nrc.CreateUser"
     />
 
@@ -50,7 +50,7 @@
   <browser:page
     name="index.html"
     for=".roles_editor.NoExtendedManagementRoleError"
-    permission="zope.Public"
+    permission="zope2.View"
     class=".roles_editor.NoExceptionManagementView"
     />
 

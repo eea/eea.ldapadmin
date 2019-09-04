@@ -13,7 +13,7 @@
     <browser:page
         name="details_ADDED_MEMBER_TO_ORG"
         for="*"
-        permission="zope.Public"
+        permission="zope2.View"
         class=".changelog.AddedMemberToOrg"
         template="templates/added_member_to_org.pt"
         />
@@ -21,7 +21,7 @@
     <browser:page
         name="details_ADDED_PENDING_MEMBER_TO_ORG"
         for="*"
-        permission="zope.Public"
+        permission="zope2.View"
         class=".changelog.AddedPendingMemberToOrg"
         template="templates/added_pending_member_to_org.pt"
         />
@@ -29,7 +29,7 @@
     <browser:page
         name="details_REMOVED_MEMBER_FROM_ORG"
         for="*"
-        permission="zope.Public"
+        permission="zope2.View"
         class=".changelog.RemovedMemberFromOrg"
         template="templates/removed_member_from_org.pt"
         />
@@ -37,7 +37,7 @@
     <browser:page
         name="details_REMOVED_PENDING_MEMBER_FROM_ORG"
         for="*"
-        permission="zope.Public"
+        permission="zope2.View"
         class=".changelog.RemovedPendingMemberFromOrg"
         template="templates/removed_pending_member_from_org.pt"
         />
@@ -45,7 +45,7 @@
     <browser:page
         name="details_EDITED_ORG"
         for="*"
-        permission="zope.Public"
+        permission="zope2.View"
         class=".changelog.EditedOrg"
         template="templates/edited_org.pt"
         />
@@ -53,7 +53,7 @@
     <browser:page
         name="details_CREATED_ORG"
         for="*"
-        permission="zope.Public"
+        permission="zope2.View"
         class=".changelog.CreatedOrg"
         template="templates/created_org.pt"
         />
@@ -61,7 +61,7 @@
     <browser:page
         name="details_RENAMED_ORGANISATION"
         for="*"
-        permission="zope.Public"
+        permission="zope2.View"
         class=".changelog.RenamedOrg"
         template="templates/renamed_org.pt"
         />
