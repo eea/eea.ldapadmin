@@ -1,5 +1,6 @@
 1.5.28 (unreleased)
 ------------------------
+* remove links to old jquery libraries [dumitval]
 * replace zope.Public permission with zope2.View [dumitval]
 * various fixes in the extended management [dumitval]
 * fix underscore link [dumitval]

@@ -11,9 +11,6 @@
     Role and subroles members of <tt tal:content="options/role_id" />
 </h1>
 
-    <link rel="stylesheet" type="text/css" media="screen"
-          href="/++resource++eea.ldapadmin-www/jquery-ui.min.css"/>
-
 <script type="text/javascript">
     function getParameterByName(name) {
         name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
