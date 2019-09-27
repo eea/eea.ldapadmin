@@ -39,15 +39,12 @@
             gravity: 'se'
         });
 
-        $("#location-tabs").accordion({heightStyle:'content'});
     });
 </script>
 
 <style>
-    #location-tabs .ui-accordion-content {font-size:85%; height:auto !important;}
     #location-tabs h4 {padding-left:2em; font-weight:normal; font-size:85%}
     #location-tabs table {margin-bottom: 20px !important;}
-    #location-tabs .ui-accordion-content a:link { color: #2a6495; }
 </style>
 
 <tal:block content="structure python:common.buttons_bar('role', options['role_id'], len(options['role_members']['users']))"/>
@@ -138,10 +135,6 @@
 
     <tal:block condition="python:is_authenticated and options['can_edit']"
         tal:define="locations options/locations">
-        <button
-            tal:condition="locations"
-            style="float:right; margin-top:20px;"
-            onclick="javascript:$('#location-tabs').accordion('destroy')">Expand all</button>
         <h2>Locations where <tt tal:content="python:role_name or '[ROOT]'" /> has permissions</h2>
         <div tal:condition="python: (not options['has_groupware']) and options['role_id']">
             <ul>
