@@ -38,7 +38,6 @@
         $('.tipsy-title').tipsy({
             gravity: 'se'
         });
-
     });
 </script>
 
