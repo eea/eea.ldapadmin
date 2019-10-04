@@ -122,7 +122,6 @@
       jQuery(document).ready(function(){
         window.data_table.fnDraw();
       });
-      });
   </script>
 </metal:block>
 
