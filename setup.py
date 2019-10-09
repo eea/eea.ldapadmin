@@ -11,11 +11,11 @@ setup(name='eea.ldapadmin',
           'eea.usersdb>=1.3.35',
           'naaya.ldapdump',
 
-          'BeautifulSoup',
+          'beautifulsoup4',
           'lxml',
 
           # TODO: these need to be set as >=. Needs checks
-          'deform==2.0.7',
+          'deform>=2.0.7',
           'colander==1.7.0',
           'jellyfish==0.2.0',
 
