@@ -1,5 +1,6 @@
 1.5.28 (unreleased)
 ------------------------
+* use py3dns instead of pyDNS for python3
 * remove reference to accordion [dumitval]
 * remove links to old jquery libraries [dumitval]
 * replace zope.Public permission with zope2.View [dumitval]
@@ -786,4 +787,3 @@
 * owners can delete empty roles [simiamih]
 * IMailDelivery defaults to "naaya-mail-delivery" named utility [simiamih]
 * customizing NETWORK_NAME from environ (e.g. Eionet, SINAnet) [simiamih]
-
