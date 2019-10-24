@@ -3,7 +3,7 @@
   xmlns:five="http://namespaces.zope.org/five">
 
   Ensure compatibility with Chameleon
-  <include package="five.pt" />
+<!-- DEPRECATED <include package="five.pt" /> -->
 
   <five:registerPackage
     package="eea.ldapadmin"

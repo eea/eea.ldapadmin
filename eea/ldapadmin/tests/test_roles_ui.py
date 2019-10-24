@@ -4,7 +4,8 @@ import re
 import logging
 from copy import deepcopy
 import csv
-from StringIO import StringIO
+from io import StringIO
+# from StringIO import StringIO
 from mock import Mock, patch
 import lxml.cssselect
 import lxml.html.soupparser
@@ -12,6 +13,8 @@ from eea.ldapadmin.roles_editor import RolesEditor
 from eea.ldapadmin.roles_editor import CommonTemplateLogic
 from eea.ldapadmin.ui_common import TemplateRenderer
 from eea import usersdb
+from six.moves import map
+from six.moves import zip
 
 
 def plaintext(element):
@@ -663,10 +666,10 @@ class UserInfoTest(unittest.TestCase):
         page = parse_html(getattr(self.ui, name)(self.request))
         txt = lambda e: e.text_content().strip()
         table = css(page, 'table.account-datatable')[0]
-        labels = map(txt, css(table, 'thead tr td'))
-        values = map(txt, css(table, 'tbody tr td'))
+        labels = list(map(txt, css(table, 'thead tr td')))
+        values = list(map(txt, css(table, 'tbody tr td')))
         self.assertEqual(len(labels), len(values))
-        data = dict(zip(labels, values))
+        data = dict(list(zip(labels, values)))
         return data
 
         self.assertEqual(data)

@@ -1,12 +1,14 @@
 import unittest
 import logging
-from StringIO import StringIO
+# from StringIO import StringIO
+from io import StringIO
 from lxml.html.soupparser import fromstring
 from mock import Mock, patch
 from eea.ldapadmin.orgs_editor import OrganisationsEditor, CommonTemplateLogic
 from eea.ldapadmin.orgs_editor import validate_org_info, VALIDATION_ERRORS
 from eea.ldapadmin.ui_common import TemplateRenderer
 from eea import usersdb
+import six
 
 org_info_fixture = {
     'name': u"Ye olde bridge club",
@@ -122,7 +124,7 @@ class OrganisationsUITest(unittest.TestCase):
         self.assertEqual(set(err_div.text for err_div in err_msg), errors)
 
         form = page.xpath('//form')[0]
-        for name, value in org_info.iteritems():
+        for name, value in six.iteritems(org_info):
             if name == 'postal_address':
                 continue
             if name != 'id':
@@ -174,7 +176,7 @@ class OrganisationsUITest(unittest.TestCase):
         self.assertEqual(form.attrib['action'], 'URL/edit_organisation')
         self.assertEqual(form.xpath('//input[@name="id"]')[0].attrib['value'],
                          'bridge_club')
-        for name, value in org_info_fixture.iteritems():
+        for name, value in six.iteritems(org_info_fixture):
             if name == 'postal_address':
                 xp = '//textarea[@name="%s:utf8:ustring"]' % name
                 frm_value = form.xpath(xp)[0].text

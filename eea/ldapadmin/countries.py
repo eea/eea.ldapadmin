@@ -81,7 +81,7 @@ def load_countries(update=False):
         if update:
             try:
                 update_countries()
-            except sparql.SparqlException, e:
+            except sparql.SparqlException as e:
                 logger.error("Couldn't import countries: %s" % e)
                 pass
         f = open(os.path.join(LDAP_DISK_STORAGE, "countries.json"), "r")
@@ -113,7 +113,7 @@ def get_country_options(country=None):
         country = ['eu', 'int']
     elif country:
         country = [country]
-    countries = COUNTRIES.items()
+    countries = list(COUNTRIES.items())
     if country:
         return [country_data for country_data in countries + PSEUDO_COUNTRIES
                 if country_data[0] in country]

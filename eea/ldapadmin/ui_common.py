@@ -1,10 +1,10 @@
 from zope.component import getMultiAdapter
 
 from Acquisition import Implicit
-from constants import NETWORK_NAME
+from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin import roles_leaders
 from eea.ldapadmin.countries import get_country
-from logic_common import _get_user_id, _is_authenticated
+from .logic_common import _get_user_id, _is_authenticated
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from z3c.pt.pagetemplate import PageTemplateFile as ChameleonTemplate
@@ -81,7 +81,7 @@ class TemplateRenderer(Implicit):
         try:
             namespace = template.pt_getContext((), options)
         except AttributeError:      # Plone5 compatibility
-            namespace = template.im_self._pt_get_context(
+            namespace = template.__self__._pt_get_context(
                 context, context.REQUEST, options)
 
         namespace['common'] = self.common_factory(context)
@@ -90,7 +90,7 @@ class TemplateRenderer(Implicit):
         if hasattr(template, 'pt_render'):
             return template.pt_render(namespace)
         else:
-            return template.im_self.render(**namespace)
+            return template.__self__.render(**namespace)
 
     def browserview(self, context, name):
         return getMultiAdapter((context, self.aq_parent.REQUEST), name=name)

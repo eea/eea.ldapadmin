@@ -9,8 +9,8 @@ from email.mime.text import MIMEText
 import colander
 import deform
 import ldap
-import ldap_config
-import roles_leaders
+from . import ldap_config
+from . import roles_leaders
 from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
 from AccessControl.unauthorized import Unauthorized
@@ -26,18 +26,20 @@ from eea.ldapadmin.users_admin import (_is_authenticated, _send_email,
                                        get_duplicates_by_name,
                                        user_info_add_schema)
 from eea.usersdb.db_agent import EmailAlreadyExists, NameAlreadyExists
-from logic_common import _get_user_id
+from .logic_common import _get_user_id
 from OFS.PropertyManager import PropertyManager
 from OFS.SimpleItem import SimpleItem
 from persistent.mapping import PersistentMapping
 from Products.Five.browser import BrowserView
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.statusmessages.interfaces import IStatusMessage
-from ui_common import (CommonTemplateLogic, TemplateRenderer,
+from .ui_common import (CommonTemplateLogic, TemplateRenderer,
                        TemplateRendererNoWrap, extend_crumbs)
 from unidecode import unidecode
 
-from ui_common import get_role_name  # load_template,; , roles_list_to_text
+from .ui_common import get_role_name  # load_template,; , roles_list_to_text
+import six
+from six.moves import map
 
 log = logging.getLogger('nfp_nrc')
 
@@ -776,8 +778,8 @@ class NfpNrc(SimpleItem, PropertyManager):
         user_form = deform.Form(user_info_edit_schema)
 
         try:
-            new_info = user_form.validate(REQUEST.form.items())
-        except deform.ValidationFailure, e:
+            new_info = user_form.validate(list(REQUEST.form.items()))
+        except deform.ValidationFailure as e:
             errors = {}
 
             for field_error in e.error.children:
@@ -1025,7 +1027,7 @@ class CreateUser(BrowserView):
         countries = dict(get_country_options(country=country))
         orgs = {}
 
-        for org_id, info in orgs_by_id.iteritems():
+        for org_id, info in six.iteritems(orgs_by_id):
             country_info = countries.get(info['country'])
 
             if country_info:
@@ -1092,14 +1094,14 @@ class CreateUser(BrowserView):
         if 'submit' in self.request.form:
             try:
                 user_form = deform.Form(schema)
-                user_info = user_form.validate(form_data.items())
+                user_info = user_form.validate(list(form_data.items()))
                 user_info['reasonToCreate'] = user_info[
                     'reasonToCreate'].replace('&', 'and')
                 user_info['search_helper'] = _transliterate(
                     user_info['first_name'], user_info['last_name'],
                     user_info.get('full_name_native', ''),
                     user_info.get('search_helper', ''))
-            except deform.ValidationFailure, e:
+            except deform.ValidationFailure as e:
                 for field_error in e.error.children:
                     errors[field_error.node.name] = field_error.msg
                 msg = u"Please correct the errors below and try again."
@@ -1113,9 +1115,9 @@ class CreateUser(BrowserView):
                 with agent.new_action():
                     try:
                         self._create_user(agent, user_info)
-                    except NameAlreadyExists, e:
+                    except NameAlreadyExists as e:
                         errors['id'] = 'This ID is alreay registered'
-                    except EmailAlreadyExists, e:
+                    except EmailAlreadyExists as e:
                         errors['email'] = 'This email is alreay registered'
                     else:
 
@@ -1128,7 +1130,7 @@ class CreateUser(BrowserView):
                                                      user_id)
 
                         send_confirmation = ('send_confirmation' in
-                                             form_data.keys())
+                                             list(form_data.keys()))
 
                         if send_confirmation:
                             self.send_confirmation_email(user_info)

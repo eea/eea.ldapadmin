@@ -9,8 +9,8 @@ from App.class_init import InitializeClass
 from OFS.SimpleItem import SimpleItem
 
 from eea.ldapadmin.constants import LDAP_DISK_STORAGE
-from countries import update_countries
-from ldapdump import dump_ldap
+from .countries import update_countries
+from .ldapdump import dump_ldap
 
 log = logging.getLogger(__name__)
 

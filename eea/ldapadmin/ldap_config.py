@@ -1,5 +1,6 @@
 from eea.usersdb import UsersDB
-from ui_common import load_template
+from .ui_common import load_template
+import six
 
 
 defaults = {
@@ -17,7 +18,7 @@ defaults = {
 
 def read_form(form, edit=False):
     config = dict((name, form.get(name, default))
-                  for name, default in defaults.iteritems())
+                  for name, default in six.iteritems(defaults))
 
     if edit:
         if not config['admin_pw'].strip():

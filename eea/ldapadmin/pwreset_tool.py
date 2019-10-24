@@ -1,3 +1,4 @@
+from __future__ import print_function
 import base64
 import hashlib
 import logging
@@ -22,6 +23,7 @@ from OFS.SimpleItem import SimpleItem
 from persistent.mapping import PersistentMapping
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.statusmessages.interfaces import IStatusMessage
+import six
 
 log = logging.getLogger(__name__)
 
@@ -141,7 +143,7 @@ class PasswordResetTool(SimpleItem):
             'network_name': NETWORK_NAME,
             'expiration_time': expiration_time.strftime("%Y-%m-%d %H:%M:%S")
         }
-        print options['token_url']
+        print(options['token_url'])
         message = MIMEText(email_template(**options).encode('utf-8'),
                            _charset='utf-8')
         message['From'] = addr_from
@@ -229,7 +231,7 @@ class PasswordResetTool(SimpleItem):
         expired = []
         cutoff_time = datetime.utcnow() - timedelta(days=1)
 
-        for token, token_data in self._tokens.iteritems():
+        for token, token_data in six.iteritems(self._tokens):
             if token_data.timestamp < cutoff_time:
                 expired.append(token)
 
@@ -279,7 +281,7 @@ class PasswordResetTool(SimpleItem):
             agent = self._get_ldap_agent(bind=True)
             try:
                 agent.set_user_password(token_data.user_id, None, new_password)
-            except CONSTRAINT_VIOLATION, e:
+            except CONSTRAINT_VIOLATION as e:
                 message = ''
 
                 if e.message['info'] in [

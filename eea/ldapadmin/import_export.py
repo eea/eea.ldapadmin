@@ -1,7 +1,9 @@
 import xlwt
 import logging
-import urllib
-from StringIO import StringIO
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+# from StringIO import StringIO
+from io import StringIO
+from six.moves import range
 
 logger = logging.getLogger(__name__)
 
@@ -11,9 +13,9 @@ def attachment_header(filename):
     try:
         filename.decode('ascii')
     except UnicodeDecodeError:
-        value = "filename*=UTF-8''%s" % urllib.quote(filename)
+        value = "filename*=UTF-8''%s" % six.moves.urllib.parse.quote(filename)
     else:
-        value = "filename=%s" % urllib.quote(filename)
+        value = "filename=%s" % six.moves.urllib.parse.quote(filename)
     return "attachment; " + value
 
 

@@ -3,6 +3,7 @@ from ldap import (SCOPE_BASE, SCOPE_ONELEVEL, SCOPE_SUBTREE,
                   NO_SUCH_ATTRIBUTE, OBJECT_CLASS_VIOLATION,
                   MOD_ADD, MOD_DELETE, RES_ADD, RES_DELETE, RES_MODIFY,
                   RES_BIND)
+import six
 
 data = {}
 
@@ -35,7 +36,7 @@ class MockConnection(object):
 
         for dn in dn_set:
             attrs = {}
-            for name, value in data[dn].iteritems():
+            for name, value in six.iteritems(data[dn]):
                 assert type(value) is list
                 if attrlist is None or name in attrlist:
                     attrs[name] = value

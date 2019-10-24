@@ -6,7 +6,7 @@ from AccessControl.Permissions import view  # , view_management_screens
 from App.config import getConfiguration
 from OFS.Folder import Folder
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
-from ui_common import CommonTemplateLogic, TemplateRenderer
+from .ui_common import CommonTemplateLogic, TemplateRenderer
 
 KNOWN_TYPES = {'Eionet Roles Editor': {
     'description': ('Browse Roles and Roles\' Members in LDAP'
@@ -137,7 +137,7 @@ class Dashboard(Folder):
 
     def index_html(self, REQUEST):
         """ Dashboard page """
-        tools = self.objectValues(KNOWN_TYPES.keys())
+        tools = self.objectValues(list(KNOWN_TYPES.keys()))
 
         # we no longer want the "My profile overview" link in the
         # "Eionet Directory Tools"

@@ -6,7 +6,8 @@ import re
 import sys
 from collections import defaultdict
 from string import ascii_lowercase, digits
-from StringIO import StringIO
+# from StringIO import StringIO
+from io import StringIO
 
 from lxml.builder import E
 from lxml.html import tostring
@@ -15,7 +16,7 @@ from zope.component import getMultiAdapter
 
 import colander
 import deform
-import query
+from . import query
 import xlrd
 import xlwt
 from AccessControl import ClassSecurityInfo, Unauthorized
@@ -34,6 +35,10 @@ from persistent.mapping import PersistentMapping
 from Products.Five.browser import BrowserView
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.statusmessages.interfaces import IStatusMessage
+import six
+from six.moves import filter
+from six.moves import map
+from six.moves import range
 
 try:
     import json
@@ -156,6 +161,7 @@ def role_members(agent, role_id, subroles=False, filter_date=None):
                 users[user_id]['leader'] = user_id in leaders
                 users[user_id]['alternate'] = user_id in alternates
     else:
+        # import pdb; pdb.set_trace()
         members = agent.members_in_role(role_id)
 
         for user_id in members['users']:
@@ -338,7 +344,6 @@ class RolesEditor(Folder):
         """ view """
         role_id = REQUEST.form.get('role_id', None)
         agent = self._get_ldap_agent()
-
         try:
             role_info = agent.role_info(role_id)
         except usersdb.RoleNotFound:
@@ -494,7 +499,7 @@ class RolesEditor(Folder):
         csv_file.writerow(['Role', 'Name', 'User ID', 'Email', 'Tel/Fax',
                            'Organisation'])
 
-        for role_id, role_data in filter_roles(agent, pattern).iteritems():
+        for role_id, role_data in six.iteritems(filter_roles(agent, pattern)):
             for (user_id, user_info) in role_data['users'].items():
                 row = []
 
@@ -504,8 +509,8 @@ class RolesEditor(Folder):
                     if field == 'role_id':
                         value = role_id
                     elif field == 'tel/fax':
-                        value = ', '.join(filter(None, [user_info['phone'],
-                                                        user_info['fax']]))
+                        value = ', '.join([_f for _f in [user_info['phone'],
+                                                        user_info['fax']] if _f])
                     else:
                         value = user_info[field]
                     row += [value]
@@ -768,7 +773,7 @@ class RolesEditor(Folder):
         return self._render_template('zpt/roles_create.zpt', **options)
 
     def _make_role(self, agent, slug, parent_role_id, description):
-        assert isinstance(slug, basestring)
+        assert isinstance(slug, six.string_types)
 
         if not slug:
             raise RoleCreationError(["Role name is required."])
@@ -790,8 +795,8 @@ class RolesEditor(Folder):
 
         try:
             agent.create_role(str(role_id), description)
-        except ValueError, e:
-            msg = unicode(e)
+        except ValueError as e:
+            msg = six.text_type(e)
 
             if 'DN already exists' in msg:
                 msg = 'Role "%s" already exists.' % slug
@@ -821,7 +826,7 @@ class RolesEditor(Folder):
 
         try:
             role_id = self._make_role(agent, slug, parent_role_id, description)
-        except RoleCreationError, e:
+        except RoleCreationError as e:
 
             for msg in e.messages:
                 msgs.add(msg, type='error')
@@ -840,7 +845,7 @@ class RolesEditor(Folder):
                 log.info("%s CREATED ROLE %s", user_id, role_id)
                 try:
                     agent.add_role_owner(role_id, user_id)
-                except Exception, e:
+                except Exception as e:
                     msg = ("Can not set owner '%r' for role '%r': %r"
                            % (user_id, role_id, e.args))
                     msgs.add(msg, type='error')
@@ -870,7 +875,7 @@ class RolesEditor(Folder):
                                % role_id)
         agent = self._get_ldap_agent()
 
-        to_remove = map(agent._role_id, agent._sub_roles(role_id))
+        to_remove = list(map(agent._role_id, agent._sub_roles(role_id)))
         options = {
             'role_id': role_id,
             'roles_to_remove': to_remove,
@@ -1157,7 +1162,7 @@ class RolesEditor(Folder):
                     for owner in user_id_list:
                         try:
                             updated = agent.remove_role_owner(role_id, owner)
-                        except Exception, e:
+                        except Exception as e:
                             t, msg = 'error', 'Error removing owner %s: %r' % (
                                 owner, e.args)
                         else:
@@ -1186,7 +1191,7 @@ class RolesEditor(Folder):
                     for owner in user_id_list:
                         try:
                             updated = agent.add_role_owner(role_id, owner)
-                        except Exception, e:
+                        except Exception as e:
                             t, msg = 'error',\
                                 'Error adding owner %s: %r' % (owner, e.args)
                         else:
@@ -1262,7 +1267,7 @@ class RolesEditor(Folder):
                     if existing not in senders:
                         try:
                             agent.remove_permittedSender(role_id, existing)
-                        except Exception, e:
+                        except Exception as e:
                             t, msg = 'error',\
                                 'Error removing sender %s: %r' % (existing,
                                                                   e.args)
@@ -1278,7 +1283,7 @@ class RolesEditor(Folder):
                     if sender not in role_info['permittedSender']:
                         try:
                             agent.add_permittedSender(role_id, sender)
-                        except Exception, e:
+                        except Exception as e:
                             t, msg = 'error',\
                                 'Error adding sender %s: %r'\
                                 % (sender, e.args)
@@ -1311,7 +1316,7 @@ class RolesEditor(Folder):
                     for sender in user_id_list:
                         try:
                             agent.remove_permittedPerson(role_id, sender)
-                        except Exception, e:
+                        except Exception as e:
                             t, msg = 'error',\
                                 'Error removing sender %s: %r' % (sender,
                                                                   e.args)
@@ -1334,7 +1339,7 @@ class RolesEditor(Folder):
                     for sender in user_id_list:
                         try:
                             agent.add_permittedPerson(role_id, sender)
-                        except Exception, e:
+                        except Exception as e:
                             t, msg = 'error',\
                                 'Error adding sender %s: %r' % (sender,
                                                                 e.args)
@@ -1414,7 +1419,7 @@ class RolesEditor(Folder):
                 if removed:
                     log_msgs.append("%s REMOVED ALTERNATES %r FOR ROLE %s" %
                                     (logged_in_usr, removed, role_id))
-        except Exception, e:
+        except Exception as e:
             t, msg = 'error', 'Error updating: %r' % (e.args, )
             self.unrestrictedTraverse("/error_log").raising(sys.exc_info())
         else:
@@ -1487,8 +1492,8 @@ class RolesEditor(Folder):
             try:
                 with agent.new_action():
                     agent.set_role_description(role_id, description)
-            except Exception, e:
-                return json.dumps({'error': unicode(e)})
+            except Exception as e:
+                return json.dumps({'error': six.text_type(e)})
             else:
                 log.info("%s SET DESCRIPTION %r FOR ROLE %s",
                          logged_in_user(REQUEST), description, role_id)
@@ -1802,9 +1807,8 @@ class EditMembersOfOneRole(BrowserView):
         if isinstance(role_id, list):  # support a modified form handler
             role_id = list(set(role_id))[0]
 
-        users = set(filter(None,
-                           [x.strip() for x in
-                            self.request.form.get('users', '').split('\n')]))
+        users = set([_f for _f in [x.strip() for x in
+                            self.request.form.get('users', '').split('\n')] if _f])
 
         # TODO: if we calculate difference based on +subroles, things will be
         # bad
@@ -1921,10 +1925,8 @@ class EditRolesOfOneMember(BrowserView):
         role_ids = set(
             filter(
                 agent.role_exists,
-                filter(None,
-                       [x.strip()
-                        for x in self.request.form.get("member_roles").split()]
-                       )
+                [_f for _f in [x.strip()
+                        for x in self.request.form.get("member_roles").split()] if _f]
             )
         )
         current_role_ids = set(

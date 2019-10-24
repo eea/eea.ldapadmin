@@ -5,7 +5,8 @@ import operator
 import re
 from datetime import datetime
 from email.mime.text import MIMEText
-from StringIO import StringIO
+# from StringIO import StringIO
+from io import StringIO
 
 from zope.component import getUtility
 from zope.sendmail.interfaces import IMailDelivery
@@ -13,15 +14,15 @@ from zope.sendmail.interfaces import IMailDelivery
 import deform
 import eea.usersdb
 import ldap
-import ldap_config
+from . import ldap_config
 import xlwt
 from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
 from AccessControl.unauthorized import Unauthorized
 from App.class_init import InitializeClass
-from constants import NETWORK_NAME
-from constants import USER_INFO_KEYS
-from countries import get_country, get_country_options
+from eea.ldapadmin.constants import NETWORK_NAME
+from eea.ldapadmin.constants import USER_INFO_KEYS
+from .countries import get_country, get_country_options
 from deform.widget import SelectWidget
 from ldap import NO_SUCH_OBJECT
 from ldap import INVALID_DN_SYNTAX
@@ -30,8 +31,9 @@ from OFS.SimpleItem import SimpleItem
 from persistent.mapping import PersistentMapping
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.statusmessages.interfaces import IStatusMessage
-from ui_common import (CommonTemplateLogic, TemplateRenderer, extend_crumbs,
+from .ui_common import (CommonTemplateLogic, TemplateRenderer, extend_crumbs,
                        load_template)
+import six
 
 log = logging.getLogger('orgs_editor')
 
@@ -190,14 +192,15 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         countries = dict(get_country_options(country=nfp_country or country))
         orgs = []
 
-        for org_id, info in orgs_by_id.iteritems():
-            country = countries.get(info['country'])
+        for org_id, info in six.iteritems(orgs_by_id):
+            country = countries.get(info['country'].decode())
 
             if country:
                 orgs.append({'id': org_id,
                              'name': info['name'],
                              'country': country['name'],
                              'country_pub_code': country['pub_code']})
+
         orgs.sort(key=operator.itemgetter('id'))
         options = {
             'sorted_organisations': orgs,
@@ -226,7 +229,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
         orgs = []
 
-        for org_id, info in orgs_by_id.iteritems():
+        for org_id, info in six.iteritems(orgs_by_id):
             country = countries.get(info['country'])
 
             if country:
@@ -443,6 +446,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         if not org_id:
             return REQUEST.RESPONSE.redirect(self.absolute_url())
         agent = self._get_ldap_agent()
+
         org_info = agent.org_info(org_id)
 
         if not (self.checkPermissionView() or
@@ -511,7 +515,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             msg = "Organisation not created. Please correct the errors below."
             msgs.add(msg, type='error')
 
-            for msg in itertools.chain(*errors.values()):
+            for msg in itertools.chain(*list(errors.values())):
                 msgs.add(msg, type='error')
 
             return self.create_organisation_html(REQUEST,
@@ -602,7 +606,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             msg = "Organisation not modified. Please correct the errors below."
             msgs.add(msg, type='error')
 
-            for msg in itertools.chain(*errors.values()):
+            for msg in itertools.chain(*list(errors.values())):
                 msgs.add(msg, type='error')
 
             return self.edit_organisation_html(REQUEST,
@@ -829,7 +833,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
         orgs = []
 
-        for org_id, info in orgs_by_id.iteritems():
+        for org_id, info in six.iteritems(orgs_by_id):
             org_members = agent.members_in_org(org_id)
             members = []
 
@@ -946,7 +950,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
             return None
         search_query = REQUEST.form.get('search_query', u"")
-        assert type(search_query) is unicode
+        assert type(search_query) is six.text_type
 
         if search_query:
             agent = self._get_ldap_agent()
@@ -1135,8 +1139,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         new_info = None
 
         try:
-            new_info = user_form.validate(REQUEST.form.items())
-        except deform.ValidationFailure, e:
+            new_info = user_form.validate(list(REQUEST.form.items()))
+        except deform.ValidationFailure as e:
             errors = {}
 
             for field_error in e.error.children:

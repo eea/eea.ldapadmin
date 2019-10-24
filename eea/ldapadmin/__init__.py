@@ -1,13 +1,13 @@
 def initialize(context):
-    import roles_editor
-    import orgs_editor
-    import pwreset_tool
-    import users_admin
-    import api_tool
-    import dashboard
-    import nfp_nrc
-    import logger
-    import countries
+    from . import roles_editor
+    from . import orgs_editor
+    from . import pwreset_tool
+    from . import users_admin
+    from . import api_tool
+    from . import dashboard
+    from . import nfp_nrc
+    from . import logger
+    from . import countries
 
     countries.load_countries()
     logger.init()

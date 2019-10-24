@@ -1,11 +1,11 @@
 from zope.component import getMultiAdapter
-from zope.interface import Attribute, Interface, implements
+from zope.interface import Attribute, Interface, implements, implementer
 
 from DateTime.DateTime import DateTime
 from eea.usersdb import factories
 from eea.usersdb.db_agent import UserNotFound
 from Products.Five import BrowserView
-from Products.LDAPUserFolder.LDAPUserFolder import LDAPUserFolder
+# from Products.LDAPUserFolder.LDAPUserFolder import LDAPUserFolder
 
 
 class IActionDetails(Interface):
@@ -17,11 +17,12 @@ class IActionDetails(Interface):
     details = Attribute("Action details in html format")
 
 
+@implementer(IActionDetails)
 class BaseActionDetails(BrowserView):
     """ Generic implementation of IActionDetails
     """
 
-    implements(IActionDetails)
+    # implements(IActionDetails)
 
     @property
     def action_title(self):
@@ -48,7 +49,9 @@ class BaseActionDetails(BrowserView):
             return ''
 
         try:
-            user_info = self.base._get_ldap_agent().user_info(entry['author'])
+            # user_info = self.base._get_ldap_agent().user_info(entry['author'])
+            agent = self.base._get_ldap_agent()
+            user_info = agent.user_info(entry['author'])
         except UserNotFound:
             return ''
 
@@ -59,10 +62,10 @@ class BaseActionDetails(BrowserView):
         # without the leading slash, since it will match the root acl
         user_folder = self.context.restrictedTraverse("acl_users")
         # Plone compatibility
-
-        if not isinstance(user_folder, LDAPUserFolder):
-            user_folder = self.context.restrictedTraverse(
-                "acl_users/ldap-plugin/acl_users")
+        # import pdb; pdb.set_trace()
+        # if not isinstance(user_folder, LDAPUserFolder):
+        user_folder = self.context.restrictedTraverse(
+            "acl_users/ldap-plugin/acl_users")
 
         return factories.agent_from_uf(user_folder)
 
@@ -138,11 +141,11 @@ class OrganisationChangelog(BrowserView):
     """
 
     def entries(self):
-        org_id = self.request.form.get('id')
+        org_id = self.request.form.get('id').encode()
         agent = self.context._get_ldap_agent()
         org_dn = agent._org_dn(org_id)
 
-        log_entries = list(reversed(agent._get_metadata(org_dn)))
+        log_entries = list(reversed(agent._get_metadata(org_dn.decode())))
 
         for entry in log_entries:
             date = DateTime(entry['timestamp']).toZone("CET")

@@ -20,13 +20,13 @@ from plone import api
 
 import deform
 import ldap
-import ldap_config
+from . import ldap_config
 from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
 from AccessControl.unauthorized import Unauthorized
 from App.class_init import InitializeClass
 from App.config import getConfiguration
-from countries import get_country_options
+from .countries import get_country_options
 from deform.widget import SelectWidget
 from eea import usersdb
 from eea.ldapadmin import eionet_profile
@@ -35,7 +35,7 @@ from eea.ldapadmin.help_messages import help_messages
 from eea.ldapadmin.ui_common import NaayaViewPageTemplateFile
 from eea.usersdb.db_agent import (EmailAlreadyExists, NameAlreadyExists,
                                   UserNotFound)
-from import_export import (excel_headers_to_object, generate_excel,
+from .import_export import (excel_headers_to_object, generate_excel,
                            set_response_attachment)
 from naaya.ldapdump.interfaces import IDumpReader
 from OFS.PropertyManager import PropertyManager
@@ -45,9 +45,13 @@ from Products.Five.browser import BrowserView
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.statusmessages.interfaces import IStatusMessage
 from transliterate import get_available_language_codes, translit
-from ui_common import CommonTemplateLogic  # load_template,
-from ui_common import TemplateRenderer, TemplateRendererNoWrap, extend_crumbs
+from .ui_common import CommonTemplateLogic  # load_template,
+from .ui_common import TemplateRenderer, TemplateRendererNoWrap, extend_crumbs
 from validate_email import INCORRECT_EMAIL, validate_email
+import six
+from six.moves import map
+from six.moves import range
+from six.moves import zip
 
 try:
     import simplejson as json
@@ -526,12 +530,12 @@ class UsersAdmin(SimpleItem, PropertyManager):
         if 'submit' in REQUEST.form:
             try:
                 user_form = deform.Form(schema)
-                user_info = user_form.validate(form_data.items())
+                user_info = user_form.validate(list(form_data.items()))
                 user_info['search_helper'] = _transliterate(
                     user_info['first_name'], user_info['last_name'],
                     user_info.get('full_name_native', ''),
                     user_info.get('search_helper', ''))
-            except deform.ValidationFailure, e:
+            except deform.ValidationFailure as e:
                 for field_error in e.error.children:
                     errors[field_error.node.name] = field_error.msg
                 msg = u"Please correct the errors below and try again."
@@ -543,9 +547,9 @@ class UsersAdmin(SimpleItem, PropertyManager):
                     user_info.pop('skip_email_validation', None)
                     try:
                         self._create_user(agent, user_info)
-                    except NameAlreadyExists, e:
+                    except NameAlreadyExists as e:
                         errors['id'] = 'This ID is alreay registered'
-                    except EmailAlreadyExists, e:
+                    except EmailAlreadyExists as e:
                         errors['email'] = 'This email is alreay registered'
                     else:
                         new_org_id = user_info['organisation']
@@ -555,7 +559,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                             self._add_to_org(agent, new_org_id, user_id)
 
                         send_confirmation = 'send_confirmation' in \
-                            form_data.keys()
+                            list(form_data.keys())
 
                         if send_confirmation:
                             self.send_confirmation_email(user_info)
@@ -728,8 +732,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
         msgs = IStatusMessage(REQUEST)
 
         try:
-            new_info = user_form.validate(REQUEST.form.items())
-        except deform.ValidationFailure, e:
+            new_info = user_form.validate(list(REQUEST.form.items()))
+        except deform.ValidationFailure as e:
             errors = {}
 
             for field_error in e.error.children:
@@ -1040,7 +1044,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
             secondary_agent = self._get_ldap_agent(secondary=True)
             orgs = secondary_agent.all_organisations()
 
-        for org_id, info in orgs.iteritems():
+        for org_id, info in six.iteritems(orgs):
             members = agent.members_in_org(org_id)
 
             if members:
@@ -1183,7 +1187,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         countries = dict(get_country_options(country=country))
         orgs = {}
 
-        for org_id, info in orgs_by_id.iteritems():
+        for org_id, info in six.iteritems(orgs_by_id):
             country_info = countries.get(info['country'])
 
             if country_info:
@@ -1325,7 +1329,7 @@ class BulkUserImporter(BrowserView):
         msgs = IStatusMessage(self.request)
         try:
             rows = self.read_xls(data)
-        except Exception, e:
+        except Exception as e:
             msgs.add('Invalid Excel file: %s' % e, type='error')
             log.exception("Exception while parsing bulk import users file")
 
@@ -1341,9 +1345,9 @@ class BulkUserImporter(BrowserView):
 
         for record_number, row_data in enumerate(rows):
             try:
-                user_info = user_form.validate(row_data.items())
+                user_info = user_form.validate(list(row_data.items()))
                 user_info['password'] = row_data['password']
-            except deform.ValidationFailure, e:
+            except deform.ValidationFailure as e:
                 for field_error in e.error.children:
                     errors.append('%s at row %d: %s' %
                                   (field_error.node.name, record_number + 1,
@@ -1361,8 +1365,7 @@ class BulkUserImporter(BrowserView):
                 if count > 1:
                     errors.append('Duplicate email: %s appears %d times'
                                   % (email, count))
-                    users_data = filter(lambda x: x['email'] != email.lower(),
-                                        users_data)
+                    users_data = [x for x in users_data if x['email'] != email.lower()]
 
         if len(usernames) != len(set(usernames)):
             for username in set(usernames):
@@ -1371,8 +1374,7 @@ class BulkUserImporter(BrowserView):
                 if count > 1:
                     errors.append('Duplicate user ID: %s appears %d times'
                                   % (username, count))
-                    users_data = filter(lambda x: x['id'] != username,
-                                        users_data)
+                    users_data = [x for x in users_data if x['id'] != username]
 
         existing_emails = set(agent.existing_emails(list(set(emails))))
         existing_users = set(agent.existing_usernames(
@@ -1384,8 +1386,7 @@ class BulkUserImporter(BrowserView):
                               % email)
 
             for email in existing_emails:
-                users_data = filter(lambda x: x['email'] != email.lower(),
-                                    users_data)
+                users_data = [x for x in users_data if x['email'] != email.lower()]
 
         if existing_users:
             for user_id in existing_users:
@@ -1393,7 +1394,7 @@ class BulkUserImporter(BrowserView):
                               % user_id)
 
             for username in existing_users:
-                users_data = filter(lambda x: x['id'] != username, users_data)
+                users_data = [x for x in users_data if x['id'] != username]
 
         for user_info in users_data:
             user_info['search_helper'] = _transliterate(
@@ -1416,12 +1417,12 @@ class BulkUserImporter(BrowserView):
 
                 try:
                     self.context.send_confirmation_email(user_info)
-                except Exception, e:
+                except Exception as e:
                     msgs.add("Error sending confirmation email to %s"
                              % user_info['email'], type='error')
                 try:
                     self.context.send_password_reset_email(user_info)
-                except Exception, e:
+                except Exception as e:
                     msgs.add("Error: %s sending password reset email to %s"
                              % (e, user_info['email']), type='error')
 

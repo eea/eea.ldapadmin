@@ -138,7 +138,7 @@ class BrowseTest(unittest.TestCase):
         self.assertTrue("message has been sent" in csstext(page, 'p'))
 
         self.assertEqual(len(self.ui._tokens), 1)
-        token = self.ui._tokens.keys()[0]
+        token = list(self.ui._tokens.keys())[0]
 
         self.assertEqual(len(self.mail), 1)
         email = parse_email(self.mail[0])
@@ -224,7 +224,7 @@ class BrowseTest(unittest.TestCase):
 
     @patch('eea.ldapadmin.pwreset_tool.datetime')
     def test_token_expiry(self, mock_datetime):
-        t0 = datetime(2011, 05, 02, 13, 30, 22)
+        t0 = datetime(2011, 0o5, 0o2, 13, 30, 22)
         mock_datetime.utcnow.return_value = t0
         token = self.ui._new_token('teh-user')
         link = 'http://test/confirm_email?token=' + token
@@ -237,7 +237,7 @@ class BrowseTest(unittest.TestCase):
 
     @patch('eea.ldapadmin.pwreset_tool.datetime')
     def test_token_expiry_in_form(self, mock_datetime):
-        t0 = datetime(2011, 05, 02, 13, 30, 22)
+        t0 = datetime(2011, 0o5, 0o2, 13, 30, 22)
         mock_datetime.utcnow.return_value = t0
         token = self.ui._new_token('teh-user')
         link = 'http://test/confirm_email?token=' + token
