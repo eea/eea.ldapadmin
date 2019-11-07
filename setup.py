@@ -14,15 +14,13 @@ setup(name='eea.ldapadmin',
           'BeautifulSoup',
           'lxml',
 
-          'deform==0.9.4',
-          'colander==0.9.7',
           'jellyfish==0.2.0',
 
           'xlrd>=0.9.3',
           'xlwt',
-          'unidecode==1.0.22',
+          'unidecode',
 
-          'requests==1.2.3',
+          'requests',
           'sparql-client',
           'python-dateutil',
           'pyDNS',

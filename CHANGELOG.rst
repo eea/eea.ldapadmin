@@ -1,5 +1,6 @@
 1.5.31 (unreleased)
 ------------------------
+* removed some version pins for zope 2.13 compatibility [dumitval]
 
 1.5.30 (2019-10-04)
 ------------------------
