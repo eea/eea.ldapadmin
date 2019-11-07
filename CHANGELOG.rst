@@ -1,4 +1,7 @@
-1.5.31 (unreleased)
+1.5.32 (unreleased)
+------------------------
+
+1.5.31 (2019-11-07)
 ------------------------
 * removed some version pins for zope 2.13 compatibility [dumitval]
 
