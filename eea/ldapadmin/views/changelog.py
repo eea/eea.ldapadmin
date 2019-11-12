@@ -64,8 +64,8 @@ class BaseActionDetails(BrowserView):
         # Plone compatibility
         # import pdb; pdb.set_trace()
         # if not isinstance(user_folder, LDAPUserFolder):
-        user_folder = self.context.restrictedTraverse(
-            "acl_users/ldap-plugin/acl_users")
+        # user_folder = self.context.restrictedTraverse(
+            # "acl_users/ldap-plugin/acl_users")
 
         return factories.agent_from_uf(user_folder)
 
@@ -145,7 +145,7 @@ class OrganisationChangelog(BrowserView):
         agent = self.context._get_ldap_agent()
         org_dn = agent._org_dn(org_id)
 
-        log_entries = list(reversed(agent._get_metadata(org_dn.decode())))
+        log_entries = list(reversed(agent._get_metadata(org_dn)))
 
         for entry in log_entries:
             date = DateTime(entry['timestamp']).toZone("CET")

@@ -213,7 +213,7 @@ MembersEditor.prototype = {
     _textarea_to_usernames: function(textarea){
         return _.filter(
                 _.map(
-                    textarea.val().split('\n'), 
+                    textarea.val().split('\n'),
                     function(s){ return s.trim(); }
                     ),
                 function(s) { return s.length > 0; }

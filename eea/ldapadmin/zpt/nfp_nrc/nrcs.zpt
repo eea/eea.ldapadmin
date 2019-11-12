@@ -180,7 +180,7 @@
                     $('<a>')
                       .addClass('account-link button')
                       .attr({
-                        href: '#container',
+                        href: '#main-container',
                         title: 'Click to go back to top'
                       })
                       .html('<img src="/++resource++eea.ldapadmin-www/up.png" class="middle-image image12" alt="" title="Back to top" /> Back to top')
@@ -218,4 +218,3 @@
        title="Note" alt=""/>
   No National Reference Centres found.
 </p>
-

@@ -2,7 +2,8 @@ import xlwt
 import logging
 import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 # from StringIO import StringIO
-from io import StringIO
+# from io import StringIO
+from io import BytesIO
 from six.moves import range
 
 logger = logging.getLogger(__name__)
@@ -11,11 +12,11 @@ logger = logging.getLogger(__name__)
 def attachment_header(filename):
     assert isinstance(filename, str)
     try:
-        filename.decode('ascii')
-    except UnicodeDecodeError:
-        value = "filename*=UTF-8''%s" % six.moves.urllib.parse.quote(filename)
-    else:
         value = "filename=%s" % six.moves.urllib.parse.quote(filename)
+    except Exception as e:
+        # import pdb; pdb.set_trace()
+        logger.error("Error setting filename %s " % e.message)
+        value = "filename*=UTF-8''%s" % six.moves.urllib.parse.quote(filename)
     return "attachment; " + value
 
 
@@ -76,6 +77,6 @@ def generate_excel(header, rows):
                 ws.row(row).set_cell_text(col, item[col], wrapstyle)
             else:
                 ws.row(row).set_cell_text(col, item[col], style)
-    output = StringIO()
+    output = BytesIO()
     wb.save(output)
     return output.getvalue()

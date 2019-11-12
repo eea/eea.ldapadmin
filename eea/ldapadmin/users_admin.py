@@ -1,4 +1,5 @@
 import logging
+import functools
 import os
 import random
 import re
@@ -87,7 +88,7 @@ def generate_user_id(first_name, last_name, agent, id_list):
         '-', '').replace("'", "").replace(" ", "")
     last_name = unidecode(last_name).replace(
         '-', '').replace("'", "").replace(" ", "")
-    min_first_length = min(first_name, 3)
+    min_first_length = min(len(first_name), 3)
     uid1 = last_name[:8 - min_first_length]
     uid2 = first_name[:8 - len(uid1)]
     base_uid = (uid1 + uid2).lower()
@@ -96,6 +97,7 @@ def generate_user_id(first_name, last_name, agent, id_list):
         return base_uid
 
     for i in range(8):
+        # import pdb; pdb.set_trace()
         for letter in string.lowercase:
             new_uid = base_uid[:8 - i - 1] + letter + base_uid[8 - i:]
 
@@ -309,7 +311,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         for row in options.get('search_results', []):
             if row.get('status') in ['disabled']:
                 row['email'] = "disabled - %s" % row['email']
-
+        # import pdb; pdb.set_trace()
         return self._render_template('zpt/users_index.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'get_statistics')
@@ -509,7 +511,10 @@ class UsersAdmin(SimpleItem, PropertyManager):
         if org and not (org in agent_orgs):
             orgs.append({'id': org, 'text': org, 'text_native': '',
                          'ldap': False})
-        orgs.sort(lambda x, y: cmp(x['text'], y['text']))
+
+        cmp = functools.cmp_to_key(lambda x, y: (x['text'] > y['text']) - (x['text'] < y['text']))
+        orgs.sort(key=cmp)
+
         choices = [('-', '-')]
 
         for org in orgs:
@@ -650,7 +655,11 @@ class UsersAdmin(SimpleItem, PropertyManager):
             org = user_orgs[0]
             org_id = agent._org_id(org)
             form_data['organisation'] = org_id
-        orgs.sort(lambda x, y: cmp(x['text'], y['text']))
+
+        cmp = functools.cmp_to_key(lambda x, y: (x['text'] > y['text']) - (x['text'] < y['text']))
+        orgs.sort(key=cmp)
+
+
         schema = user_info_edit_schema.clone()
 
         skip_email_validation_node = colander.SchemaNode(
@@ -1035,7 +1044,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         Return all email addresses
         """
         from ldap import NO_SUCH_OBJECT
-
         agent = self._get_ldap_agent()
         bulk_emails = []
         try:
@@ -1052,18 +1060,16 @@ class UsersAdmin(SimpleItem, PropertyManager):
                     try:
                         user_info = agent.user_info(user_id)
 
-                        if user_info not in bulk_emails:
-                            bulk_emails.append(str(user_info['email']))
+                        if user_info['email'] not in bulk_emails:
+                            bulk_emails.append(user_info['email'])
                     except (NO_SUCH_OBJECT, usersdb.UserNotFound):
                         pass
-
         return json.dumps(bulk_emails)
 
     security.declareProtected(eionet_edit_users, 'bulk_check_email')
 
     def bulk_check_email(self, REQUEST):
         """ Bulk verify emails for conformance """
-
         agent = self._get_ldap_agent(bind=True)
         emails = []
         form_data = REQUEST.form.get('emails', None)
@@ -1477,7 +1483,7 @@ class ResetUser(BrowserView):
 
         for (role_id, attrs) in ldap_roles:
             roles.append((role_id,
-                          attrs.get('description', ('', ))[0].decode('utf8')))
+                          attrs.get('description', ('', ))[0]))
         options = {
             'common': CommonTemplateLogic(self.context),
             'context': self.context,

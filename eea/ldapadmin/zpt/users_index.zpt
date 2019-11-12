@@ -40,7 +40,7 @@
     </form>
   </div>
 
-  <tal:block condition="python: options.has_key('search_results')">
+  <tal:block condition="python: 'search_results' in options">
     <tal:block condition="options/search_results">
     <br />
     <table class="account-datatable dataTable">

@@ -8,6 +8,7 @@ from email.mime.text import MIMEText
 
 import colander
 import deform
+import functools
 import ldap
 from . import ldap_config
 from . import roles_leaders
@@ -442,7 +443,7 @@ class NfpNrc(SimpleItem, PropertyManager):
             role_id = agent._role_id(role_dn)
 
             try:
-                description = attr.get('description', ('',))[0]
+                description = attr.get('description', (b'',))[0].decode()
                 role = SimplifiedRoleDict(role_id, description)
             except ValueError:
                 continue
@@ -718,7 +719,9 @@ class NfpNrc(SimpleItem, PropertyManager):
             org = user_orgs[0]
             org_id = agent._org_id(org)
             form_data['organisation'] = org_id
-        orgs.sort(lambda x, y: cmp(x['text'], y['text']))
+
+        cmp = functools.cmp_to_key(lambda x, y: (x['text'] > y['text']) - (x['text'] < y['text']))
+        orgs.sort(key=cmp)
 
         choices = [('', '-')]
 
@@ -1071,7 +1074,10 @@ class CreateUser(BrowserView):
         if org and not (org in agent_orgs):
             orgs.append({'id': org, 'text': org, 'text_native': '',
                          'ldap': False})
-        orgs.sort(lambda x, y: cmp(x['text'], y['text']))
+
+        cmp = functools.cmp_to_key(lambda x, y: (x['text'] > y['text']) - (x['text'] < y['text']))
+        orgs.sort(key=cmp)
+
         choices = [('', '-')]
 
         for org in orgs:

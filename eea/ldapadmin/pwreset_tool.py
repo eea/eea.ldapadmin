@@ -62,9 +62,9 @@ TokenData = namedtuple('TokenData', 'user_id timestamp')
 
 
 def random_token():
-    bits = hashlib.sha1(str(datetime.now()) + str(random.random())).digest()
+    bits = hashlib.sha1((str(datetime.now()) + str(random.random())).encode()).digest()
 
-    return base64.urlsafe_b64encode(bits).replace('-', '')[:20]
+    return base64.urlsafe_b64encode(bits).replace(b'-', b'')[:20]
 
 
 class PasswordResetTool(SimpleItem):
@@ -127,9 +127,10 @@ class PasswordResetTool(SimpleItem):
         return self._render_template('zpt/pwreset_index.zpt', **options)
 
     def _new_token(self, user_id):
-        token = random_token()
+        token = random_token().decode()
         self._tokens[token] = TokenData(user_id, datetime.utcnow())
 
+        self._p_changed = True
         return token
 
     def _send_token_email(self, addr_to, token, user_info):
@@ -144,8 +145,7 @@ class PasswordResetTool(SimpleItem):
             'expiration_time': expiration_time.strftime("%Y-%m-%d %H:%M:%S")
         }
         print(options['token_url'])
-        message = MIMEText(email_template(**options).encode('utf-8'),
-                           _charset='utf-8')
+        message = MIMEText(email_template(**options),)
         message['From'] = addr_from
         message['To'] = addr_to
         subject = "%s account password recovery" % NETWORK_NAME
@@ -238,6 +238,8 @@ class PasswordResetTool(SimpleItem):
         for token in expired:
             log.info('Token %r expired.', token)
             del self._tokens[token]
+            self._p_changed = True
+
 
     security.declareProtected(view, 'confirm_email')
 
@@ -306,6 +308,8 @@ class PasswordResetTool(SimpleItem):
                 del self._tokens[token]
                 location = (self.absolute_url() +
                             '/messages_html?msg=password-reset')
+                self._p_changed = True
+
 
         REQUEST.RESPONSE.redirect(location)
 

@@ -28,7 +28,7 @@
       <div class="clear">&nbsp;</div>
 
       <div class="left-position">
-        <a href="#workarea" class="account-link button" title="Click to go back to top">
+        <a href="#main-container" class="account-link button" title="Click to go back to top">
           <img src="/++resource++eea.ldapadmin-www/up.png" alt=""
                class="middle-image image12" title="Back to top" />
           Back to top

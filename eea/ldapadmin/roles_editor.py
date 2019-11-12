@@ -8,6 +8,7 @@ from collections import defaultdict
 from string import ascii_lowercase, digits
 # from StringIO import StringIO
 from io import StringIO
+from io import BytesIO
 
 from lxml.builder import E
 from lxml.html import tostring
@@ -118,7 +119,7 @@ def filter_roles(agent, pattern):
                      [role_id])[0].decode(agent._encoding),
             'naming': roles_leaders.naming(role_id),
         }
-
+    # import pdb; pdb.set_trace()
     return out
 
 
@@ -147,7 +148,6 @@ def role_members(agent, role_id, subroles=False, filter_date=None):
 
     users = {}
     leaders, alternates = agent.role_leaders(role_id)
-
     if subroles:
         members = agent.members_in_subroles_with_source(role_id)
 
@@ -161,7 +161,6 @@ def role_members(agent, role_id, subroles=False, filter_date=None):
                 users[user_id]['leader'] = user_id in leaders
                 users[user_id]['alternate'] = user_id in alternates
     else:
-        # import pdb; pdb.set_trace()
         members = agent.members_in_role(role_id)
 
         for user_id in members['users']:
@@ -218,7 +217,7 @@ def role_members(agent, role_id, subroles=False, filter_date=None):
 
             try:
                 user_dn = rec[0]
-                uid = agent._user_id(user_dn)
+                uid = agent._user_id(user_dn) # must be string
             except KeyError:
                 uid = [x.split('=')[1]
                        for x in user_dn.split(',') if x.startswith('cn')]
@@ -277,7 +276,7 @@ def role_members(agent, role_id, subroles=False, filter_date=None):
             users[user_id]['leader'] = user_id in leaders
             users[user_id]['alternate'] = user_id in alternates
             users[user_id]['roles'] = _user_roles.get(user_id, [])
-
+    # import pdb; pdb.set_trace()
     return {'users': users}
 
 
@@ -329,7 +328,6 @@ class RolesEditor(Folder):
     def _get_permitted_senders_info(self, mail_info):
         """ Returns permittedSender-s as {'patterns': [..], 'emails': [..]} """
         result = {'patterns': [], 'emails': []}
-
         for entity in mail_info['permittedSender']:
             if '*' in entity:
                 result['patterns'].append(entity)
@@ -351,7 +349,7 @@ class RolesEditor(Folder):
             options = {'message': "Role %s does not exist." % role_id}
 
             return self._render_template('zpt/generic_error.zpt', **options)
-
+        # import pdb; pdb.set_trace()
         subroles = agent.role_names_in_role(role_id)
         has_subroles = False
         subrole_ids = []    # used in permissions for NFP
@@ -406,7 +404,7 @@ class RolesEditor(Folder):
                         locations[rid].append(info)
 
         def get_user_info(user_dn):
-            uid = agent._user_id(user_dn)
+            uid = agent._user_id(user_dn.decode()) #must be string not bytes
 
             return agent.user_info(uid)
 
@@ -514,14 +512,14 @@ class RolesEditor(Folder):
                     else:
                         value = user_info[field]
                     row += [value]
-                csv_file.writerow([v.encode('utf-8') for v in row])
+                csv_file.writerow([v for v in row])
 
         REQUEST.RESPONSE.setHeader('Content-Type', 'text/csv')
         filename = 'Eionet users in %s.csv' % pattern.replace('*', 'ANY')
         REQUEST.RESPONSE.setHeader("Content-Disposition",
                                    "attachment; filename=\"%s\"" % filename)
-
-        return codecs.BOM_UTF8 + output_file.getvalue()
+        # import pdb; pdb.set_trace() CSV
+        return codecs.BOM_UTF8 + output_file.getvalue().encode()
 
     security.declareProtected(eionet_edit_roles, 'import_xls')
 
@@ -794,7 +792,7 @@ class RolesEditor(Folder):
             role_id = parent_role_id + '-' + slug
 
         try:
-            agent.create_role(str(role_id), description)
+            agent.create_role(role_id, description)
         except ValueError as e:
             msg = six.text_type(e)
 
@@ -903,6 +901,7 @@ class RolesEditor(Folder):
             for user_id in agent.members_in_role_and_subroles(role_id)[
                     'users']:
                 self._remove_user_from_role(user_id, role_id, logged_in)
+            # import pdb; pdb.set_trace()
             agent.delete_role(role_id)
         parent_role_id = '-'.join(role_id.split('-')[:-1])
 
@@ -1002,6 +1001,7 @@ class RolesEditor(Folder):
         if user_id_list:
             with agent.new_action():
                 for user_id in user_id_list:
+                    # import pdb; pdb.set_trace()
                     roles_id_list = agent.remove_from_role(role_id,
                                                            'user',
                                                            user_id)
@@ -1124,6 +1124,7 @@ class RolesEditor(Folder):
             return self._render_template('zpt/generic_error.zpt', **options)
 
         members = role_members(agent, role_id, subroles)
+        # import pdb; pdb.set_trace()
         keys = sorted(members['users'].keys())
 
         rows = []
@@ -1136,8 +1137,7 @@ class RolesEditor(Folder):
 
             if subroles:
                 row.insert(0, '\n'.join(usr['roles']))
-            rows.append([value.encode('utf-8') for value in row])
-
+            rows.append([value for value in row])
         return generate_excel(header, rows)
 
     security.declareProtected(view, 'edit_owners')
@@ -1203,7 +1203,7 @@ class RolesEditor(Folder):
                         msgs.add(msg, type=t)
 
         mailgroup_info = agent.mail_group_info(role_id)
-
+        # import pdb; pdb.set_trace()
         for owner in mailgroup_info['owner']:
             try:
                 options['role_owners'][owner] = agent.user_info(owner)
@@ -1439,6 +1439,7 @@ class RolesEditor(Folder):
 
         """
         role_id = REQUEST.form.get('role_id', None)
+        # import pdb; pdb.set_trace()
 
         if not REQUEST.AUTHENTICATED_USER:
             raise Unauthorized("You are not allowed to manage members in %s" %
@@ -1469,7 +1470,7 @@ class RolesEditor(Folder):
             'can_edit_members': self.can_edit_members(
                 role_id, REQUEST.AUTHENTICATED_USER),
         }
-
+        # import pdb; pdb.set_trace()
         self._set_breadcrumbs(self._role_parents_stack(role_id) +
                               [("All members", "#")])
 
@@ -1669,7 +1670,6 @@ def get_extended_role_id(child_role_id, agent):
         return child_role_id
 
     parent_id = agent._role_id_parent(role_dn)
-
     if not parent_id:
         return False
 
@@ -1696,7 +1696,8 @@ class IsExtendedEnabled(BrowserView):
 
         if not role_id:
             return False
-
+        # res = bool(get_extended_role_id(role_id, agent))
+        # return "STATUS: %s" % str(res)
         return bool(get_extended_role_id(role_id, agent))
 
 
@@ -2014,7 +2015,8 @@ class ExportExcel(BrowserView):
                 roles_sheet.write(i, 1, user_id, style_normal)
                 i += 1
 
-        out = StringIO()
+        # out = StringIO()
+        out = BytesIO()
         wb.save(out)
         out.seek(0)
         out = out.read()

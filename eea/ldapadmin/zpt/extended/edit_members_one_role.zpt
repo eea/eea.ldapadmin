@@ -186,7 +186,7 @@
     <script tal:content="string:
 
     jQuery(document).ready(function(){
-        $('#search_tabs').tabs();
+        // $('#search_tabs').tabs();  // is this needed anymore?
 
         var members_editor = new MembersEditor('${context/absolute_url}/@@search_eionet');
     });"></script>

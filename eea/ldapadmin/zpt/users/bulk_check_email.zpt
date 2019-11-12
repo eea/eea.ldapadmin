@@ -11,10 +11,9 @@
             }
 
             $('#id_emails').focus();
-
             $.ajax({
                 url: 'bulk_get_emails',
-                async: false,
+                async: true,
                 dataType: 'json',
                 beforeSend: function() {
                     $('#loading').show();

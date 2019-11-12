@@ -1,4 +1,5 @@
 import codecs
+import functools
 import itertools
 import logging
 import operator
@@ -7,6 +8,7 @@ from datetime import datetime
 from email.mime.text import MIMEText
 # from StringIO import StringIO
 from io import StringIO
+from io import BytesIO
 
 from zope.component import getUtility
 from zope.sendmail.interfaces import IMailDelivery
@@ -230,7 +232,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         orgs = []
 
         for org_id, info in six.iteritems(orgs_by_id):
-            country = countries.get(info['country'])
+            country = countries.get(info['country'].decode())
 
             if country:
                 orgs.append({'id': org_id,
@@ -333,7 +335,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
             row_counter += i + 2
 
-        out = StringIO()
+        # out = StringIO()
+        out = BytesIO()
         wb.save(out)
         out.seek(0)
         out = out.read()
@@ -420,7 +423,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         users_sheet.col(1).set_width(6000)
         users_sheet.col(2).set_width(9000)
 
-        out = StringIO()
+        # out = StringIO()
+        out = BytesIO()
         wb.save(out)
         out.seek(0)
         out = out.read()
@@ -859,10 +863,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         }
 
         if format == 'csv':
-            from StringIO import StringIO
             import csv
 
-            output = StringIO()
+            # output = StringIO()
+            output = BytesIO()
             header = ('Organisation ID', 'Organisation name', 'Member ID',
                       'Member full name', 'Member email')
 
@@ -1094,7 +1098,9 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             org_id = agent._org_id(org)
             form_data['organisation'] = org_id
 
-        orgs.sort(lambda x, y: cmp(x['text'], y['text']))
+        cmp = functools.cmp_to_key(lambda x, y: (x['text'] > y['text']) - (x['text'] < y['text']))
+        orgs.sort(key=cmp)
+
         schema = user_info_edit_schema.clone()
         choices = [('-', '-')]
 
