@@ -62,7 +62,7 @@ class BaseActionDetails(BrowserView):
         # without the leading slash, since it will match the root acl
         user_folder = self.context.restrictedTraverse("acl_users")
         # Plone compatibility
-        # import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace() # removed ldapuserfolder
         # if not isinstance(user_folder, LDAPUserFolder):
         # user_folder = self.context.restrictedTraverse(
             # "acl_users/ldap-plugin/acl_users")

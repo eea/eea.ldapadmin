@@ -97,7 +97,7 @@ def generate_user_id(first_name, last_name, agent, id_list):
         return base_uid
 
     for i in range(8):
-        # import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace() check uid generation
         for letter in string.lowercase:
             new_uid = base_uid[:8 - i - 1] + letter + base_uid[8 - i:]
 
@@ -311,7 +311,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         for row in options.get('search_results', []):
             if row.get('status') in ['disabled']:
                 row['email'] = "disabled - %s" % row['email']
-        # import pdb; pdb.set_trace()
         return self._render_template('zpt/users_index.zpt', **options)
 
     security.declareProtected(eionet_edit_users, 'get_statistics')

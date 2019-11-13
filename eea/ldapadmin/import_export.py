@@ -14,7 +14,7 @@ def attachment_header(filename):
     try:
         value = "filename=%s" % six.moves.urllib.parse.quote(filename)
     except Exception as e:
-        # import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace() not tested exception
         logger.error("Error setting filename %s " % e.message)
         value = "filename*=UTF-8''%s" % six.moves.urllib.parse.quote(filename)
     return "attachment; " + value
