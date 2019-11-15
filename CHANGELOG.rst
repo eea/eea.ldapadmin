@@ -1,5 +1,6 @@
 1.5.28 (unreleased)
 ------------------------
+* bugfix for different template engine [dumitval]
 * remove reference to accordion [dumitval]
 * remove links to old jquery libraries [dumitval]
 * replace zope.Public permission with zope2.View [dumitval]
