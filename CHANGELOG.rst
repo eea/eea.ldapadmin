@@ -1,5 +1,6 @@
 1.5.32 (unreleased)
 ------------------------
+* propper way of getting user id [dumitval]
 
 1.5.31 (2019-11-07)
 ------------------------

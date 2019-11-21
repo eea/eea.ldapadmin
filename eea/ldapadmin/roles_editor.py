@@ -76,6 +76,7 @@ def _role_parents(role_id):
         parents.append(role_id)
     return reversed(parents)
 
+
 SESSION_PREFIX = 'eea.ldapadmin.roles_editor'
 SESSION_MESSAGES = SESSION_PREFIX + '.messages'
 SESSION_FORM_DATA = SESSION_PREFIX + '.form_data'
@@ -89,7 +90,7 @@ def logged_in_user(request):
     user_id = ''
     if _is_authenticated(request):
         user = request.get('AUTHENTICATED_USER', '')
-        user_id = str(user.id)
+        user_id = str(user.getId())
 
     return user_id
 

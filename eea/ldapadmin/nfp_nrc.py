@@ -83,7 +83,7 @@ def logged_in_user(request):
     user_id = ''
     if _is_authenticated(request):
         user = request.get('AUTHENTICATED_USER', '')
-        user_id = user.id
+        user_id = user.getId()
 
     return user_id
 
