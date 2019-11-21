@@ -1,4 +1,7 @@
-1.5.32 (unreleased)
+1.5.33 (unreleased)
+------------------------
+
+1.5.32 (2019-11-21)
 ------------------------
 * propper way of getting user id [dumitval]
 
