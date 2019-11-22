@@ -1467,7 +1467,7 @@ class ResetUser(BrowserView):
         if 'submit' in self.request.form:
             with agent.new_action():
                 agent.reset_user_roles(user_id)
-            msg = 'Roles for user "%s" have been reseted (deleted).' % user_id
+            msg = 'Roles for user "%s" have been reset (deleted).' % user_id
             IStatusMessage(self.request).add(msg, type='info')
             log.info("%s RESETED USER %s", logged_in_user(self.request),
                      user_id)
