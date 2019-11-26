@@ -1,4 +1,7 @@
-1.5.33 (unreleased)
+1.5.34 (unreleased)
+------------------------
+
+1.5.33 (2019-11-26)
 ------------------------
 * fixes for the new branch of 'observing countries' [dumitval]
 
