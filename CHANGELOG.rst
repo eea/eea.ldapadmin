@@ -1,5 +1,6 @@
 1.5.33 (unreleased)
 ------------------------
+* fixes for the new branch of 'observing countries' [dumitval]
 
 1.5.32 (2019-11-21)
 ------------------------

@@ -1132,6 +1132,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                     return group[0].replace('eionet-nfp-cc-', '')
                 if 'eionet-nfp-mc-' in group[0]:
                     return group[0].replace('eionet-nfp-mc-', '')
+                if 'eionet-nfp-oc-' in group[0]:
+                    return group[0].replace('eionet-nfp-oc-', '')
 
     def get_ldap_user_groups(self, user_id):
         """ """

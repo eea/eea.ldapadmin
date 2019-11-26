@@ -64,6 +64,7 @@ def manage_add_nfp_nrc(parent, id, REQUEST=None):
     if REQUEST is not None:
         REQUEST.RESPONSE.redirect(parent.absolute_url() + '/manage_workspace')
 
+
 SESSION_PREFIX = 'eea.ldapadmin.nfp_nrc'
 SESSION_MESSAGES = SESSION_PREFIX + '.messages'
 SESSION_FORM_DATA = SESSION_PREFIX + '.form_data'
@@ -100,7 +101,7 @@ class SimplifiedRole(object):
     """
 
     def __init__(self, role_id, description):
-        m = re.match(r'^eionet-(nfp|nrc)-(.*)(mc|cc)-([^-]*)$', role_id,
+        m = re.match(r'^eionet-(nfp|nrc)-(.*)(mc|cc|oc)-([^-]*)$', role_id,
                      re.IGNORECASE)
         r = re.match(
             r'^reportnet-awp-([^-]*)-reporter-([^-]*)$',
@@ -138,7 +139,7 @@ class SimplifiedRoleDict(dict):
     """
 
     def __init__(self, role_id, description):
-        m = re.match(r'^eionet-(nfp|nrc)-(.*)(mc|cc)-([^-]*)$', role_id,
+        m = re.match(r'^eionet-(nfp|nrc)-(.*)(mc|cc|oc)-([^-]*)$', role_id,
                      re.IGNORECASE)
         r = re.match(
             r'^reportnet-awp-([^-]*)-reporter-([^-]*)$',
@@ -456,10 +457,16 @@ class NfpNrc(SimpleItem, PropertyManager):
 
                 roles.append(role)
 
-        return json.dumps(
-            {'roles': sorted(roles, key=lambda k: k['role_id']),
+        if roles:
+            return json.dumps(
+                {'roles': sorted(roles, key=lambda k: k['role_id']),
+                 'has_problematic_users': has_problematic_users,
+                 'naming': roles_leaders.naming(roles[0]['role_id'])})
+        else:
+            return json.dumps(
+            {'roles': [],
              'has_problematic_users': has_problematic_users,
-             'naming': roles_leaders.naming(roles[0]['role_id'])})
+             'naming': ''})
 
     security.declareProtected(eionet_access_nfp_nrc, 'nrcs')
 
@@ -1151,7 +1158,8 @@ class CreateUser(BrowserView):
             ldap_groups = self.get_ldap_user_groups(user_id)
             for group in ldap_groups:
                 if ('eionet-nfp-mc-' in group[0] or
-                        'eionet-nfp-cc-' in group[0]):
+                    'eionet-nfp-cc-' in group[0] or
+                        'eionet-nfp-oc-' in group[0]):
                     return group[0].rsplit('-', 1)[-1]
 
     def get_ldap_user_groups(self, user_id):
