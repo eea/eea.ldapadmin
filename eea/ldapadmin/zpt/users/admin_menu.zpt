@@ -12,10 +12,6 @@
               >Bulk verify usernames</a>
         </li>
         <li class="portletItem" tal:condition="full_edit_permission">
-          <a tal:attributes="href string:${common/base_url}/bulk_check_email" class="btn btn-primary" role="button"
-              >Bulk verify emails</a>
-        </li>
-        <li class="portletItem" tal:condition="full_edit_permission">
           <a tal:attributes="href string:${common/base_url}/bulk_create_user" class="btn btn-primary" role="button"
               >Create accounts from file</a>
         </li>

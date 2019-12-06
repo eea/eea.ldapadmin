@@ -1065,57 +1065,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
                         pass
         return json.dumps(bulk_emails)
 
-    security.declareProtected(eionet_edit_users, 'bulk_check_email')
-
-    def bulk_check_email(self, REQUEST):
-        """ Bulk verify emails for conformance """
-        agent = self._get_ldap_agent(bind=True)
-        emails = []
-        form_data = REQUEST.form.get('emails', None)
-
-        if form_data:
-            emails = re.sub(r'[\s,]+', ' ', form_data).split(' ')
-
-        duplicates = []
-        singles = []
-
-        for email in emails:
-            if email.lower() not in [x.lower() for x in singles]:
-                singles.append(email)
-            else:
-                duplicates.append(email)
-
-        options = {
-            'emails': sorted(singles),
-            'valid': [],
-            'invalid': [],
-            'taken': [],
-            'bulk_emails': [],
-            'duplicates': sorted(duplicates),
-        }
-
-        node = user_info_add_schema['email']
-
-        for email in emails:
-            try:
-                node.validator(node, email)
-            except colander.Invalid:
-                options['invalid'].append(email)
-            else:
-                options['valid'].append(email.lower())
-
-        # search for availability
-
-        if options['valid']:
-            options['taken'] = sorted(agent.existing_emails(options['valid']))
-            options['valid'] = sorted(set(options['valid']) -
-                                      set(options['taken']))
-
-        self._set_breadcrumbs([("Bulk Verify Emails", '#')])
-
-        return self._render_template('zpt/users/bulk_check_email.zpt',
-                                     **options)
-
     security.declareProtected(eionet_edit_users, 'eionet_profile')
 
     def eionet_profile(self, REQUEST):
