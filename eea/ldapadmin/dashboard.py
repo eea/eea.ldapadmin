@@ -47,7 +47,8 @@ KNOWN_TYPES = {'Eionet Roles Editor': {
 eionet_access_ldap_explorer = 'Eionet access LDAP explorer'
 
 CONFIG = getConfiguration()
-CONFIG.environment.update(os.environ)
+if hasattr(CONFIG, 'environment'):
+    CONFIG.environment.update(os.environ)
 
 FORUM_URL = getattr(CONFIG, 'environment', {}).get('FORUM_URL', '')
 
