@@ -73,7 +73,8 @@ user_info_add_schema['search_helper'].widget = deform.widget.TextAreaWidget()
 user_info_add_schema['department'].widget = deform.widget.TextAreaWidget()
 
 CONFIG = getConfiguration()
-CONFIG.environment.update(os.environ)
+if hasattr(CONFIG, 'environment'):
+    CONFIG.environment.update(os.environ)
 FORUM_URL = getattr(CONFIG, 'environment', {}).get('FORUM_URL', '')
 
 password_letters = '23456789ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
