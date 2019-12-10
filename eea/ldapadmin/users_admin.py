@@ -98,7 +98,7 @@ def generate_user_id(first_name, last_name, agent, id_list):
 
     for i in range(8):
         # import pdb; pdb.set_trace() check uid generation
-        for letter in string.lowercase:
+        for letter in string.ascii_lowercase:
             new_uid = base_uid[:8 - i - 1] + letter + base_uid[8 - i:]
 
             if not(list(agent.existing_usernames([new_uid])) or

@@ -1226,7 +1226,7 @@ class CreateUser(BrowserView):
 
     def get_ldap_user_groups(self, user_id):
         """ """
-        agent = self.aq_parent._get_ldap_agent(bind=True, secondary=True)
+        agent = self.context._get_ldap_agent(bind=True, secondary=True)
         ldap_roles = sorted(
             agent.member_roles_info('user', user_id, ('description',)))
 
