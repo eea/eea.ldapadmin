@@ -141,10 +141,17 @@ class TemplateRendererNoWrap(Implicit):
         options['context'] = self.aq_parent
         options['request'] = self.aq_parent.REQUEST
 
-        namespace = template.pt_getContext((), options)
+        try:
+            namespace = template.pt_getContext((), options)
+        except AttributeError:      # Plone5 compatibility
+            namespace = template._pt_get_context(
+                context, context.REQUEST, options)
         namespace['common'] = self.common_factory(context)
 
-        return template.pt_render(namespace)
+        if hasattr(template, 'pt_render'):
+            return template.pt_render(namespace)
+        else:
+            return template.render(**namespace)
 
     def __call__(self, name, **options):
         return self.render(name, **options)
