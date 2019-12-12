@@ -1,5 +1,6 @@
 1.5.28 (unreleased)
 ------------------------
+* fixes for the new branch of 'observing countries' [dumitval]
 * bugfix for different template engine [dumitval]
 * remove reference to accordion [dumitval]
 * remove links to old jquery libraries [dumitval]
