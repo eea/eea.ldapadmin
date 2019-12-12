@@ -1,4 +1,4 @@
-import os.path
+import os
 import json
 import time
 import logging
@@ -63,6 +63,9 @@ def update_countries():
                 'eionet': eionet.value == 'Yes',
                 'eun22': eun22.value == 'Yes',
             })
+
+    if not os.path.isdir(LDAP_DISK_STORAGE): 
+        os.mkdir(LDAP_DISK_STORAGE)
     f = open(os.path.join(LDAP_DISK_STORAGE, "countries.json"), "w")
     json.dump(countries, f)
     f.close()
