@@ -1,6 +1,6 @@
 1.5.28 (unreleased)
 ------------------------
-* use py3dns instead of pyDNS for python3
+* fixes for the new branch of 'observing countries' [dumitval]
 * remove reference to accordion [dumitval]
 * remove links to old jquery libraries [dumitval]
 * replace zope.Public permission with zope2.View [dumitval]
