@@ -706,7 +706,7 @@ class RolesEditor(Folder):
         agent = self._get_ldap_agent()
         role_info = agent.role_info(role_id)
 
-        return agent._user_dn(user.getId()) in role_info['owner']
+        return str.encode(agent._user_dn(user.getId())) in role_info['owner']
 
     security.declareProtected(view, 'can_delete_role')
 
