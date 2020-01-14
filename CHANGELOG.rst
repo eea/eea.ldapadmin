@@ -1,5 +1,6 @@
 1.5.28 (unreleased)
 ------------------------
+* remove duplicated user edit page in the organisation area [dumitval]
 * fix permission checking (issue with bytes vs. str) [dumitval]
 * fixes for the new branch of 'observing countries' [dumitval]
 * remove reference to accordion [dumitval]
