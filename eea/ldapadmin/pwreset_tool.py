@@ -286,7 +286,7 @@ class PasswordResetTool(SimpleItem):
             except CONSTRAINT_VIOLATION as e:
                 message = ''
 
-                if e.message['info'] in [
+                if e.args[0]['info'] in [
                         'Password fails quality checking policy']:
                     try:
                         defaultppolicy = agent.conn.search_s(
@@ -295,11 +295,11 @@ class PasswordResetTool(SimpleItem):
                             SCOPE_BASE)
                         p_length = defaultppolicy[0][1]['pwdMinLength'][0]
                         message = '%s (min. %s characters)' % (
-                            e.message['info'], p_length)
+                            e.args[0]['info'], p_length)
                     except NO_SUCH_OBJECT:
-                        message = e.message['info']
+                        message = e.args[0]['info']
                 else:
-                    message = e.message['info']
+                    message = e.args[0]['info']
 
                 msgs.add(message, type='error')
                 location = '%s/confirm_email?token=%s' % (self.absolute_url(),
