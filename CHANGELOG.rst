@@ -1,4 +1,7 @@
-1.5.34 (unreleased)
+1.5.35 (unreleased)
+------------------------
+
+1.5.34 (2020-02-03)
 ------------------------
 * email messages are now instance of email.message.Message [dumitval]
 
