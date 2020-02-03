@@ -13,8 +13,8 @@ from eea.ldapadmin.ui_common import CommonTemplateLogic
 from eea.ldapadmin.ui_common import SessionMessages
 from eea.ldapadmin.ui_common import TemplateRenderer
 from eea.ldapadmin.ui_common import load_template
+from eea.ldapadmin.logic_common import _create_plain_message
 from eea.ldapadmin.users_admin import eionet_edit_users
-from email.mime.text import MIMEText
 from persistent.mapping import PersistentMapping
 from zope.component import getUtility
 from zope.component.interfaces import ComponentLookupError
@@ -55,6 +55,7 @@ def _role_parents(role_id):
         parents.append(role_id)
     return reversed(parents)
 
+
 SESSION_PREFIX = 'eea.ldapadmin.pwreset_tool'
 SESSION_MESSAGES = SESSION_PREFIX + '.messages'
 SESSION_FORM_DATA = SESSION_PREFIX + '.form_data'
@@ -62,6 +63,7 @@ SESSION_FORM_DATA = SESSION_PREFIX + '.form_data'
 
 def _set_session_message(request, msg_type, msg):
     SessionMessages(request, SESSION_MESSAGES).add(msg_type, msg)
+
 
 TokenData = namedtuple('TokenData', 'user_id timestamp')
 
@@ -146,8 +148,8 @@ class PasswordResetTool(SimpleItem):
             'expiration_time': expiration_time.strftime("%Y-%m-%d %H:%M:%S")
         }
         print options['token_url']
-        message = MIMEText(email_template(**options).encode('utf-8'),
-                           _charset='utf-8')
+        message = _create_plain_message(
+            email_template(**options).encode('utf-8'))
         message['From'] = addr_from
         message['To'] = addr_to
         message['Subject'] = "%s account password recovery" % NETWORK_NAME
@@ -301,5 +303,6 @@ class PasswordResetTool(SimpleItem):
     def can_edit_users(self):
         user = self.REQUEST.AUTHENTICATED_USER
         return bool(user.has_permission(eionet_edit_users, self))
+
 
 InitializeClass(PasswordResetTool)

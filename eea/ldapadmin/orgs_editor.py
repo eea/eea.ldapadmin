@@ -11,10 +11,9 @@ from constants import USER_INFO_KEYS
 from countries import get_country, get_country_options
 from datetime import datetime
 from deform.widget import SelectWidget
-from email.mime.text import MIMEText
 from ldap import NO_SUCH_OBJECT
 from ldap import INVALID_DN_SYNTAX
-from logic_common import _session_pop
+from eea.ldapadmin.logic_common import _session_pop, _create_plain_message
 from persistent.mapping import PersistentMapping
 from ui_common import extend_crumbs, CommonTemplateLogic
 from ui_common import load_template, SessionMessages, TemplateRenderer
@@ -751,8 +750,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             'context': self,
             'network_name': NETWORK_NAME
         }
-        message = MIMEText(email_template(**options).encode('utf-8'),
-                           _charset='utf-8')
+        message = _create_plain_message(
+            email_template(**options).encode('utf-8'))
         message['From'] = addr_from
         message['To'] = user_info['email']
         message['Subject'] = subject

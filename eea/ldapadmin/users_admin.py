@@ -17,11 +17,10 @@ from eea import usersdb
 from eea.ldapadmin import eionet_profile
 from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.help_messages import help_messages
-from eea.ldapadmin.logic_common import _session_pop
+from eea.ldapadmin.logic_common import _session_pop, _create_plain_message
 from eea.ldapadmin.ui_common import NaayaViewPageTemplateFile
 from eea.usersdb.db_agent import NameAlreadyExists, EmailAlreadyExists
 from eea.usersdb.db_agent import UserNotFound
-from email.mime.text import MIMEText
 from import_export import excel_headers_to_object
 from import_export import generate_excel
 from import_export import set_response_attachment
@@ -387,7 +386,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         addr_from = "no-reply@eea.europa.eu"
         addr_to = "helpdesk@eionet.europa.eu"
 
-        message = MIMEText('')
+        message = _create_plain_message('')
         message['From'] = addr_from
         message['To'] = addr_to
 
@@ -855,8 +854,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         email_password_body = self._render_template.render(
             "zpt/users/email_enabled_account.zpt", **user_info)
 
-        message = MIMEText(email_password_body.encode('utf-8'),
-                           _charset='utf-8')
+        message = _create_plain_message(email_password_body.encode('utf-8'))
         message['From'] = addr_from
         message['To'] = addr_to
         message['Subject'] = "%s Account - account enabled" % NETWORK_NAME
@@ -909,8 +907,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         addr_to = user_info['email']
         email_password_body = self.email_password(user_info['first_name'],
                                                   password, 'change')
-        message = MIMEText(email_password_body.encode('utf-8'),
-                           _charset='utf-8')
+        message = _create_plain_message(email_password_body.encode('utf-8'))
         message['From'] = addr_from
         message['To'] = addr_to
         message['Subject'] = "%s Account - New password" % NETWORK_NAME
@@ -1063,7 +1060,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         """ Sends confirmation email """
         addr_from = "no-reply@eea.europa.eu"
         addr_to = user_info['email']
-        message = MIMEText('')
+        message = _create_plain_message('')
         message['From'] = addr_from
         message['To'] = addr_to
 
@@ -1543,7 +1540,7 @@ class AutomatedUserDisabler(BrowserView):
         addr_from = "no-reply@eea.europa.eu"
         addr_to = user['email']
 
-        message = MIMEText('')
+        message = _create_plain_message('')
         message['From'] = addr_from
         message['To'] = addr_to
 
@@ -1562,7 +1559,7 @@ class AutomatedUserDisabler(BrowserView):
         addr_from = "no-reply@eea.europa.eu"
         addr_to = user['email']
 
-        message = MIMEText('')
+        message = _create_plain_message('')
         message['From'] = addr_from
         message['To'] = addr_to
 
@@ -1581,7 +1578,7 @@ class AutomatedUserDisabler(BrowserView):
         addr_from = "no-reply@eea.europa.eu"
         addr_to = 'helpdesk@eea.europa.eu'
 
-        message = MIMEText('')
+        message = _create_plain_message('')
         message['From'] = addr_from
         message['To'] = addr_to
 

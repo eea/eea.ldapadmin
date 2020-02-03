@@ -13,7 +13,7 @@ from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.countries import get_country
 from eea.ldapadmin.countries import get_country_options
 from eea.ldapadmin.help_messages import help_messages
-from eea.ldapadmin.logic_common import _session_pop
+from eea.ldapadmin.logic_common import _session_pop, _create_plain_message
 from eea.ldapadmin.ui_common import NaayaViewPageTemplateFile
 from eea.ldapadmin.users_admin import _is_authenticated
 from eea.ldapadmin.users_admin import _send_email
@@ -24,7 +24,6 @@ from eea.ldapadmin.users_admin import get_duplicates_by_name
 from eea.ldapadmin.users_admin import _transliterate
 from eea.ldapadmin.users_admin import user_info_add_schema
 from eea.usersdb.db_agent import NameAlreadyExists, EmailAlreadyExists
-from email.mime.text import MIMEText
 from logic_common import _get_user_id
 from persistent.mapping import PersistentMapping
 from ui_common import CommonTemplateLogic
@@ -464,9 +463,9 @@ class NfpNrc(SimpleItem, PropertyManager):
                  'naming': roles_leaders.naming(roles[0]['role_id'])})
         else:
             return json.dumps(
-            {'roles': [],
-             'has_problematic_users': has_problematic_users,
-             'naming': ''})
+                {'roles': [],
+                 'has_problematic_users': has_problematic_users,
+                 'naming': ''})
 
     security.declareProtected(eionet_access_nfp_nrc, 'nrcs')
 
@@ -939,7 +938,7 @@ class CreateUser(BrowserView):
         addr_from = "no-reply@eea.europa.eu"
         addr_to = to or "helpdesk@eionet.europa.eu"
 
-        message = MIMEText('')
+        message = _create_plain_message('')
         message['From'] = addr_from
         message['To'] = addr_to
 
@@ -951,7 +950,7 @@ class CreateUser(BrowserView):
         try:
             requester = logged_in_user(self.request)
             info = agent.user_info(requester)
-        except:
+        except Exception:
             info = {'first_name': '', 'last_name': ''}
 
         options['author'] = u"%(firstname)s %(lastname)s (%(requester)s)" % {
@@ -1116,7 +1115,7 @@ class CreateUser(BrowserView):
         """ Sends confirmation email """
         addr_from = "no-reply@eea.europa.eu"
         addr_to = user_info['email']
-        message = MIMEText('')
+        message = _create_plain_message('')
         message['From'] = addr_from
         message['To'] = addr_to
 
