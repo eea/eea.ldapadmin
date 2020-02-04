@@ -1,4 +1,4 @@
-1.5.35 (unreleased)
+1.5.35 (2020-02-04)
 ------------------------
 * fix for email sending [dumitval]
 
