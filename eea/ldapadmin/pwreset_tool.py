@@ -161,7 +161,7 @@ class PasswordResetTool(SimpleItem):
             mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
             try:
                 mailer.send(addr_from, [addr_to], message.as_string())
-            except AssertionError:
+            except (ValueError, AssertionError):
                 mailer.send(addr_from, [addr_to], message)
 
     security.declareProtected(view, 'ask_for_password_reset')

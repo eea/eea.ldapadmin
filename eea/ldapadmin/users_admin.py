@@ -1139,7 +1139,7 @@ def _send_email(addr_from, addr_to, message):
         mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
         try:
             mailer.send(addr_from, [addr_to], message.as_string())
-        except AssertionError:
+        except (ValueError, AssertionError):
             mailer.send(addr_from, [addr_to], message)
 
 
