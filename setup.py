@@ -1,7 +1,12 @@
+import os
 from setuptools import find_packages, setup
 
-setup(name='eea.ldapadmin',
-      version='1.5.28',
+NAME = "eea.ldapadmin"
+PATH = NAME.split('.') + ['version.txt']
+VERSION = open(os.path.join(*PATH)).read().strip()
+
+setup(name=NAME,
+      version=VERSION,
       author='Eau de Web',
       author_email='office@eaudeweb.ro',
       packages=find_packages(),

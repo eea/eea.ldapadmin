@@ -1,5 +1,6 @@
-1.5.28 (unreleased)
+2.0 (unreleased)
 ------------------------
+* compatibility changes for gitflow integration [dumitval]
 * fix fetching of error messages [dumitval]
 * remove duplicated user edit page in the organisation area [dumitval]
 * fix permission checking (issue with bytes vs. str) [dumitval]
