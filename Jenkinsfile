@@ -94,7 +94,7 @@ pipeline {
         )
       }
     }
-
+/*
     stage('Tests') {
       steps {
         parallel(
@@ -107,7 +107,7 @@ pipeline {
         )
       }
     }
-
+*/
 
     stage('Report to SonarQube') {
       when {
