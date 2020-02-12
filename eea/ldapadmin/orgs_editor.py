@@ -1,13 +1,10 @@
 import codecs
-import functools
 import itertools
 import logging
 import operator
 import re
 from datetime import datetime
 from email.mime.text import MIMEText
-# from StringIO import StringIO
-from io import StringIO
 from io import BytesIO
 
 from zope.component import getUtility
@@ -25,7 +22,6 @@ from App.class_init import InitializeClass
 from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.constants import USER_INFO_KEYS
 from .countries import get_country, get_country_options
-from deform.widget import SelectWidget
 from ldap import NO_SUCH_OBJECT
 from ldap import INVALID_DN_SYNTAX
 from OFS.PropertyManager import PropertyManager
@@ -34,7 +30,7 @@ from persistent.mapping import PersistentMapping
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.statusmessages.interfaces import IStatusMessage
 from .ui_common import (CommonTemplateLogic, TemplateRenderer, extend_crumbs,
-                       load_template)
+                        load_template)
 import six
 
 log = logging.getLogger('orgs_editor')
@@ -335,7 +331,6 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
             row_counter += i + 2
 
-        # out = StringIO()
         out = BytesIO()
         wb.save(out)
         out.seek(0)
@@ -423,7 +418,6 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         users_sheet.col(1).set_width(6000)
         users_sheet.col(2).set_width(9000)
 
-        # out = StringIO()
         out = BytesIO()
         wb.save(out)
         out.seek(0)
@@ -865,7 +859,6 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         if format == 'csv':
             import csv
 
-            # output = StringIO()
             output = BytesIO()
             header = ('Organisation ID', 'Organisation name', 'Member ID',
                       'Member full name', 'Member email')
