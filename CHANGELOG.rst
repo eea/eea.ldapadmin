@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.1 - (2020-02-13)
+2.0 - (2020-02-13)
 ---------------------------
 * Change: Gitflow automatic release [valentinab25]
 * compatibility changes for gitflow integration [dumitval]
