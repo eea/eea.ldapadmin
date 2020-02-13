@@ -1,5 +1,5 @@
 from zope.component import getMultiAdapter
-from zope.interface import Attribute, Interface, implements, implementer
+from zope.interface import Attribute, Interface, implementer
 
 from DateTime.DateTime import DateTime
 from eea.usersdb import factories
@@ -21,8 +21,6 @@ class IActionDetails(Interface):
 class BaseActionDetails(BrowserView):
     """ Generic implementation of IActionDetails
     """
-
-    # implements(IActionDetails)
 
     @property
     def action_title(self):
@@ -49,14 +47,12 @@ class BaseActionDetails(BrowserView):
             return ''
 
         try:
-            # user_info = self.base._get_ldap_agent().user_info(entry['author'])
             agent = self.base._get_ldap_agent()
             user_info = agent.user_info(entry['author'])
         except UserNotFound:
             return ''
 
         return user_info['email']
-
 
     def _get_ldap_agent(self):
         # without the leading slash, since it will match the root acl
@@ -65,7 +61,7 @@ class BaseActionDetails(BrowserView):
         # import pdb; pdb.set_trace() # removed ldapuserfolder
         # if not isinstance(user_folder, LDAPUserFolder):
         # user_folder = self.context.restrictedTraverse(
-            # "acl_users/ldap-plugin/acl_users")
+        #     "acl_users/ldap-plugin/acl_users")
 
         return factories.agent_from_uf(user_folder)
 
