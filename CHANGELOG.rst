@@ -1,5 +1,9 @@
-2.0 (unreleased)
-------------------------
+Changelog
+=========
+
+2.1 - (2020-02-13)
+---------------------------
+* Change: Gitflow automatic release [valentinab25]
 * compatibility changes for gitflow integration [dumitval]
 * fix fetching of error messages [dumitval]
 * remove duplicated user edit page in the organisation area [dumitval]
