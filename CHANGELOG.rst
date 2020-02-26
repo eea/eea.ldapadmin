@@ -3,6 +3,8 @@ Changelog
 
 2.1-dev0 - (unreleased)
 ---------------------------
+* Feature: updated Jenkins pipeline
+  [alecghica refs #110159]
 
 2.0 - (2020-02-13)
 ---------------------------
