@@ -1,9 +1,9 @@
-import os
+from os.path import join
 from setuptools import find_packages, setup
 
 NAME = "eea.ldapadmin"
 PATH = NAME.split('.') + ['version.txt']
-VERSION = open(os.path.join(*PATH)).read().strip()
+VERSION = open(join(*PATH)).read().strip()
 
 setup(name=NAME,
       version=VERSION,
@@ -11,7 +11,7 @@ setup(name=NAME,
       long_description_content_type="text/x-rst",
       long_description=(
           open("README.rst").read() + "\n" +
-          open("CHANGELOG.rst").read()
+          open(join("docs", "HISTORY.txt")).read(),
       ),
       author='Eau de Web',
       author_email='office@eaudeweb.ro',
