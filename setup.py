@@ -11,7 +11,7 @@ setup(name=NAME,
       long_description_content_type="text/x-rst",
       long_description=(
           open("README.rst").read() + "\n" +
-          open(join("docs", "HISTORY.txt")).read(),
+          open(join("docs", "HISTORY.txt")).read()
       ),
       author='Eau de Web',
       author_email='office@eaudeweb.ro',
