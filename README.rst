@@ -1,5 +1,15 @@
 Eionet roles editor
 ===================
+ 
+.. image:: https://ci.eionet.europa.eu/buildStatus/icon?job=Eionet/eea.ldapadmin/develop&subject=develop
+  :target: https://ci.eionet.europa.eu/job/Eionet/job/eea.ldapadmin/job/develop/display/redirect
+  :alt: Develop
+.. image:: https://ci.eionet.europa.eu/buildStatus/icon?job=Eionet/eea.ldapadmin/master&subject=master
+  :target: https://ci.eionet.europa.eu/job/Eionet/job/eea.ldapadmin/job/master/display/redirect
+  :alt: Master
+.. image:: https://img.shields.io/github/v/release/eea/eea.ldapadmin
+  :target: https://eggrepo.eea.europa.eu/d/eea.ldapadmin/
+  :alt: Release
 
 https://svn.eionet.europa.eu/projects/Zope/ticket/3823
 
