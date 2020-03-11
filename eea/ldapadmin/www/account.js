@@ -101,7 +101,7 @@ function selectAll(name, additional_class){
 		if(!role_name){
 			alert("You must provide a name for the role");
 		}
-		else
+		else {
             var pathname = window.location.pathname;
 			$.post(pathname + '/edit_role_name',
 				{role_id: role_id, 'role_name:utf8:ustring': role_name},
@@ -117,6 +117,7 @@ function selectAll(name, additional_class){
 					}
 				},
 				'json');
+        }
 	};
 
 	$(document).ready(function(){
