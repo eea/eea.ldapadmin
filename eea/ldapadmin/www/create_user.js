@@ -10,7 +10,7 @@ $(function() {
             first_name: fname.val(),
             last_name: lname.val(),
             email: email.val()
-          }
+          };
           $.ajax({
               url: url_search_duplicates,
               data: data,
@@ -25,7 +25,7 @@ $(function() {
             return;
         }
         checkFields();
-    }
+    };
     $('form[name="create-account"]').find(":input").blur(onBlur);
     checkFields();
 });
