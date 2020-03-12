@@ -40,6 +40,7 @@
     $("#textArea").setSelection(10,15);
 
  */
+// jshint ignore: start
 var caretPositionAmp;
 
 jQuery.fn.extend({

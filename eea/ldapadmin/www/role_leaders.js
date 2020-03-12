@@ -32,12 +32,12 @@ $(function () {
 
         if($(this).attr('checked')) {
             parent.find('.alternate_container').show();
-            leader.hide()
+            leader.hide();
             leader.attr('checked', false);
             parents.find('.leader_container').hide();
         } else {
             parent.find('.alternate_container').hide();
-            leader.show()
+            leader.show();
         }
 
     }).change();
