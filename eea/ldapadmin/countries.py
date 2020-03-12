@@ -64,7 +64,7 @@ def update_countries():
                 'eun22': eun22.value == 'Yes',
             })
 
-    if not os.path.isdir(LDAP_DISK_STORAGE): 
+    if not os.path.isdir(LDAP_DISK_STORAGE):
         os.mkdir(LDAP_DISK_STORAGE)
     f = open(os.path.join(LDAP_DISK_STORAGE, "countries.json"), "w")
     json.dump(countries, f)

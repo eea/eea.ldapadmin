@@ -210,13 +210,13 @@ def role_members(agent, role_id, subroles=False, filter_date=None):
                 continue
             try:
                 changelog = json.loads(changelog)
-            except:
+            except Exception:
                 changelog = []
                 log.warning("Invalid changelog for user %r", rec)
 
             try:
                 user_dn = rec[0]
-                uid = agent._user_id(user_dn) # must be string
+                uid = agent._user_id(user_dn)  # must be string
             except KeyError:
                 uid = [x.split('=')[1]
                        for x in user_dn.split(',') if x.startswith('cn')]
@@ -401,7 +401,7 @@ class RolesEditor(Folder):
                         locations[rid].append(info)
 
         def get_user_info(user_dn):
-            uid = agent._user_id(user_dn.decode()) #must be string not bytes
+            uid = agent._user_id(user_dn.decode())  # must be string not bytes
 
             return agent.user_info(uid)
 
@@ -504,8 +504,9 @@ class RolesEditor(Folder):
                     if field == 'role_id':
                         value = role_id
                     elif field == 'tel/fax':
-                        value = ', '.join([_f for _f in [user_info['phone'],
-                                                        user_info['fax']] if _f])
+                        value = ', '.join(
+                            [_f for _f in [user_info['phone'],
+                                           user_info['fax']] if _f])
                     else:
                         value = user_info[field]
                     row += [value]
@@ -665,7 +666,7 @@ class RolesEditor(Folder):
         for role_id, description in roles.items():
             try:
                 agent.set_role_description(role_id, description.strip())
-            except:
+            except Exception:
                 problems.append(role_id)
 
         return problems
@@ -1800,7 +1801,9 @@ class EditMembersOfOneRole(BrowserView):
             role_id = list(set(role_id))[0]
 
         users = set([_f for _f in [x.strip() for x in
-                            self.request.form.get('users', '').split('\n')] if _f])
+                                   self.request.form.get('users',
+                                                         '').split('\n')]
+                     if _f])
 
         # TODO: if we calculate difference based on +subroles, things will be
         # bad
@@ -1917,8 +1920,10 @@ class EditRolesOfOneMember(BrowserView):
         role_ids = set(
             filter(
                 agent.role_exists,
-                [_f for _f in [x.strip()
-                        for x in self.request.form.get("member_roles").split()] if _f]
+                [_f for _f in [
+                    x.strip() for x in
+                    self.request.form.get("member_roles").split()]
+                 if _f]
             )
         )
         current_role_ids = set(

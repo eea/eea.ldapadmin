@@ -1,8 +1,8 @@
 import xlwt
 import logging
-import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
-# from StringIO import StringIO
-# from io import StringIO
+import six.moves.urllib.error
+import six.moves.urllib.parse
+import six.moves.urllib.request
 from io import BytesIO
 from six.moves import range
 

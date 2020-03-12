@@ -34,8 +34,10 @@ from persistent.mapping import PersistentMapping
 from Products.Five.browser import BrowserView
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.statusmessages.interfaces import IStatusMessage
-from .ui_common import (CommonTemplateLogic, TemplateRenderer,
-                       TemplateRendererNoWrap, extend_crumbs)
+from .ui_common import CommonTemplateLogic
+from .ui_common import TemplateRenderer
+from .ui_common import TemplateRendererNoWrap
+from .ui_common import extend_crumbs
 from unidecode import unidecode
 
 from .ui_common import get_role_name  # load_template,; , roles_list_to_text
@@ -726,7 +728,8 @@ class NfpNrc(SimpleItem, PropertyManager):
             org_id = agent._org_id(org)
             form_data['organisation'] = org_id
 
-        cmp = functools.cmp_to_key(lambda x, y: (x['text'] > y['text']) - (x['text'] < y['text']))
+        cmp = functools.cmp_to_key(
+            lambda x, y: (x['text'] > y['text']) - (x['text'] < y['text']))
         orgs.sort(key=cmp)
 
         choices = [('', '-')]
@@ -1001,7 +1004,7 @@ class CreateUser(BrowserView):
         try:
             requester = logged_in_user(self.request)
             info = agent.user_info(requester)
-        except:
+        except Exception:
             info = {'first_name': '', 'last_name': ''}
 
         options['author'] = u"%(firstname)s %(lastname)s (%(requester)s)" % {
@@ -1081,7 +1084,8 @@ class CreateUser(BrowserView):
             orgs.append({'id': org, 'text': org, 'text_native': '',
                          'ldap': False})
 
-        cmp = functools.cmp_to_key(lambda x, y: (x['text'] > y['text']) - (x['text'] < y['text']))
+        cmp = functools.cmp_to_key(
+            lambda x, y: (x['text'] > y['text']) - (x['text'] < y['text']))
         orgs.sort(key=cmp)
 
         choices = [('', '-')]

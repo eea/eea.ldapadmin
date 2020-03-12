@@ -29,7 +29,8 @@ SPARQL_QUERY = """
          OPTIONAL { <http://rdfdata.eionet.europa.eu/eea/countries/EUN22> skos:member ?ucountry, ?eun22member }
          OPTIONAL { <http://rdfdata.eionet.europa.eu/eea/countries/EEA> skos:member ?ucountry, ?eeamember }
          OPTIONAL { <http://rdfdata.eionet.europa.eu/eea/countries/EIONET> skos:member ?ucountry, ?eionetmember }
-        }"""
+        }"""  # noqa: E501
+
 SPARQL_ENDPOINT = 'http://semantic.eea.europa.eu/sparql'
 
 USER_INFO_KEYS = [

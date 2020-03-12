@@ -36,8 +36,9 @@ from eea.ldapadmin.help_messages import help_messages
 from eea.ldapadmin.ui_common import NaayaViewPageTemplateFile
 from eea.usersdb.db_agent import (EmailAlreadyExists, NameAlreadyExists,
                                   UserNotFound)
-from .import_export import (excel_headers_to_object, generate_excel,
-                           set_response_attachment)
+from .import_export import excel_headers_to_object
+from .import_export import generate_excel
+from .import_export import set_response_attachment
 from naaya.ldapdump.interfaces import IDumpReader
 from OFS.PropertyManager import PropertyManager
 from OFS.SimpleItem import SimpleItem
@@ -512,7 +513,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
             orgs.append({'id': org, 'text': org, 'text_native': '',
                          'ldap': False})
 
-        cmp = functools.cmp_to_key(lambda x, y: (x['text'] > y['text']) - (x['text'] < y['text']))
+        cmp = functools.cmp_to_key(
+            lambda x, y: (x['text'] > y['text']) - (x['text'] < y['text']))
         orgs.sort(key=cmp)
 
         choices = [('-', '-')]
@@ -656,9 +658,9 @@ class UsersAdmin(SimpleItem, PropertyManager):
             org_id = agent._org_id(org)
             form_data['organisation'] = org_id
 
-        cmp = functools.cmp_to_key(lambda x, y: (x['text'] > y['text']) - (x['text'] < y['text']))
+        cmp = functools.cmp_to_key(
+            lambda x, y: (x['text'] > y['text']) - (x['text'] < y['text']))
         orgs.sort(key=cmp)
-
 
         schema = user_info_edit_schema.clone()
 
@@ -1320,7 +1322,8 @@ class BulkUserImporter(BrowserView):
                 if count > 1:
                     errors.append('Duplicate email: %s appears %d times'
                                   % (email, count))
-                    users_data = [x for x in users_data if x['email'] != email.lower()]
+                    users_data = [x for x in users_data
+                                  if x['email'] != email.lower()]
 
         if len(usernames) != len(set(usernames)):
             for username in set(usernames):
@@ -1341,7 +1344,8 @@ class BulkUserImporter(BrowserView):
                               % email)
 
             for email in existing_emails:
-                users_data = [x for x in users_data if x['email'] != email.lower()]
+                users_data = [x for x in users_data
+                              if x['email'] != email.lower()]
 
         if existing_users:
             for user_id in existing_users:

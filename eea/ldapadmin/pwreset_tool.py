@@ -62,7 +62,8 @@ TokenData = namedtuple('TokenData', 'user_id timestamp')
 
 
 def random_token():
-    bits = hashlib.sha1((str(datetime.now()) + str(random.random())).encode()).digest()
+    bits = hashlib.sha1((str(datetime.now()) +
+                         str(random.random())).encode()).digest()
 
     return base64.urlsafe_b64encode(bits).replace(b'-', b'')[:20]
 
@@ -240,7 +241,6 @@ class PasswordResetTool(SimpleItem):
             del self._tokens[token]
             self._p_changed = True
 
-
     security.declareProtected(view, 'confirm_email')
 
     def confirm_email(self, REQUEST):
@@ -309,7 +309,6 @@ class PasswordResetTool(SimpleItem):
                 location = (self.absolute_url() +
                             '/messages_html?msg=password-reset')
                 self._p_changed = True
-
 
         REQUEST.RESPONSE.redirect(location)
 
