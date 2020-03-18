@@ -21,7 +21,7 @@ $(function() {
        }
     };
     var onBlur = function() {
-        if ($.trim($(this).val()) == "") {
+        if ($.trim($(this).val()) === "") {
             return;
         }
         checkFields();

@@ -1,7 +1,6 @@
 $(function() {
 
 var www_url = '/++resource++eea.ldapadmin-www';
-decorate_subrole_links($('table.sub-roles > tbody'), 0);
 
 function decorate_subrole_links(sub_roles, level) {
     $('> tr', sub_roles).each(function() {
@@ -19,16 +18,19 @@ function decorate_subrole_links(sub_roles, level) {
     });
 }
 
+decorate_subrole_links($('table.sub-roles > tbody'), 0);
+
 function make_arrow() {
     return $('<'+'img class="roles-tree-arrow help-tooltip" src="'+www_url+'/s.gif">');
 }
 
 function subrole_expand(evt) {
-    if(typeof evt != 'undefined')
+    if(typeof evt != 'undefined'){
         evt.preventDefault();
+    }
     var tr = $(this).parent().parent();
     var subroles_tr_list = tr.data('subroles-box');
-    if(subroles_tr_list == null) {
+    if(subroles_tr_list === null) {
         fetch_subroles(tr);
     } else {
         subroles_tr_list.show();
@@ -38,8 +40,9 @@ function subrole_expand(evt) {
 }
 
 function subrole_collapse(evt) {
-    if(typeof evt != 'undefined')
+    if(typeof evt != 'undefined'){
         evt.preventDefault();
+    }
     var tr = $(this).parent().parent();
 
     tr.data('subroles-box').hide();
@@ -50,15 +53,17 @@ function subrole_collapse(evt) {
 function subrole_expand_all(){
     var arrows = jQuery(".arrow-normal:visible");
     var i;
-    for(i=0; i < arrows.length; i++)
+    for(i=0; i < arrows.length; i++){
         subrole_expand.call(arrows[i]);
+    }
 }
 
 function subrole_collapse_all(){
     var arrows = jQuery(".arrow-down:visible");
     var i;
-    for(i=0; i < arrows.length; i++)
+    for(i=0; i < arrows.length; i++){
         subrole_collapse.call(arrows[i]);
+    }
 }
 
 function fetch_subroles(tr) {
