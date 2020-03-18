@@ -12,7 +12,7 @@
  *   - jquery.a-tools >= 1.4.1 (http://plugins.jquery.com/project/a-tools)
  */
 // jshint ignore: start
-
+/* jslint:disable */
 ; (function($) {
     // workaround for Opera browser
     if ($.browser.opera) {

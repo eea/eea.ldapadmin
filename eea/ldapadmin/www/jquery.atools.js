@@ -41,6 +41,7 @@
 
  */
 // jshint ignore: start
+/* jslint:disable */
 var caretPositionAmp;
 
 jQuery.fn.extend({
