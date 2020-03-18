@@ -3,7 +3,7 @@
 // (c) 2008-2010 jason frame [jason@onehackoranother.com]
 // released under the MIT license
 // jshint ignore: start
-
+// ignore jslint start
 (function($) {
     
     function maybeCall(thing, ctx) {
