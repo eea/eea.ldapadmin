@@ -43,6 +43,20 @@ setup(name=NAME,
           'transliterate',
           'validate-email>=edw.1.3.1',
       ],
+      extras_require={
+          'test': [
+              'plone.app.testing',
+              'mock',
+              'wsgi_intercept',
+              'mechanize',
+          ],
+          'yum': [
+          ],
+          'apt': [
+          ],
+          'zope2': [
+          ]
+      },
       entry_points={'console_scripts':
                     ['dump_ldap = eea.ldapadmin.ldapdump:dump_ldap',
                      'update_countries = '
