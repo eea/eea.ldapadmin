@@ -116,7 +116,7 @@ def filter_roles(agent, pattern):
         out[role_id] = {
             'users': role_members(agent, role_id)['users'],
             'name': (attr.get('description') or
-                     [role_id])[0].decode(agent._encoding),
+                     [role_id])[0],
             'naming': roles_leaders.naming(role_id),
         }
     return out
@@ -486,7 +486,7 @@ class RolesEditor(Folder):
         if not _is_authenticated(REQUEST):
             return "You must be logged in to access this page.\n"
 
-        pattern = REQUEST.form.get('pattern' '')
+        pattern = REQUEST.form.get('pattern', '')
         agent = self._get_ldap_agent()
 
         output_file = StringIO()
@@ -516,7 +516,7 @@ class RolesEditor(Folder):
         filename = 'Eionet users in %s.csv' % pattern.replace('*', 'ANY')
         REQUEST.RESPONSE.setHeader("Content-Disposition",
                                    "attachment; filename=\"%s\"" % filename)
-        return codecs.BOM_UTF8 + output_file.getvalue().encode()
+        return output_file.getvalue().encode()
 
     security.declareProtected(eionet_edit_roles, 'import_xls')
 

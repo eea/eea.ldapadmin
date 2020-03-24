@@ -1,13 +1,13 @@
 import unittest
 import logging
 from io import StringIO
-from lxml.html.soupparser import fromstring
 from mock import Mock, patch
 from eea.ldapadmin.orgs_editor import OrganisationsEditor, CommonTemplateLogic
 from eea.ldapadmin.orgs_editor import validate_org_info, VALIDATION_ERRORS
 from eea.ldapadmin.countries import get_country
 from eea.ldapadmin.ui_common import TemplateRenderer
 from eea.ldapadmin.testing import INTEGRATION_TESTING
+from eea.ldapadmin.testing import base_setup, parse_html, status_messages
 from eea import usersdb
 from plone.api.user import get_current
 import six
@@ -30,28 +30,12 @@ org_info_fixture = {
     'email': 'bridge@example.com',
 }
 
-
-def parse_html(html):
-    return fromstring(html)
-
-
-def mock_request():
-    request = Mock()
-    request.SESSION = {}
-
-    return request
-
-
 validation_errors_fixture = {
     'id': [u"invalid ID"],
     'phone': [u"invalid PHONE"],
     'fax': [u"invalid FAX"],
     'postal_code': [u"invalid POSTAL CODE"],
 }
-
-
-def session_messages(request):
-    return request.SESSION.get('eea.ldapadmin.orgs_editor.messages')
 
 
 class StubbedOrganisationsEditor(OrganisationsEditor):
@@ -71,29 +55,16 @@ class OrganisationsUITest(unittest.TestCase):
 
     def setUp(self):
         self.ui = StubbedOrganisationsEditor('organisations')
+        user = get_current()
+        base_setup(self, user)
         self.ui.checkPermissionView = Mock(return_value=True)
         self.ui.checkPermissionEditOrganisations = Mock(return_value=True)
         self.ui.nfp_for_country = Mock(return_value=None)
         self.ui.get_country = Mock(return_value='European Union organisation')
-        self.mock_agent = Mock()
-        self.mock_agent.new_action = Mock
-        self.mock_agent.new_action.__enter__ = Mock(
-            return_value=self.mock_agent.new_action)
-        self.mock_agent.new_action.__exit__ = Mock(
-            return_value=None)
         self.mock_agent.all_organisations.return_value = {}
         org_info = dict(org_info_fixture)
         org_info['id'] = 'eu_bridgeclub'
         self.mock_agent.org_info = Mock(return_value=org_info)
-        self.ui._get_ldap_agent = Mock(return_value=self.mock_agent)
-        self.request = self.REQUEST = self.ui.REQUEST = self.layer[
-            'portal'].REQUEST
-        self.request.method = 'POST'
-        self.request.RESPONSE.redirect = Mock()
-        user = get_current()
-        self.REQUEST.AUTHENTICATED_USER = user
-        user.getRoles = Mock(return_value=['Authenticated'])
-
         self.stream = StringIO()
         self.handler = logging.StreamHandler(self.stream)
         self.log = logging.getLogger('orgs_editor')
@@ -109,7 +80,6 @@ class OrganisationsUITest(unittest.TestCase):
         self.handler.close()
 
     def test_create_org_form(self):
-        self.ui.can_edit_organisations = Mock(return_value=True)
         page = parse_html(self.ui.create_organisation_html(self.request))
 
         def exists(xp):
@@ -130,7 +100,6 @@ class OrganisationsUITest(unittest.TestCase):
 
     @patch('eea.ldapadmin.orgs_editor.logged_in_user')
     def test_create_org_submit(self, logged_user):
-        self.ui.can_edit_organisations = Mock(return_value=True)
         logged_user.return_value = "John Doe"
         self.request.form = dict(org_info_fixture)
         self.request.form['id'] = 'eu_bridgeclub'
@@ -172,7 +141,6 @@ class OrganisationsUITest(unittest.TestCase):
 
     @patch('eea.ldapadmin.orgs_editor.validate_org_info')
     def test_create_org_submit_invalid(self, mock_validator):
-        self.ui.can_edit_organisations = Mock(return_value=True)
         self.request.form = dict(org_info_fixture, id='eu_bridgeclub')
         mock_validator.return_value = validation_errors_fixture
 
@@ -263,6 +231,9 @@ class OrganisationsUITest(unittest.TestCase):
         self.request.RESPONSE.redirect.assert_called_with(
             'URL/organisation?id=tunnel_club')
 
+        msg = 'Organisation "eu_bridgeclub" renamed to "tunnel_club".'
+        self.assertEqual(status_messages(self.request), {'info': msg})
+
         logmsg = "John Doe RENAMED ORGANISATION eu_bridgeclub TO tunnel_club\n"
         self.assertEqual(self.stream.getvalue(), logmsg)
 
@@ -276,6 +247,9 @@ class OrganisationsUITest(unittest.TestCase):
                                                            'tunnel_club')
         self.request.RESPONSE.redirect.assert_called_with(
             'URL/organisation?id=eu_bridgeclub')
+        msg = ('Organisation "eu_bridgeclub" could not be renamed because '
+               '"tunnel_club" already exists.')
+        self.assertEqual(status_messages(self.request), {'error': msg})
 
     def test_rename_org_submit_crash(self):
         self.request.form = {'id': 'eu_bridgeclub', 'new_id': 'tunnel_club'}
@@ -286,6 +260,9 @@ class OrganisationsUITest(unittest.TestCase):
         self.mock_agent.rename_org.assert_called_once_with('eu_bridgeclub',
                                                            'tunnel_club')
         self.request.RESPONSE.redirect.assert_called_with('URL/')
+        msg = ('Renaming of "eu_bridgeclub" failed mid-way. Some data may be '
+               'inconsistent. Please inform a system administrator.')
+        self.assertEqual(status_messages(self.request), {'error': msg})
 
     def test_delete_org_page(self):
         import re
@@ -322,22 +299,10 @@ class OrganisationsUIMembersTest(unittest.TestCase):
 
     def setUp(self):
         self.ui = StubbedOrganisationsEditor('organisations')
-        self.mock_agent = Mock()
-        self.mock_agent.new_action = Mock
-        self.mock_agent.new_action.__enter__ = Mock(
-            return_value=self.mock_agent.new_action)
-        self.mock_agent.new_action.__exit__ = Mock(
-            return_value=None)
-        self.mock_agent.user_organisations = Mock(return_value=[])
-        self.ui._get_ldap_agent = Mock(return_value=self.mock_agent)
-        self.request = self.REQUEST = self.ui.REQUEST = self.layer[
-            'portal'].REQUEST
-        self.request.RESPONSE.redirect = Mock()
         user = get_current()
-        self.REQUEST.AUTHENTICATED_USER = user
+        base_setup(self, user)
+        self.mock_agent.user_organisations = Mock(return_value=[])
         self.REQUEST.AUTHENTICATED_USER.getId = Mock(return_value='')
-        user.getRoles = Mock(return_value=['Authenticated'])
-        self.ui.REQUEST = self.request
 
         user_list = {
             'anne': {
