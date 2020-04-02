@@ -46,16 +46,8 @@ setup(name=NAME,
       extras_require={
           'test': [
               'plone.app.testing',
-              'mock',
-              'wsgi_intercept',
-              'mechanize',
+              'plone.app.robotframework',
           ],
-          'yum': [
-          ],
-          'apt': [
-          ],
-          'zope2': [
-          ]
       },
       entry_points={'console_scripts':
                     ['dump_ldap = eea.ldapadmin.ldapdump:dump_ldap',

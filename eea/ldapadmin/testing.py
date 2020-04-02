@@ -4,6 +4,8 @@ from lxml.html.soupparser import fromstring
 from Products.statusmessages.interfaces import IStatusMessage
 from plone.app.testing import (PLONE_FIXTURE, FunctionalTesting,
                                IntegrationTesting, PloneSandboxLayer)
+from plone.app.contenttypes.testing import PLONE_APP_CONTENTTYPES_FIXTURE
+from plone.testing import zope
 
 
 class Fixture(PloneSandboxLayer):
@@ -30,13 +32,38 @@ class Fixture(PloneSandboxLayer):
         self.loadZCML(package=eea.ldapadmin)
 
 
+class FunctionalFixture(PloneSandboxLayer):
+    """ Fixture """
+
+    defaultBases = (PLONE_APP_CONTENTTYPES_FIXTURE,)
+
+    def setUpZope(self, app, configurationContext):
+        """ Set up Zope """
+        # Load ZCML
+        import eea.ldapadmin
+        import plone.dexterity
+        import plone.app.textfield
+
+        # needed for Dexterity FTI
+        self.loadZCML(package=plone.dexterity)
+
+        # needed for DublinCore behavior
+        self.loadZCML(package=plone.app.dexterity)
+
+        # needed to support RichText in testpage
+        self.loadZCML(package=plone.app.textfield)
+
+        self.loadZCML(package=eea.ldapadmin)
+
+
 FIXTURE = Fixture()
+FUNCTIONAL_FIXTURE = FunctionalFixture()
 INTEGRATION_TESTING = IntegrationTesting(
     bases=(FIXTURE,),
     name='eea.ldapadmin:Integration',
 )
 FUNCTIONAL_TESTING = FunctionalTesting(
-    bases=(FIXTURE,),
+    bases=(FUNCTIONAL_FIXTURE,),
     name='eea.ldapadmin:Functional',
 )
 

@@ -106,7 +106,7 @@ class TemplateRenderer(Implicit):
             try:
                 layout = self.aq_parent.getLayoutTool().getCurrentSkin()
                 main_template = layout.getTemplateById('standard_template')
-            except:
+            except Exception:
                 main_template = self.aq_parent.restrictedTraverse(
                     'standard_template.pt')
             main_page_macro = main_template.macros['page']
@@ -239,7 +239,7 @@ class CommonTemplateLogic(object):
 
         return NETWORK_NAME == 'Eionet'
 
-    @property
+#    @property
     def can_edit_users(self):
         return self.context.can_edit_users()
 

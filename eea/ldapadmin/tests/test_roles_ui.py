@@ -6,7 +6,7 @@ from copy import deepcopy
 import csv
 from io import StringIO
 # from StringIO import StringIO
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 import lxml.cssselect
 import lxml.html.soupparser
 from eea.ldapadmin.roles_editor import RolesEditor
@@ -347,7 +347,6 @@ class AddRemoveRoleMembersTest(unittest.TestCase):
         self.request = self.REQUEST = self.ui.REQUEST = self.layer[
             'portal'].REQUEST
         user = get_current()
-        self.REQUEST.AUTHENTICATED_USER = user
         user.getRoles = Mock(return_value=['Authenticated'])
 
         self.stream = StringIO()

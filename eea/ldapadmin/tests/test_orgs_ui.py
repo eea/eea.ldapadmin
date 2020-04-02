@@ -1,7 +1,7 @@
 import unittest
 import logging
 from io import StringIO
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 from eea.ldapadmin.orgs_editor import OrganisationsEditor, CommonTemplateLogic
 from eea.ldapadmin.orgs_editor import validate_org_info, VALIDATION_ERRORS
 from eea.ldapadmin.countries import get_country
