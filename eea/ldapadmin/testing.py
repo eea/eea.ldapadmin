@@ -5,7 +5,6 @@ from Products.statusmessages.interfaces import IStatusMessage
 from plone.app.testing import (PLONE_FIXTURE, FunctionalTesting,
                                IntegrationTesting, PloneSandboxLayer)
 from plone.app.contenttypes.testing import PLONE_APP_CONTENTTYPES_FIXTURE
-from plone.testing import zope
 
 
 class Fixture(PloneSandboxLayer):
