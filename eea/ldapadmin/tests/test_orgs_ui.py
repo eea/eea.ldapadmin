@@ -26,7 +26,6 @@ org_info_fixture = {
     'country': u"eu",
     #    'country': u"European Union organisation, EU",
     'locality': u"K\xf8benhavn",
-    'locality': u"K\xf8benhavn",
     'email': 'bridge@example.com',
 }
 
