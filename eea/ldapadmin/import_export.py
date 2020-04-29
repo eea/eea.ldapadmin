@@ -1,26 +1,29 @@
-import xlwt
+''' import and exmport functionality '''
 import logging
+from io import BytesIO
 import six.moves.urllib.error
 import six.moves.urllib.parse
 import six.moves.urllib.request
-from io import BytesIO
 from six.moves import range
+import xlwt
 
 logger = logging.getLogger(__name__)
 
 
 def attachment_header(filename):
+    ''' create the attachment header '''
     assert isinstance(filename, str)
     try:
         value = "filename=%s" % six.moves.urllib.parse.quote(filename)
     except Exception as e:
         # import pdb; pdb.set_trace() not tested exception
-        logger.error("Error setting filename %s " % str(e))
+        logger.error("Error setting filename %s", str(e))
         value = "filename*=UTF-8''%s" % six.moves.urllib.parse.quote(filename)
     return "attachment; " + value
 
 
 def set_response_attachment(RESPONSE, filename, content_type, length=None):
+    ''' set the response attachment headers '''
     RESPONSE.setHeader('Content-Type', content_type)
     if length is not None:
         RESPONSE.setHeader('Content-Length', length)
@@ -54,6 +57,9 @@ def excel_headers_to_object(properties):
 
 
 def generate_excel(header, rows):
+    ''' generate an excel file
+    based on a list of columns (header)
+    and a list of lists (rows)'''
     style = xlwt.XFStyle()
     wrapstyle = xlwt.XFStyle()
     wrapstyle.alignment.wrap = 1

@@ -1,3 +1,4 @@
+''' constants '''
 import os
 
 from App.config import getConfiguration

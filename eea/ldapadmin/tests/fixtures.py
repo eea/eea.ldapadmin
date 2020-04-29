@@ -1,3 +1,4 @@
+''' fixtures '''
 ldap_data = {
     'ou=Roles,o=EIONET,l=Europe': {
         'description': ["Roles"],

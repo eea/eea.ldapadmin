@@ -1,3 +1,4 @@
+''' logger settings '''
 import os
 import logging
 
@@ -5,6 +6,7 @@ from eea.ldapadmin.constants import LDAP_DISK_STORAGE
 
 
 def init():
+    ''' configure logger for several objects '''
     names = ['nfp_nrc', 'orgs_editor', 'roles_editor', 'users_admin']
 
     for name in names:

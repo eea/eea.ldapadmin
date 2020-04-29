@@ -94,10 +94,12 @@ def base_setup(context, user):
 
 
 def parse_html(html):
+    ''' return parsed html '''
     return fromstring(html)
 
 
 def status_messages(request):
+    ''' get status messages '''
     messages = {}
     for message in IStatusMessage(request).show():
         messages[message.type] = message.message

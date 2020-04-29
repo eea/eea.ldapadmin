@@ -1,5 +1,6 @@
-import yaml
+''' eionet LDAP connections '''
 import os
+import yaml
 import requests
 
 from App.config import getConfiguration
@@ -8,8 +9,9 @@ CONFIG = getConfiguration()
 if hasattr(CONFIG, 'environment'):
     CONFIG.environment.update(os.environ)
 
-LDAP_DISK_STORAGE = getattr(CONFIG, 'environment', {}).\
-                            get('LDAP_DISK_STORAGE', '')
+LDAP_DISK_STORAGE = getattr(CONFIG,
+                            'environment',
+                            {}).get('LDAP_DISK_STORAGE', '')
 
 
 def get_endpoints():
@@ -32,5 +34,4 @@ def get_endpoint_data(endpoint, userid):
                        auth=(_['user'], _['password']))
     if req.status_code == 200:
         return req.json()
-    else:
-        return {}
+    return {}

@@ -1,18 +1,19 @@
+''' test the pw reset tool '''
 import re
 import unittest
-import transaction
-from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
+from datetime import datetime, timedelta
+import transaction
 from zope.component import getUtility
-from plone.registry.interfaces import IRegistry
 from Products.MailHost.interfaces import IMailHost
-from plone.api.user import get_current
+from plone.registry.interfaces import IRegistry
 from plone.api import portal
+from plone.api.user import get_current
 from plone.testing.z2 import Browser
+import eea.usersdb
 from eea.ldapadmin.testing import FUNCTIONAL_TESTING
 from eea.ldapadmin.pwreset_tool import manage_add_pwreset_tool
 from eea.ldapadmin.pwreset_tool import PasswordResetTool
-import eea.usersdb
 
 
 users = [
@@ -27,6 +28,7 @@ portal.send_email = Mock()
 
 
 def extract_link_from_email(email, url_base):
+    ''' extract the password reset link from the reset email '''
     url_piece = url_base + '/confirm_email?token='
     match = re.search(re.escape(url_piece) + r'(?P<token>\S+)(?=\s)',
                       email['body'].get_payload())
@@ -35,17 +37,20 @@ def extract_link_from_email(email, url_base):
 
 
 def parse_html(html):
+    ''' return a soup parsed object '''
     from lxml.html.soupparser import fromstring
     return fromstring(html)
 
 
 def csstext(target, selector):
+    ''' return text from HTML based on CSSSelector '''
     from lxml.cssselect import CSSSelector
     return ' '.join(e.text_content() for e in
                     CSSSelector(selector)(target)).strip()
 
 
 def decode_form(request):
+    ''' decode from values '''
     form = {}
     source = request.POST or request.GET
     for name in source:
@@ -58,6 +63,7 @@ def decode_form(request):
 
 
 class BrowseTest(unittest.TestCase):
+    ''' test browsing to the password reset tool '''
 
     layer = FUNCTIONAL_TESTING
 
@@ -73,7 +79,9 @@ class BrowseTest(unittest.TestCase):
 
         self.portal.error_log._ignored_exceptions = ()
 
+        # pylint: disable=superfluous-parens
         def raising(self, info):
+            '''print errors'''
             import traceback
             traceback.print_tb(info[2])
             print(info[1])
@@ -97,12 +105,14 @@ class BrowseTest(unittest.TestCase):
         portal.send_email.reset_mock()
 
     def assert_invalid_token_response(self, page):
+        ''' assert that the tool recognizes a false token '''
         self.assertEqual(csstext(page, 'div.error'),
                          "Error\n        Password reset link is invalid, "
                          "perhaps it has expired. Please try again.")
         self.assertFalse(self.mock_agent.set_user_password.called)
 
     def test_welcome_page(self):
+        ''' assert the coorect opening of the main index '''
         br = self.browser
         br.open(self.app_url)
         page = parse_html(br.contents)
@@ -110,11 +120,12 @@ class BrowseTest(unittest.TestCase):
         self.assertEqual(csstext(page, 'h1'), "Reset Eionet account password")
 
     def test_reset_password(self):
+        ''' test the reset password workflow '''
         br = self.browser
         br.open(self.app_url)
         form = br.getForm('identify')
-        input = form.getControl(name='email:utf8:ustring')
-        input.value = 'testpilot@example.com'
+        form_input = form.getControl(name='email:utf8:ustring')
+        form_input.value = 'testpilot@example.com'
         form.submit('Reset password')
         page = parse_html(br.contents)
 
@@ -139,20 +150,20 @@ class BrowseTest(unittest.TestCase):
 
         # first should fail with non matching passwords
         form = br.getForm('new-password')
-        input = form.getControl(name='password:utf8:ustring')
-        input.value = 'NeWpAsS'
-        input = form.getControl(name='password-confirm:utf8:ustring')
-        input.value = 'newpass'
+        form_input = form.getControl(name='password:utf8:ustring')
+        form_input.value = 'NeWpAsS'
+        form_input = form.getControl(name='password-confirm:utf8:ustring')
+        form_input.value = 'newpass'
         form.submit('Save new password')
         page = parse_html(br.contents)
 
         self.assertEqual(csstext(page, 'div.error'),
                          "Error\n        Passwords do not match.")
         form = br.getForm('new-password')
-        input = form.getControl(name='password:utf8:ustring')
-        input.value = 'NeWpAsS'
-        input = form.getControl(name='password-confirm:utf8:ustring')
-        input.value = 'NeWpAsS'
+        form_input = form.getControl(name='password:utf8:ustring')
+        form_input.value = 'NeWpAsS'
+        form_input = form.getControl(name='password-confirm:utf8:ustring')
+        form_input.value = 'NeWpAsS'
         form.submit('Save new password')
         page = parse_html(br.contents)
 
@@ -161,11 +172,12 @@ class BrowseTest(unittest.TestCase):
         self.assertTrue("successfully reset" in csstext(page, 'p'))
 
     def test_enter_bad_email(self):
+        ''' test fail on bad email '''
         br = self.browser
         br.open(self.app_url)
         form = br.getForm('identify')
-        input = form.getControl(name='email:utf8:ustring')
-        input.value = 'badtestpilot@example.com'
+        form_input = form.getControl(name='email:utf8:ustring')
+        form_input.value = 'badtestpilot@example.com'
         form.submit('Reset password')
         page = parse_html(br.contents)
 
@@ -175,6 +187,7 @@ class BrowseTest(unittest.TestCase):
         self.assertEqual(len(self.portal.pwreset._tokens), 0)
 
     def test_invalid_token_in_link(self):
+        ''' test fail with invalid token in link '''
         token = "bogus-token"
         link = '%s/confirm_email?token=%s' % (
             self.portal.pwreset.absolute_url(), token)
@@ -186,13 +199,14 @@ class BrowseTest(unittest.TestCase):
 
     @patch('eea.ldapadmin.pwreset_tool.datetime')
     def test_token_expiry(self, mock_datetime):
+        ''' test fail on expired token '''
         t0 = datetime.utcnow()
         mock_datetime.utcnow.return_value = t0
         br = self.browser
         br.open(self.app_url)
         form = br.getForm('identify')
-        input = form.getControl(name='email:utf8:ustring')
-        input.value = 'testpilot@example.com'
+        form_input = form.getControl(name='email:utf8:ustring')
+        form_input.value = 'testpilot@example.com'
         form.submit('Reset password')
         token = list(self.portal.pwreset._tokens.keys())[0]
         mock_datetime.utcnow.return_value = t0 + timedelta(days=1, minutes=1)
@@ -205,13 +219,14 @@ class BrowseTest(unittest.TestCase):
 
     @patch('eea.ldapadmin.pwreset_tool.datetime')
     def test_token_expiry_in_form(self, mock_datetime):
+        ''' test fail when token expires while in form '''
         t0 = datetime.utcnow()
         mock_datetime.utcnow.return_value = t0
         br = self.browser
         br.open(self.app_url)
         form = br.getForm('identify')
-        input = form.getControl(name='email:utf8:ustring')
-        input.value = 'testpilot@example.com'
+        form_input = form.getControl(name='email:utf8:ustring')
+        form_input.value = 'testpilot@example.com'
         form.submit('Reset password')
         token = list(self.portal.pwreset._tokens.keys())[0]
         link = '%s/confirm_email?token=%s' % (
@@ -220,37 +235,39 @@ class BrowseTest(unittest.TestCase):
         mock_datetime.utcnow.return_value = t0 + timedelta(days=1, minutes=1)
         page = parse_html(br.contents)
         form = br.getForm('new-password')
-        input = form.getControl(name='password:utf8:ustring')
-        input.value = 'NeWpAsS'
-        input = form.getControl(name='password-confirm:utf8:ustring')
-        input.value = 'NeWpAsS'
+        form_input = form.getControl(name='password:utf8:ustring')
+        form_input.value = 'NeWpAsS'
+        form_input = form.getControl(name='password-confirm:utf8:ustring')
+        form_input.value = 'NeWpAsS'
         form.submit('Save new password')
         page = parse_html(br.contents)
 
         self.assert_invalid_token_response(page)
 
     def test_no_token_reuse(self):
+        ''' test fail on reusing token '''
         br = self.browser
         br.open(self.app_url)
         form = br.getForm('identify')
-        input = form.getControl(name='email:utf8:ustring')
-        input.value = 'testpilot@example.com'
+        form_input = form.getControl(name='email:utf8:ustring')
+        form_input.value = 'testpilot@example.com'
         form.submit('Reset password')
         token = list(self.portal.pwreset._tokens.keys())[0]
         link = '%s/confirm_email?token=%s' % (
             self.portal.pwreset.absolute_url(), token)
         br.open(link)
         form = br.getForm('new-password')
-        input = form.getControl(name='password:utf8:ustring')
-        input.value = 'NeWpAsS'
-        input = form.getControl(name='password-confirm:utf8:ustring')
-        input.value = 'NeWpAsS'
+        form_input = form.getControl(name='password:utf8:ustring')
+        form_input.value = 'NeWpAsS'
+        form_input = form.getControl(name='password-confirm:utf8:ustring')
+        form_input.value = 'NeWpAsS'
         form.submit('Save new password')
 
         self.assertFalse(token in self.portal.pwreset._tokens)
 
     @patch('eea.ldapadmin.ui_common.CommonTemplateLogic.network_name')
     def test_network_name_customization(self, mock_network_name):
+        ''' test customisation of network name '''
         mock_network_name.return_value = 'SINAnet'
         br = self.browser
         br.open(self.app_url)

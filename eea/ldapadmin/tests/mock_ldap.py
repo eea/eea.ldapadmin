@@ -1,20 +1,24 @@
+''' mock the ldap connection and database '''
+import six
 from ldap import (SCOPE_BASE, SCOPE_ONELEVEL, SCOPE_SUBTREE,
                   NO_SUCH_OBJECT, ALREADY_EXISTS, NOT_ALLOWED_ON_NONLEAF,
                   NO_SUCH_ATTRIBUTE, OBJECT_CLASS_VIOLATION,
                   MOD_ADD, MOD_DELETE, RES_ADD, RES_DELETE, RES_MODIFY,
                   RES_BIND)
-import six
 
 data = {}
 
 
 def initialize(url):
+    ''' initialize '''
     return MockConnection()
 
 
+# pylint: disable=too-many-branches
 class MockConnection(object):
+    ''' mock the ldap connection '''
     def search_s(self, query_dn, scope, filterstr=None, attrlist=None):
-        # filterstr is currently ignored
+        ''' filterstr is currently ignored '''
 
         out = []
         dn_set = []
@@ -37,7 +41,7 @@ class MockConnection(object):
         for dn in dn_set:
             attrs = {}
             for name, value in six.iteritems(data[dn]):
-                assert type(value) is list
+                assert isinstance(value, list)
                 if attrlist is None or name in attrlist:
                     attrs[name] = value
             out.append((dn, attrs))
@@ -45,6 +49,7 @@ class MockConnection(object):
         return out
 
     def add_s(self, dn, modlist):
+        ''' add to database '''
         if dn in data:
             raise ALREADY_EXISTS
         if dn.split(',', 1)[1] not in data:  # make sure the parent exists
@@ -55,6 +60,7 @@ class MockConnection(object):
         return (RES_ADD, [])
 
     def delete_s(self, dn):
+        ''' delete from database '''
         for other_dn in data:
             if other_dn.endswith(',' + dn):
                 raise NOT_ALLOWED_ON_NONLEAF
@@ -62,6 +68,7 @@ class MockConnection(object):
         return (RES_DELETE, [])
 
     def modify_s(self, dn, modlist):
+        ''' modify '''
         assert dn in data
         for action, attr_name, values in modlist:
             if action == MOD_ADD:
@@ -87,4 +94,5 @@ class MockConnection(object):
         return (RES_MODIFY, [])
 
     def simple_bind_s(self, bind_dn, bind_pw):
+        ''' simple bind '''
         return (RES_BIND, [])

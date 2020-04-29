@@ -1,3 +1,4 @@
+''' Password reset tool '''
 from __future__ import print_function
 import base64
 import hashlib
@@ -7,6 +8,7 @@ from collections import namedtuple
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 
+import six
 from zope.component import getUtility
 from zope.sendmail.interfaces import IMailDelivery
 
@@ -23,7 +25,6 @@ from OFS.SimpleItem import SimpleItem
 from persistent.mapping import PersistentMapping
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.statusmessages.interfaces import IStatusMessage
-import six
 
 log = logging.getLogger(__name__)
 
@@ -33,14 +34,14 @@ manage_add_pwreset_tool_html.ldap_config_edit_macro = ldap_config.edit_macro
 manage_add_pwreset_tool_html.config_defaults = lambda: ldap_config.defaults
 
 
-def manage_add_pwreset_tool(parent, id, REQUEST=None):
+def manage_add_pwreset_tool(parent, tool_id, REQUEST=None):
     """ Create a new PasswordResetTool object """
-    form = (REQUEST is not None and REQUEST.form or {})
+    form = (REQUEST.form if REQUEST is not None else {})
     config = ldap_config.read_form(form)
     obj = PasswordResetTool(config)
-    obj.title = form.get('title', id)
-    obj._setId(id)
-    parent._setObject(id, obj)
+    obj.title = form.get('title', tool_id)
+    obj._setId(tool_id)
+    parent._setObject(tool_id, obj)
 
     if REQUEST is not None:
         REQUEST.RESPONSE.redirect(parent.absolute_url() + '/manage_workspace')
@@ -62,6 +63,7 @@ TokenData = namedtuple('TokenData', 'user_id timestamp')
 
 
 def random_token():
+    ''' create a random token '''
     bits = hashlib.sha1((str(datetime.now()) +
                          str(random.random())).encode()).digest()
 
@@ -69,6 +71,7 @@ def random_token():
 
 
 class PasswordResetTool(SimpleItem):
+    ''' Password reset tool '''
     meta_type = 'Eionet Password Reset Tool'
     security = ClassSecurityInfo()
     icon = '++resource++eea.ldapadmin-www/eionet_password_reset_tool.gif'
@@ -80,6 +83,7 @@ class PasswordResetTool(SimpleItem):
 
     _render_template = TemplateRenderer(CommonTemplateLogic)
 
+    # pylint: disable=dangerous-default-value
     def __init__(self, config={}):
         super(PasswordResetTool, self).__init__()
         self._config = PersistentMapping(config)
@@ -88,6 +92,7 @@ class PasswordResetTool(SimpleItem):
     security.declareProtected(view_management_screens, 'get_config')
 
     def get_config(self):
+        ''' return the config dictionary '''
         return dict(self._config)
 
     security.declareProtected(view_management_screens, 'manage_edit')
@@ -315,6 +320,7 @@ class PasswordResetTool(SimpleItem):
     security.declareProtected(view, 'can_edit_users')
 
     def can_edit_users(self):
+        ''' check permission to edit users '''
         user = self.REQUEST.AUTHENTICATED_USER
 
         return bool(user.has_permission(eionet_edit_users, self))

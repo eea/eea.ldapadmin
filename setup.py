@@ -1,3 +1,5 @@
+""" EEA LDAP Admin Installer
+"""
 from os.path import join
 from setuptools import find_packages, setup
 
@@ -25,7 +27,6 @@ setup(name=NAME,
           'beautifulsoup4',
           'lxml',
 
-          # TODO: these need to be set as >=. Needs checks
           'deform>=2.0.8',
           'colander==1.7.0',
           'jellyfish==0.7.2; python_version>"3.0"',
@@ -42,6 +43,8 @@ setup(name=NAME,
           'pydns; python_version<"3.0"',
           'transliterate',
           'validate-email>=edw.1.3.1',
+          'plone.app.testing',
+          'plone.app.robotframework',
       ],
       extras_require={
           'test': [

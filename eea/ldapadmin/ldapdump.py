@@ -1,3 +1,4 @@
+''' dump the LDAP database to a local cache '''
 import logging
 import os.path
 

@@ -1,3 +1,4 @@
+''' query module '''
 from AccessControl import ClassSecurityInfo
 from OFS.PropertyManager import PropertyManager
 from OFS.SimpleItem import SimpleItem
@@ -7,13 +8,13 @@ from .ui_common import CommonTemplateLogic, TemplateRenderer
 manage_add_query_html = PageTemplateFile('zpt/query_manage_add.zpt', globals())
 
 
-def manage_add_query(parent, id, title, pattern, REQUEST=None):
+def manage_add_query(parent, query_id, title, pattern, REQUEST=None):
     """ Create a new Query object """
     obj = Query()
-    obj._setId(id)
+    obj._setId(query_id)
     obj.title = title
     obj.pattern = pattern
-    parent._setObject(id, obj)
+    parent._setObject(query_id, obj)
 
     if REQUEST is not None:
         url = parent.absolute_url() + '/manage_workspace'
@@ -22,6 +23,7 @@ def manage_add_query(parent, id, title, pattern, REQUEST=None):
 
 
 class Query(SimpleItem, PropertyManager):
+    ''' An Eionet roles editor query '''
     meta_type = 'Eionet Roles Editor Query'
     security = ClassSecurityInfo()
     icon = '++resource++eea.ldapadmin-www/roles_query.gif'

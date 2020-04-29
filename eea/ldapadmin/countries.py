@@ -1,3 +1,4 @@
+''' countries management '''
 import os
 import json
 import time
@@ -51,7 +52,7 @@ def update_countries():
     s = sparql.Service(SPARQL_ENDPOINT)
     results = [i for i in s.query(SPARQL_QUERY).fetchone()]
     countries = []
-    if len(results) > 0:
+    if results:
         for item in results:
             (code, name, pub_code, eu, eea, eionet, eun22) = item
             countries.append({
@@ -73,6 +74,7 @@ def update_countries():
 
 def load_countries(update=False):
     """ Load countries from json file in memory """
+    # pylint: disable=global-statement
     global COUNTRIES
     try:
         f = open(os.path.join(LDAP_DISK_STORAGE, "countries.json"), "r")
@@ -85,8 +87,7 @@ def load_countries(update=False):
             try:
                 update_countries()
             except sparql.SparqlException as e:
-                logger.error("Couldn't import countries: %s" % e)
-                pass
+                logger.error("Couldn't import countries: %s", e)
         f = open(os.path.join(LDAP_DISK_STORAGE, "countries.json"), "r")
         data = json.load(f)
         f.close()

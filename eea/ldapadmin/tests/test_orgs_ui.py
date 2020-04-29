@@ -1,16 +1,17 @@
-import unittest
-import logging
+''' test the organisations ui '''
 from io import StringIO
+import logging
+import unittest
 from unittest.mock import Mock, patch
+import six
+from plone.api.user import get_current
+from eea import usersdb
 from eea.ldapadmin.orgs_editor import OrganisationsEditor, CommonTemplateLogic
 from eea.ldapadmin.orgs_editor import validate_org_info, VALIDATION_ERRORS
 from eea.ldapadmin.countries import get_country
 from eea.ldapadmin.ui_common import TemplateRenderer
 from eea.ldapadmin.testing import INTEGRATION_TESTING
 from eea.ldapadmin.testing import base_setup, parse_html, status_messages
-from eea import usersdb
-from plone.api.user import get_current
-import six
 
 org_info_fixture = {
     'name': u"Ye olde bridge club",
@@ -38,17 +39,20 @@ validation_errors_fixture = {
 
 
 class StubbedOrganisationsEditor(OrganisationsEditor):
-    def __init__(self, id):
+    ''' Stubbed organisations editor '''
+    def __init__(self, tool_id):
         super(StubbedOrganisationsEditor, self).__init__()
         self._render_template = TemplateRenderer(CommonTemplateLogic)
         self._render_template.wrap = lambda html: "<html>%s</html>" % html
         self.can_edit_organisation = Mock(return_value=True)
 
     def absolute_url(self):
+        ''' return URL '''
         return "URL"
 
 
 class OrganisationsUITest(unittest.TestCase):
+    ''' test the organisations ui '''
 
     layer = INTEGRATION_TESTING
 
@@ -79,10 +83,13 @@ class OrganisationsUITest(unittest.TestCase):
         self.handler.close()
 
     def test_create_org_form(self):
+        ''' test the creat org form '''
         page = parse_html(self.ui.create_organisation_html(self.request))
 
         def exists(xp):
+            ''' check existence of element in page '''
             return len(page.xpath(xp)) > 0
+
         self.assertTrue(exists('//form//input[@name="id:utf8:ustring"]'))
         self.assertTrue(exists('//form//input[@name="name:utf8:ustring"]'))
         self.assertTrue(exists('//form//input[@name="url:utf8:ustring"]'))
@@ -99,6 +106,7 @@ class OrganisationsUITest(unittest.TestCase):
 
     @patch('eea.ldapadmin.orgs_editor.logged_in_user')
     def test_create_org_submit(self, logged_user):
+        ''' test submit on create org '''
         logged_user.return_value = "John Doe"
         self.request.form = dict(org_info_fixture)
         self.request.form['id'] = 'eu_bridgeclub'
@@ -140,6 +148,7 @@ class OrganisationsUITest(unittest.TestCase):
 
     @patch('eea.ldapadmin.orgs_editor.validate_org_info')
     def test_create_org_submit_invalid(self, mock_validator):
+        ''' test fail on invalid org data '''
         self.request.form = dict(org_info_fixture, id='eu_bridgeclub')
         mock_validator.return_value = validation_errors_fixture
 
@@ -151,6 +160,7 @@ class OrganisationsUITest(unittest.TestCase):
         self.assertEqual(self.mock_agent.create_org.call_count, 0)
 
     def test_edit_org_form(self):
+        ''' test edit org form '''
         self.request.form = {'id': 'eu_bridgeclub'}
         self.mock_agent.org_info.return_value = dict(org_info_fixture,
                                                      id='eu_bridgeclub')
@@ -181,6 +191,7 @@ class OrganisationsUITest(unittest.TestCase):
 
     @patch('eea.ldapadmin.orgs_editor.logged_in_user')
     def test_edit_org_submit(self, logged_user):
+        ''' test submit on edit org '''
         logged_user.return_value = "John Doe"
         self.request.form = dict(org_info_fixture, id='eu_bridgeclub')
 
@@ -196,6 +207,7 @@ class OrganisationsUITest(unittest.TestCase):
 
     @patch('eea.ldapadmin.orgs_editor.validate_org_info')
     def test_edit_org_submit_invalid(self, mock_validator):
+        ''' test fail on invalid org edit data '''
         self.request.form = dict(org_info_fixture, id='eu_bridgeclub')
         self.request.form['id'] = 'eu_bridgeclub'
         mock_validator.return_value = validation_errors_fixture
@@ -207,6 +219,7 @@ class OrganisationsUITest(unittest.TestCase):
         self.assertEqual(self.mock_agent.set_org_info.call_count, 0)
 
     def test_rename_org_page(self):
+        ''' test rename org page '''
         self.request.form = {'id': 'eu_bridgeclub'}
         self.mock_agent.org_info.return_value = dict(org_info_fixture,
                                                      id='eu_bridgeclub')
@@ -220,6 +233,7 @@ class OrganisationsUITest(unittest.TestCase):
 
     @patch('eea.ldapadmin.orgs_editor.logged_in_user')
     def test_rename_org_submit(self, logged_user):
+        ''' test rename organisation '''
         logged_user.return_value = "John Doe"
         self.request.form = {'id': 'eu_bridgeclub', 'new_id': 'tunnel_club'}
 
@@ -237,6 +251,7 @@ class OrganisationsUITest(unittest.TestCase):
         self.assertEqual(self.stream.getvalue(), logmsg)
 
     def test_rename_org_submit_fail(self):
+        ''' test fail on org rename '''
         self.request.form = {'id': 'eu_bridgeclub', 'new_id': 'tunnel_club'}
         self.mock_agent.rename_org.side_effect = usersdb.NameAlreadyExists()
 
@@ -251,6 +266,7 @@ class OrganisationsUITest(unittest.TestCase):
         self.assertEqual(status_messages(self.request), {'error': msg})
 
     def test_rename_org_submit_crash(self):
+        ''' test crash on org rename '''
         self.request.form = {'id': 'eu_bridgeclub', 'new_id': 'tunnel_club'}
         self.mock_agent.rename_org.side_effect = usersdb.OrgRenameError()
 
@@ -264,6 +280,7 @@ class OrganisationsUITest(unittest.TestCase):
         self.assertEqual(status_messages(self.request), {'error': msg})
 
     def test_delete_org_page(self):
+        ''' test delete org page '''
         import re
         self.request.form = {'id': 'eu_bridgeclub'}
         self.mock_agent.org_info.return_value = dict(org_info_fixture,
@@ -280,6 +297,7 @@ class OrganisationsUITest(unittest.TestCase):
 
     @patch('eea.ldapadmin.orgs_editor.logged_in_user')
     def test_delete_org_submit(self, logged_user):
+        ''' test delete organisation '''
         logged_user.return_value = "John Doe"
         self.request.form = {'id': 'eu_bridgeclub'}
 
@@ -293,6 +311,7 @@ class OrganisationsUITest(unittest.TestCase):
 
 
 class OrganisationsUIMembersTest(unittest.TestCase):
+    ''' test the members ui '''
 
     layer = INTEGRATION_TESTING
 
@@ -331,6 +350,7 @@ class OrganisationsUIMembersTest(unittest.TestCase):
         self.handler.close()
 
     def test_enumerate_members(self):
+        ''' test members listing '''
         self.request.form = {'id': 'eu_bridgeclub'}
 
         page = parse_html(self.ui.members_html(self.request))
@@ -359,6 +379,7 @@ class OrganisationsUIMembersTest(unittest.TestCase):
 
     @patch('eea.ldapadmin.orgs_editor.logged_in_user')
     def test_remove_members_submit(self, logged_user):
+        ''' test removal of members '''
         logged_user.return_value = "John Doe"
         self.request.form = {'id': 'eu_bridgeclub', 'user_id': ['jsmith']}
 
@@ -374,6 +395,7 @@ class OrganisationsUIMembersTest(unittest.TestCase):
         self.assertEqual(self.stream.getvalue(), logmsg)
 
     def test_add_members_html(self):
+        ''' test add_members_html '''
         self.request.form = {'id': 'eu_bridgeclub', 'search_query': u"smith"}
         self.mock_agent.search_user.return_value = [
             {'id': 'anne', 'first_name': "Anne", 'last_name': "Smith"},
@@ -402,6 +424,7 @@ class OrganisationsUIMembersTest(unittest.TestCase):
         self.assertEqual(anne_checkbox.attrib['value'], 'anne')
 
     def test_add_members_submit(self):
+        ''' test addition of members '''
         self.request.form = {'id': 'eu_bridgeclub', 'user_id': ['jsmith']}
 
         self.ui.add_members(self.request)
@@ -417,6 +440,7 @@ class OrganisationsUIMembersTest(unittest.TestCase):
 
 
 class OrganisationsValidationTest(unittest.TestCase):
+    ''' validation tests '''
     def _test_bad_values(self, name, values, msg):
         for bad_value in values:
             org_info = dict(org_info_fixture, **{name: bad_value})
@@ -439,18 +463,22 @@ class OrganisationsValidationTest(unittest.TestCase):
         self._test_good_values(name, good_values)
 
     def test_phone_number(self):
+        ''' test the phone number '''
         self._test_phone('phone', VALIDATION_ERRORS['phone'])
 
     def test_fax_number(self):
+        ''' test the fax number '''
         self._test_phone('fax', VALIDATION_ERRORS['fax'])
 
     def test_postcode(self):
+        ''' test the postcode '''
         bad_values = ['123 456', 'DK_1234 33', u'DK 123\xf8456']
         self._test_bad_values('postal_code', bad_values,
                               VALIDATION_ERRORS['postal_code'])
         self._test_good_values('postal_code', ['', 'DK 1Nu 456', 'ro31-23'])
 
     def test_id(self):
+        ''' test the id '''
         for bad_id in ['', '123', 'asdf123', 'my(org)', u'my_\xf8rg']:
             err = validate_org_info(bad_id, dict(org_info_fixture),
                                     create_mode=True)

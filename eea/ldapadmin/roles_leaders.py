@@ -27,14 +27,13 @@ def naming(role_id):
                           'short': 'ACP'},
             'generic_pl': 'primary contact points'
         }
-    else:
-        return {
-            'leader': {'long': 'Maintainer',
-                       'short': 'Mn'},
-            'alternate': {'long': 'Alternate Maintainer',
-                          'short': 'AM'},
-            'generic_pl': 'maintainers'
-        }
+    return {
+        'leader': {'long': 'Maintainer',
+                   'short': 'Mn'},
+        'alternate': {'long': 'Alternate Maintainer',
+                      'short': 'AM'},
+        'generic_pl': 'maintainers'
+    }
 
 
 def leaders_enabled(role_id):

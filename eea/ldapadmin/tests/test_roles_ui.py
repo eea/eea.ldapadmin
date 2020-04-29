@@ -1,50 +1,56 @@
 # encoding: utf-8
-import unittest
+''' test roles ui '''
 import re
 import logging
+import unittest
+from unittest.mock import Mock, patch
 from copy import deepcopy
 import csv
 from io import StringIO
-# from StringIO import StringIO
-from unittest.mock import Mock, patch
+from six.moves import map
+from six.moves import zip
 import lxml.cssselect
 import lxml.html.soupparser
+from plone.api.user import get_current
 from eea.ldapadmin.roles_editor import RolesEditor
 from eea.ldapadmin.roles_editor import CommonTemplateLogic
 from eea.ldapadmin.ui_common import TemplateRenderer
 from eea.ldapadmin.testing import INTEGRATION_TESTING
 from eea.ldapadmin.testing import base_setup, parse_html, status_messages
 from eea import usersdb
-from six.moves import map
-from six.moves import zip
-from plone.api.user import get_current
 
 
 def plaintext(element):
+    ''' return plain text of element '''
     return re.sub(r'\s\s+', ' ', element.text_content()).strip()
 
 
 def css(target, selector):
+    ''' return text based on css selector '''
     return lxml.cssselect.CSSSelector(selector)(target)
 
 
 def csstext(target, selector):
+    ''' return text based on css selector '''
     return ' '.join(e.text_content() for e in css(target, selector)).strip()
 
 
 def stubbed_renderer():
+    ''' stubbed template renderer '''
     renderer = TemplateRenderer(CommonTemplateLogic)
     renderer.wrap = lambda html: "<html>%s</html>" % html
     return renderer
 
 
 class StubbedRolesEditor(RolesEditor):
+    ''' stubbed roles editor '''
     def __init__(self):
         super(StubbedRolesEditor, self).__init__()
         self._render_template = stubbed_renderer()
         self.is_extended_enabled = Mock(return_value=False)
 
     def absolute_url(self):
+        ''' return just URL '''
         return "URL"
 
 
@@ -84,6 +90,7 @@ user_info_fixture = user_map_fixture['jsmith']
 
 
 class BrowseTest(unittest.TestCase):
+    ''' browse test '''
 
     layer = INTEGRATION_TESTING
 
@@ -105,6 +112,7 @@ class BrowseTest(unittest.TestCase):
         }
 
     def test_browse_subroles(self):
+        ''' test browse subroles '''
         role_names = {'bank': "Bank for Test", 'agency': "The Agency"}
         self.mock_agent.role_names_in_role.return_value = role_names
         self.mock_agent.role_infos_in_role.return_value = {
@@ -141,12 +149,14 @@ class BrowseTest(unittest.TestCase):
         self.assertEqual(plaintext(tr2.xpath('td[2]')[0]), "Bank for Test")
 
     def test_browse_role_info(self):
+        ''' test browse role info '''
         page = parse_html(self.ui.index_html(self.request))
 
         self.assertEqual(page.xpath('//h1')[0].text, "Various places")
         self.mock_agent.role_info.assert_called_with('places')
 
     def test_user_info(self):
+        ''' test display user info '''
         self.mock_agent.members_in_role.return_value = {
             'users': ['jsmith'], 'orgs': [],
         }
@@ -166,6 +176,7 @@ class BrowseTest(unittest.TestCase):
                          user_info_fixture['organisation'])
 
     def test_missing_role(self):
+        ''' test on missing role '''
         exc = usersdb.RoleNotFound("no-such-role")
         self.mock_agent.role_info.side_effect = exc
         self.request.form = {'role_id': 'no-such-role'}
@@ -178,6 +189,7 @@ class BrowseTest(unittest.TestCase):
 
 
 class CreateDeleteRolesTest(unittest.TestCase):
+    ''' testing the creation and deletion of roles '''
 
     layer = INTEGRATION_TESTING
 
@@ -187,8 +199,10 @@ class CreateDeleteRolesTest(unittest.TestCase):
         base_setup(self, user)
 
         def agent_role_id(role_dn):
+            ''' return the role id from role dn '''
             assert role_dn.startswith('test-dn:')
             return role_dn[len('test-dn:'):]
+
         self.mock_agent._role_id = agent_role_id
         self.mock_agent.mail_group_info.return_value = {
             'owner': [],
@@ -210,6 +224,7 @@ class CreateDeleteRolesTest(unittest.TestCase):
         self.handler.close()
 
     def test_link_from_browse(self):
+        ''' test create link in browser '''
         self.mock_agent.members_in_role.return_value = {'users': [],
                                                         'orgs': []}
         self.mock_agent.role_names_in_role.return_value = {}
@@ -231,6 +246,7 @@ class CreateDeleteRolesTest(unittest.TestCase):
         self.assertEqual(plaintext(delete_links[0]), "Delete role places")
 
     def test_create_role_html(self):
+        ''' test role creation '''
         self.request.form = {'parent_role_id': 'places'}
 
         page = parse_html(self.ui.create_role_html(self.request))
@@ -246,6 +262,7 @@ class CreateDeleteRolesTest(unittest.TestCase):
 
     @patch('eea.ldapadmin.roles_editor.logged_in_user')
     def test_create_role_submit(self, logged_user):
+        ''' test create role '''
         logged_user.return_value = "john_doe"
         self.request.form = {'parent_role_id': 'places', 'slug': 'shiny',
                              'description': "Shiny new role"}
@@ -267,6 +284,7 @@ class CreateDeleteRolesTest(unittest.TestCase):
 
     @patch('eea.ldapadmin.roles_editor.logged_in_user')
     def test_create_role_submit_unicode(self, logged_user):
+        ''' test create role with unicode characters '''
         logged_user.return_value = "john_doe"
         self.request.form = {'parent_role_id': 'places', 'slug': 'shiny',
                              'description': u"Shiny new r\u014dle"}
@@ -277,6 +295,7 @@ class CreateDeleteRolesTest(unittest.TestCase):
             'places-shiny', "john_doe")
 
     def test_create_role_submit_invalid(self):
+        ''' test fail on invalid role id '''
         self.request.form = {'parent_role_id': 'places', 'slug': 'SHINY',
                              'description': "Shiny new role"}
         self.ui.create_role(self.request)
@@ -297,6 +316,7 @@ class CreateDeleteRolesTest(unittest.TestCase):
                          "Shiny new role")
 
     def test_delete_role_html(self):
+        ''' test the delete role page '''
         self.request.form = {'role_id': 'places-bank'}
         self.mock_agent._sub_roles.return_value = [
             'test-dn:places-bank',
@@ -315,6 +335,7 @@ class CreateDeleteRolesTest(unittest.TestCase):
 
     @patch('eea.ldapadmin.roles_editor.logged_in_user')
     def test_delete_role(self, logged_user):
+        ''' test the deletion of a role '''
         logged_user.return_value = "John Doe"
         self.request.form = {'role_id': 'places-bank'}
         self.mock_agent.members_in_role_and_subroles.return_value = {
@@ -332,6 +353,7 @@ class CreateDeleteRolesTest(unittest.TestCase):
 
 
 class AddRemoveRoleMembersTest(unittest.TestCase):
+    ''' test the addition and removal of role members '''
 
     layer = INTEGRATION_TESTING
 
@@ -363,6 +385,7 @@ class AddRemoveRoleMembersTest(unittest.TestCase):
         self.handler.close()
 
     def test_links(self):
+        ''' test links in page '''
         self.mock_agent.members_in_role.return_value = {
             'users': [], 'orgs': []}
         self.mock_agent.role_names_in_role.return_value = {}
@@ -384,6 +407,7 @@ class AddRemoveRoleMembersTest(unittest.TestCase):
         self.assertEqual(plaintext(rm_members_links[0]), "Remove members")
 
     def test_add_user_html(self):
+        ''' test the add user page '''
         self.request.form = {'role_id': 'places'}
 
         page = parse_html(self.ui.add_member_html(self.request))
@@ -393,9 +417,9 @@ class AddRemoveRoleMembersTest(unittest.TestCase):
                          "Add members to role places")
 
     def test_add_user_search_html(self):
+        ''' test the search html '''
         self.request.form = {'role_id': 'places', 'name': 'smith'}
         self.mock_agent.search_user.return_value = [user_info_fixture]
-        self.mock_agent.search_org.return_value = []
 
         page = parse_html(self.ui.add_member_html(self.request))
 
@@ -406,9 +430,9 @@ class AddRemoveRoleMembersTest(unittest.TestCase):
         self.assertEqual(form.attrib['action'], 'URL/add_user')
 
     def test_add_user_search_html_no_results(self):
+        ''' test the search with no results '''
         self.request.form = {'role_id': 'places', 'name': 'smith'}
         self.mock_agent.search_user.return_value = []
-        self.mock_agent.search_org.return_value = []
 
         page = parse_html(self.ui.add_member_html(self.request))
 
@@ -417,6 +441,7 @@ class AddRemoveRoleMembersTest(unittest.TestCase):
 
     @patch('eea.ldapadmin.roles_editor.logged_in_user')
     def test_add_user_submit(self, logged_user):
+        ''' test the addition of a user '''
         logged_user.return_value = 'John Doe'
         self.request.form = {'role_id': 'places-bank', 'user_id': 'jsmith'}
         self.mock_agent.add_to_role.return_value = ['places', 'places-bank']
@@ -436,6 +461,7 @@ class AddRemoveRoleMembersTest(unittest.TestCase):
         self.assertEqual(self.stream.getvalue(), logmsg)
 
     def test_remove_users_html(self):
+        ''' test the remove user page '''
         self.mock_agent.members_in_role.return_value = {
             'users': ['jsmith'], 'orgs': []}
         self.mock_agent.role_names_in_role.return_value = {}
@@ -456,6 +482,7 @@ class AddRemoveRoleMembersTest(unittest.TestCase):
 
     @patch('eea.ldapadmin.roles_editor.logged_in_user')
     def test_remove_users_submit(self, logged_user):
+        ''' test the removal of a user'''
         logged_user.return_value = 'John Doe'
         self.request.form = {'role_id': 'places', 'user_id_list': ['jsmith']}
         self.mock_agent.role_info.return_value = {
@@ -474,6 +501,7 @@ class AddRemoveRoleMembersTest(unittest.TestCase):
 
     @patch('eea.ldapadmin.roles_editor.logged_in_user')
     def test_remove_users_submit_nothing(self, logged_user):
+        ''' test removal without data '''
         logged_user.return_value = 'John Doe'
         self.request.form = {'role_id': 'places'}
         self.mock_agent.role_info.return_value = {
@@ -488,6 +516,7 @@ class AddRemoveRoleMembersTest(unittest.TestCase):
 
 
 class UserSearchTest(unittest.TestCase):
+    ''' test the search '''
 
     layer = INTEGRATION_TESTING
 
@@ -511,6 +540,7 @@ class UserSearchTest(unittest.TestCase):
         self.handler.close()
 
     def test_plain(self):
+        ''' test the search page '''
         self.request.form = {}
         page = parse_html(self.ui.search_users(self.request))
 
@@ -519,6 +549,7 @@ class UserSearchTest(unittest.TestCase):
             len(form.xpath('.//input[@name="name:ustring:utf8"]')), 1)
 
     def test_results(self):
+        ''' test getting results '''
         self.request.form = {'name': 'smith'}
         self.mock_agent.search_user.return_value = [user_info_fixture]
 
@@ -529,6 +560,7 @@ class UserSearchTest(unittest.TestCase):
         self.assertEqual(name, "Joe Smith")
 
     def test_no_result(self):
+        ''' test getting no results '''
         self.request.form = {'name': 'smith'}
         self.mock_agent.search_user.return_value = []
 
@@ -538,6 +570,7 @@ class UserSearchTest(unittest.TestCase):
                          "Found no users matching smith.")
 
     def test_user_roles_html(self):
+        ''' test user roles info is called '''
         self.request.form = {'user_id': 'jsmith'}
         self.mock_agent.list_member_roles.return_value = ['places-bank',
                                                           'places-bank-branch']
@@ -553,6 +586,7 @@ class UserSearchTest(unittest.TestCase):
                          ['places-bank', 'places-bank-branch'])
 
     def test_user_remove_from_role_html(self):
+        ''' test remove user from role '''
         self.request.form = {'role_id': 'places', 'user_id': 'jsmith'}
         self.mock_agent.list_member_roles.return_value = [
             'places', 'places-bank', 'places-bank-central']
@@ -569,6 +603,7 @@ class UserSearchTest(unittest.TestCase):
 
     @patch('eea.ldapadmin.roles_editor.logged_in_user')
     def test_user_remove_from_role_submit(self, logged_user):
+        ''' test removal of user '''
         logged_user.return_value = "John Doe"
         self.request.form = {'role_id': 'places', 'user_id': 'jsmith'}
         role_ids = ['places-bank', 'places-bank-central']
@@ -589,6 +624,7 @@ class UserSearchTest(unittest.TestCase):
 
 
 class FilterTest(unittest.TestCase):
+    ''' test filtering '''
 
     layer = INTEGRATION_TESTING
 
@@ -603,15 +639,15 @@ class FilterTest(unittest.TestCase):
             'places-shiny': {'users': [], 'orgs': []},
         }
         self.mock_agent.filter_roles.return_value = [
-            (x, {}) for x in role_membership.keys()]
+            (x, {}) for x in role_membership]
         self.mock_agent.members_in_role.side_effect = role_membership.get
         self.mock_agent.user_info.side_effect = deepcopy(user_map_fixture).get
         self.mock_agent.org_info.side_effect = deepcopy(org_map_fixture).get
 
     def check_query_results(self, page):
+        ''' check query results '''
         self.assertEqual([plaintext(tt) for tt in page.xpath('//h3')],
                          ["Users in places-bank", 'Users in places-shiny'])
-        # TODO we should also list places-shiny somehow
 
         user_names = [plaintext(s) for s in
                       page.xpath('//table[1]/tbody/tr/td[1]')]
@@ -620,6 +656,7 @@ class FilterTest(unittest.TestCase):
         self.assertEqual(user_names, expected_user_names)
 
     def test_filter_html(self):
+        ''' test filter_html '''
         self.request.form = {'pattern': 'places-*'}
 
         page = parse_html(self.ui.filter(self.request))
@@ -629,6 +666,7 @@ class FilterTest(unittest.TestCase):
         self.check_query_results(page)
 
     def test_no_results(self):
+        ''' test no results '''
         self.request.form = {'pattern': 'places-*'}
         self.mock_agent.filter_roles.return_value = []
 
@@ -639,6 +677,7 @@ class FilterTest(unittest.TestCase):
 
 
 class UserInfoTest(unittest.TestCase):
+    ''' test user info '''
 
     layer = INTEGRATION_TESTING
 
@@ -662,10 +701,11 @@ class UserInfoTest(unittest.TestCase):
         self.role_membership = {'places-bank': {
             'users': ['jsmith'], 'orgs': []}}
         self.mock_agent.filter_roles.side_effect = lambda *args, **kw: \
-            [(x, {}) for x in self.role_membership.keys()]
+            [(x, {}) for x in self.role_membership]
         self.mock_agent.members_in_role.side_effect = self.role_membership.get
 
     def _get_fields(self, name):
+        ''' get specific field from page '''
         page = parse_html(getattr(self.ui, name)(self.request))
         txt = lambda e: e.text_content().strip()
         table = css(page, 'table.account-datatable')[0]
@@ -675,10 +715,8 @@ class UserInfoTest(unittest.TestCase):
         data = dict(list(zip(labels, values)))
         return data
 
-        self.assertEqual(data)
-
     def test_not_logged_in(self):
-        # not-logged-in users can see just the name
+        ''' not-logged-in users can see just the name '''
 
         # "view role" page
         self.request.form = {'role_id': 'places-bank'}
@@ -689,10 +727,11 @@ class UserInfoTest(unittest.TestCase):
         self.assertEqual(self._get_fields('filter'), {'Name': "Joe Smith"})
 
     def test_logged_in(self):
-        # logged-in users can see more info
+        ''' logged-in users can see more info '''
 
         def assert_full_info(data):
-            self.assertEqual(data['Name'],  "Joe Smith")
+            ''' assert the data contains all information '''
+            self.assertEqual(data['Name'], "Joe Smith")
             self.assertEqual(data['User ID'], "jsmith")
             self.assertEqual(data['Email'], "jsmith@example.com")
             self.assertEqual(data['Tel/Fax'], "555 1234\n\n555 6789")
@@ -709,6 +748,7 @@ class UserInfoTest(unittest.TestCase):
         assert_full_info(self._get_fields('filter'))
 
     def test_filter_users_csv(self):
+        ''' test filter_users_csv '''
         self.users['confucius'] = {
             'id': 'confucius',
             'full_name': u"孔子", 'organisation': u"儒家",
