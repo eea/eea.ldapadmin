@@ -122,6 +122,7 @@ class OrganisationsUITest(unittest.TestCase):
         self.assertEqual(self.stream.getvalue(), logmsg)
 
     def _verify_org_form_submit_error(self, page, org_info, errors):
+        ''' verify org submit error '''
         err_msg = page.xpath('//div[@class="error-msg"]')
         self.assertEqual(set(err_div.text for err_div in err_msg), errors)
 
@@ -442,6 +443,7 @@ class OrganisationsUIMembersTest(unittest.TestCase):
 class OrganisationsValidationTest(unittest.TestCase):
     ''' validation tests '''
     def _test_bad_values(self, name, values, msg):
+        ''' test bad values '''
         for bad_value in values:
             org_info = dict(org_info_fixture, **{name: bad_value})
             err = validate_org_info('myorg', org_info)
@@ -449,6 +451,7 @@ class OrganisationsValidationTest(unittest.TestCase):
                              "Missed bad %s %r" % (name, bad_value))
 
     def _test_good_values(self, name, values):
+        ''' test good values '''
         for ok_value in values:
             org_info = dict(org_info_fixture, **{name: ok_value})
             err = validate_org_info('myorg', org_info)
@@ -456,6 +459,7 @@ class OrganisationsValidationTest(unittest.TestCase):
                             "False positive %r %r" % (name, ok_value))
 
     def _test_phone(self, name, msg):
+        ''' test phone number '''
         bad_values = ['asdf', '1234adsf', '555 1234', '+55 3123 asdf']
         self._test_bad_values(name, bad_values, msg)
 

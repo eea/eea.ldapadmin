@@ -179,6 +179,7 @@ class CommonTemplateLogic(object):
         return self.context.unrestrictedTraverse("/").absolute_url()
 
     def _get_request(self):
+        ''' get request '''
         return self.context.REQUEST
 
     def admin_menu(self):

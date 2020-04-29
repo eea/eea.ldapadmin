@@ -40,6 +40,7 @@ class Query(SimpleItem, PropertyManager):
     _render_template = TemplateRenderer(CommonTemplateLogic)
 
     def _get_ldap_agent(self):
+        ''' get the ldap agent '''
         return self.aq_parent._get_ldap_agent()
 
     def index_html(self, REQUEST):

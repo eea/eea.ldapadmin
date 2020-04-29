@@ -149,6 +149,7 @@ def manage_add_users_admin(parent, tool_id, REQUEST=None):
 
 
 def _is_authenticated(request):
+    ''' check if user is authenticated '''
     return 'Authenticated' in request.AUTHENTICATED_USER.getRoles()
 
 
@@ -228,6 +229,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         self._config = PersistentMapping(config)
 
     def _set_breadcrumbs(self, stack):
+        ''' set breadcrumbs '''
         self.REQUEST._users_admin_crumbs = stack
 
     def breadcrumbtrail(self):
@@ -244,6 +246,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return stack
 
     def _get_ldap_agent(self, bind=True, secondary=False):
+        ''' get the ldap agent '''
         agent = ldap_config.ldap_agent_with_config(self._config, bind,
                                                    secondary=secondary)
         try:
@@ -801,6 +804,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
             self.absolute_url() + '/edit_user?id=' + user_id)
 
     def _add_to_org(self, agent, org_id, user_id):
+        ''' add user to organisations '''
         try:
             agent.add_to_org(org_id, [user_id])
             log.info("USER %s ADDED %s as member of organisation %s",
@@ -1177,6 +1181,7 @@ InitializeClass(UsersAdmin)
 
 
 def _send_email(addr_from, addr_to, message):
+    ''' send an email '''
     api.portal.send_email(recipient=[addr_to], sender=addr_from,
                           subject=message.get('subject'), body=message)
 
@@ -1441,6 +1446,7 @@ class MigrateDisabledEmails(BrowserView):
     ''' restore the original email to disabled users '''
 
     def _get_metadata(self, metadata):
+        ''' get metadata from json '''
         if not metadata:
             metadata = "[]"
         metadata = json.loads(metadata)
@@ -1730,6 +1736,7 @@ def check_valid_email(node, value):
 
 
 def _transliterate(first_name, last_name, full_name_native, search_helper):
+    ''' transliterate unicode characters to ascii '''
     vocab = set(first_name.split(' ') + last_name.split(' ') +
                 full_name_native.split(' ') + search_helper.split(' '))
     langs = get_available_language_codes()

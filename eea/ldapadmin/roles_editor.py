@@ -73,10 +73,12 @@ def manage_add_roles_editor(parent, tool_id, REQUEST=None):
 
 
 def _is_authenticated(request):
+    ''' check if user is authenticated '''
     return 'Authenticated' in request.AUTHENTICATED_USER.getRoles()
 
 
 def _role_parents(role_id):
+    ''' get role parents '''
     if role_id is None:
         return []
     parents = [role_id]
@@ -317,12 +319,14 @@ class RolesEditor(Folder):
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/manage_edit')
 
     def _get_ldap_agent(self, bind=True):
+        ''' get the ldap agent '''
         agent = ldap_config.ldap_agent_with_config(self._config, bind)
         agent._author = logged_in_user(self.REQUEST)
 
         return agent
 
     def _predefined_filters(self):
+        ''' return predefined filters '''
         return sorted(self.objectValues([query.Query.meta_type]),
                       key=operator.methodcaller('getId'))
 
@@ -453,6 +457,7 @@ class RolesEditor(Folder):
                                      **options)
 
     def _filter_results(self, pattern, title=None):
+        ''' filter results '''
         search_url = self.absolute_url() + '/filter'
         csv_url = self.absolute_url() + '/filter_users_csv'
         options = {
@@ -628,18 +633,21 @@ class RolesEditor(Folder):
         '''
 
     def _merge_roles(self, roles):
+        ''' merge roles '''
         agent = self._get_ldap_agent(bind=True)
 
         for role_source, role_destination in roles.items():
             agent.merge_roles(role_source, role_destination)
 
     def _prefill_roles(self, roles):
+        ''' prefill roles '''
         agent = self._get_ldap_agent(bind=True)
 
         for role_destination, role_source in roles.items():
             agent.prefill_roles_from(role_destination, role_source)
 
     def _create_roles(self, roles):
+        ''' create roles '''
         agent = self._get_ldap_agent(bind=True)
 
         problems = []
@@ -775,6 +783,7 @@ class RolesEditor(Folder):
         return self._render_template('zpt/roles_create.zpt', **options)
 
     def _make_role(self, agent, slug, parent_role_id, description):
+        ''' make role '''
         assert isinstance(slug, six.string_types)
 
         if not slug:
@@ -1506,10 +1515,12 @@ class RolesEditor(Folder):
     manage_add_query = query.manage_add_query
 
     def _role_parents_stack(self, role_id):
+        ''' return role parents '''
         return [(rid, self.absolute_url() + '/?role_id=%s' % rid)
                 for rid in _role_parents(role_id)]
 
     def _set_breadcrumbs(self, stack):
+        ''' set breadcrumbs '''
         self.REQUEST._roles_editor_crumbs = stack
 
     def breadcrumbtrail(self):

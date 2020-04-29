@@ -9,12 +9,11 @@ from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 
 import six
-from zope.component import getUtility
-from zope.sendmail.interfaces import IMailDelivery
 
 from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
 from App.class_init import InitializeClass
+from plone import api
 from eea.ldapadmin import ldap_config, query
 from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.ui_common import (CommonTemplateLogic, TemplateRenderer,
@@ -48,6 +47,7 @@ def manage_add_pwreset_tool(parent, tool_id, REQUEST=None):
 
 
 def _role_parents(role_id):
+    ''' get role parents '''
     if role_id is None:
         return []
     parents = [role_id]
@@ -117,9 +117,11 @@ class PasswordResetTool(SimpleItem):
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/manage_edit')
 
     def _get_ldap_agent(self, bind=True):
+        ''' get the ldap agent '''
         return ldap_config.ldap_agent_with_config(self._config, bind)
 
     def _predefined_filters(self):
+        ''' return predefined filters '''
         return sorted(self.objectValues([query.Query.meta_type]),
                       key=lambda ob: ob.getId())
 
@@ -133,6 +135,7 @@ class PasswordResetTool(SimpleItem):
         return self._render_template('zpt/pwreset_index.zpt', **options)
 
     def _new_token(self, user_id):
+        ''' generate new token '''
         token = random_token().decode()
         self._tokens[token] = TokenData(user_id, datetime.utcnow())
 
@@ -140,6 +143,7 @@ class PasswordResetTool(SimpleItem):
         return token
 
     def _send_token_email(self, addr_to, token, user_info):
+        ''' send token email '''
         addr_from = "no-reply@eionet.europa.eu"
         email_template = load_template('zpt/pwreset_token_email.zpt')
         expiration_time = datetime.utcnow() + timedelta(days=1)
@@ -157,16 +161,8 @@ class PasswordResetTool(SimpleItem):
         subject = "%s account password recovery" % NETWORK_NAME
         message['Subject'] = subject
 
-        try:
-            from plone import api
-            api.portal.send_email(recipient=[addr_to], sender=addr_from,
-                                  subject=subject, body=message)
-        except ImportError:
-            mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
-            try:
-                mailer.send(addr_from, [addr_to], message.as_string())
-            except AssertionError:
-                mailer.send(addr_from, [addr_to], message)
+        api.portal.send_email(recipient=[addr_to], sender=addr_from,
+                              subject=subject, body=message)
 
     security.declareProtected(view, 'ask_for_password_reset')
 
@@ -226,6 +222,7 @@ class PasswordResetTool(SimpleItem):
         return self._render_template('zpt/pwreset_message.zpt', **options)
 
     def _say_token_expired(self, REQUEST):
+        ''' display message that the token expired '''
         msgs = IStatusMessage(REQUEST)
         msg = (u"Password reset link is invalid, perhaps it has "
                u"expired. Please try again.")
@@ -234,6 +231,7 @@ class PasswordResetTool(SimpleItem):
         REQUEST.RESPONSE.redirect(location)
 
     def _expire_tokens(self):
+        ''' expire tokens after cutoff time '''
         expired = []
         cutoff_time = datetime.utcnow() - timedelta(days=1)
 

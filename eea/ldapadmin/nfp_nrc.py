@@ -199,6 +199,7 @@ def get_nfps_for_country(agent, country_code):
 
 
 def _get_roles_for_user(agent, user_id, prefix_dn):
+    ''' get a list of roles of user '''
     out = []
     filterstr = ("(&(objectClass=groupOfUniqueNames)(uniqueMember=%s))" %
                  agent._user_dn(user_id))
@@ -372,6 +373,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         self._config = PersistentMapping(config)
 
     def _set_breadcrumbs(self, stack):
+        ''' set the breadcrumbs '''
         self.REQUEST._nfp_nrc = stack
 
     def breadcrumbtrail(self):
@@ -420,6 +422,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/manage_edit')
 
     def _get_ldap_agent(self, bind=True, secondary=False):
+        ''' get the ldap agent '''
         agent = ldap_config.ldap_agent_with_config(self._config, bind,
                                                    secondary=secondary)
         try:
@@ -848,6 +851,7 @@ class NfpNrc(SimpleItem, PropertyManager):
                                   (self.absolute_url(), user_id, role_id))
 
     def _add_to_org(self, agent, org_id, user_id):
+        ''' add user to organisation '''
         try:
             agent.add_to_org(org_id, [user_id])
         except ldap.INSUFFICIENT_ACCESS:
@@ -861,6 +865,7 @@ class NfpNrc(SimpleItem, PropertyManager):
                 raise
 
     def _remove_from_all_orgs(self, agent, user_id):
+        ''' remove user from all organisations '''
         orgs = agent.user_organisations(user_id)
 
         for org_dn in orgs:

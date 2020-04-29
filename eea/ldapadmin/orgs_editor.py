@@ -110,6 +110,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
     _render_template = TemplateRenderer(CommonTemplateLogic)
 
     def _set_breadcrumbs(self, stack):
+        ''' set the breadcrumbs '''
         self.REQUEST._orgs_editor = stack
 
     def breadcrumbtrail(self):
@@ -183,6 +184,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/manage_edit')
 
     def _get_ldap_agent(self, bind=True, secondary=False):
+        ''' get the ldap agent '''
         agent = ldap_config.ldap_agent_with_config(self._config, bind,
                                                    secondary=secondary)
         agent._author = logged_in_user(self.REQUEST)
@@ -1057,6 +1059,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         return member_id in org_members
 
     def _add_to_org(self, agent, org_id, user_id):
+        ''' add user to org '''
         try:
             agent.add_to_org(org_id, [user_id])
         except ldap.INSUFFICIENT_ACCESS:
@@ -1070,6 +1073,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                 raise
 
     def _remove_from_all_orgs(self, agent, user_id):
+        ''' remove user from all organisations '''
         orgs = agent.user_organisations(user_id)
 
         for org_dn in orgs:
