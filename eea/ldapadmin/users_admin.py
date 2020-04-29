@@ -820,6 +820,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 raise
 
     def _remove_from_all_orgs(self, agent, user_id):
+        ''' remove user from all orgs '''
         orgs = agent.user_organisations(user_id)
 
         for org_dn in orgs:

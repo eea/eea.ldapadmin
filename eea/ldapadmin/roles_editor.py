@@ -631,6 +631,7 @@ class RolesEditor(Folder):
         return self._render_template('zpt/roles_import_xls.zpt',
                                      **{'problems': problems})
         '''
+        raise NotImplementedError
 
     def _merge_roles(self, roles):
         ''' merge roles '''
