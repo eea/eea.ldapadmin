@@ -44,6 +44,13 @@ Click to browse and manage members in National Resource Centres and or Reporters
                   </td>
                   <td tal:content="nfp/description" />
               </tr>
+              <tr tal:attributes="class python:'odd' if path('repeat/nfp/odd') else 'even'">
+                  <td>
+                      <a tal:attributes="href string:${common/base_url}/extranet_reporters?nfp=${nfp/country}"
+                        tal:content="python:'Reporter '+common.code_to_name(country)"></a>
+                  </td>
+                  <td tal:content="nfp/description" />
+              </tr>
             </tal:block>
           </tal:block>
         </tbody>

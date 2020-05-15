@@ -1,5 +1,8 @@
 1.5.38 (unreleased)
 ------------------------
+* add the extranet reporters to the nfp_nrc index [dumitval]
+* add role id in parenthesis for easier identification (extranet
+  reporters listing [dumitval]
 
 1.5.37 (2020-05-15)
 ------------------------
