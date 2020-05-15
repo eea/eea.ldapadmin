@@ -267,8 +267,6 @@ def get_nfps_for_country(agent, country_code):
 
 def _get_roles_for_user(agent, user_id, prefix_dn):
     out = []
-    if "eionet-nfp" in prefix_dn:
-        user_id = user_id and 'pykonch'
     filterstr = ("(&(objectClass=groupOfUniqueNames)(uniqueMember=%s))" %
                  agent._user_dn(user_id))
     branch = ""
