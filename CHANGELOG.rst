@@ -1,4 +1,7 @@
-1.5.37 (unreleased)
+1.5.38 (unreleased)
+------------------------
+
+1.5.37 (2020-05-15)
 ------------------------
 * remove debugging code [dumitval]
 
