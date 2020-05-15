@@ -126,7 +126,7 @@
               .append(
                 $('<h3>')
                   .attr('id', role['role_id'])
-                  .text(role['description'])
+                  .text(role['description'] + ' (' + role['role_id'] + ')')
                 );
                 if (role['users'].length > 0){
                   $('#' + div_id).append(
