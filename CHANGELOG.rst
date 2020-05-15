@@ -1,4 +1,7 @@
-1.5.36 (unreleased)
+1.5.37 (unreleased)
+------------------------
+
+1.5.36 (2020-05-15)
 ------------------------
 * add extranet reporters overview to the eionet-nfp admin tools [dumitval]
 * load reportnet and extranet reporters with ajax [dumitval]
