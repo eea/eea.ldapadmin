@@ -99,7 +99,6 @@ EXTRANET_REPORTER_ROLES = [
     'extranet-ied-ieddat',
     'extranet-inspire-reporter',
     'extranet-mcp-reporter',
-    'extranet-mercury',
     'extranet-mercury-reporter',
     'extranet-mmr-reporter',
     'extranet-msfdreporter-data',
