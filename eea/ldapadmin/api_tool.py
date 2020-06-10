@@ -17,11 +17,11 @@ log = logging.getLogger(__name__)
 
 def manage_add_api_tool(parent, REQUEST=None):
     """ Create a new ApiTool object """
-    id = 'api_tool'
+    tool_id = 'api_tool'
     title = 'Api Tool'
 
-    obj = ApiTool(id, title)
-    parent._setObject(id, obj)
+    obj = ApiTool(tool_id, title)
+    parent._setObject(tool_id, obj)
 
     if REQUEST is not None:
         REQUEST.RESPONSE.redirect(parent.absolute_url() + '/manage_workspace')
@@ -39,9 +39,9 @@ class ApiTool(SimpleItem):
         SimpleItem.manage_options
     )
 
-    def __init__(self, id, title):
+    def __init__(self, tool_id, title):
         super(ApiTool, self).__init__()
-        self.id = id
+        self.id = tool_id
         self.title = title
 
     security.declareProtected(view_management_screens, 'update_countries')
@@ -57,7 +57,7 @@ class ApiTool(SimpleItem):
     security.declareProtected(view_management_screens, 'dump_ldap')
 
     def dump_ldap(self, REQUEST=None, RESPONSE=None):
-        """ """
+        """ dump the LDAP database to cache storage """
         dump_ldap(LDAP_DISK_STORAGE)
         return 'FINISHED dump_ldap @ {}/ to {}'.format(
             self.absolute_url(),

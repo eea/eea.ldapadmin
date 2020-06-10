@@ -1,4 +1,8 @@
+''' ldap admin package '''
+
+
 def initialize(context):
+    ''' initialize '''
     from . import roles_editor
     from . import orgs_editor
     from . import pwreset_tool

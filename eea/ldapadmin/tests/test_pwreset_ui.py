@@ -1,33 +1,56 @@
-import unittest
+''' test the pw reset tool '''
 import re
+import unittest
+from unittest.mock import Mock, patch
 from datetime import datetime, timedelta
-from zope.component import getGlobalSiteManager
-from zope.sendmail.interfaces import IMailDelivery
-from mock import Mock, patch
-from webob import Response
-from webob.exc import HTTPNotFound, HTTPSeeOther
-from webob.dec import wsgify
-from eea.ldapadmin.pwreset_tool import PasswordResetTool, CommonTemplateLogic
-from eea.ldapadmin.ui_common import TemplateRenderer
+import transaction
+from zope.component import getUtility
+from Products.MailHost.interfaces import IMailHost
+from plone.registry.interfaces import IRegistry
+from plone.api import portal
+from plone.api.user import get_current
+from plone.testing.z2 import Browser
 import eea.usersdb
+from eea.ldapadmin.testing import FUNCTIONAL_TESTING
+from eea.ldapadmin.pwreset_tool import manage_add_pwreset_tool
+from eea.ldapadmin.pwreset_tool import PasswordResetTool
 
 
-def stubbed_renderer():
-    renderer = TemplateRenderer(CommonTemplateLogic)
-    renderer.wrap = lambda html: "<html>%s</html>" % html
-    return renderer
+users = [
+    {'id': 'teh-user', 'email': 'testpilot@example.com', 'status': ''},
+]
+mock_agent = Mock(spec=eea.usersdb.UsersDB)
+filter_users = lambda email: [u for u in users if u['email'] == email]
+mock_agent.search_user_by_email.side_effect = filter_users
+PasswordResetTool._get_ldap_agent = Mock(return_value=mock_agent)
+
+portal.send_email = Mock()
 
 
-class StubbedPasswordResetTool(PasswordResetTool):
-    def __init__(self):
-        super(StubbedPasswordResetTool, self).__init__()
-        self._render_template = stubbed_renderer()
+def extract_link_from_email(email, url_base):
+    ''' extract the password reset link from the reset email '''
+    url_piece = url_base + '/confirm_email?token='
+    match = re.search(re.escape(url_piece) + r'(?P<token>\S+)(?=\s)',
+                      email['body'].get_payload())
+    assert match is not None
+    return match.group()
 
-    def absolute_url(self):
-        return "http://test"
+
+def parse_html(html):
+    ''' return a soup parsed object '''
+    from lxml.html.soupparser import fromstring
+    return fromstring(html)
+
+
+def csstext(target, selector):
+    ''' return text from HTML based on CSSSelector '''
+    from lxml.cssselect import CSSSelector
+    return ' '.join(e.text_content() for e in
+                    CSSSelector(selector)(target)).strip()
 
 
 def decode_form(request):
+    ''' decode from values '''
     form = {}
     source = request.POST or request.GET
     for name in source:
@@ -39,262 +62,215 @@ def decode_form(request):
     return form
 
 
-class WsgiApp(object):
-    def __init__(self, ui):
-        self.ui = ui
-        self.session = {}
-
-    @wsgify
-    def __call__(self, request):
-        request.SESSION = self.session
-        request.RESPONSE = Mock()
-        request.form = decode_form(request)
-        try:
-            name = request.path[1:] or 'index_html'
-            method = getattr(self.ui, name)
-        except AttributeError:
-            return HTTPNotFound()
-        else:
-            self.ui.REQUEST = request
-            body = method(request)
-
-            if request.RESPONSE.redirect.called:
-                url = request.RESPONSE.redirect.call_args[0][0]
-                return HTTPSeeOther(location=url)
-
-            else:
-                return Response(body)
-
-
-def parse_email(mimetext):
-    from email.parser import Parser
-    return Parser().parsestr(mimetext)
-
-
-def csstext(target, selector):
-    from lxml.cssselect import CSSSelector
-    return ' '.join(e.text_content() for e in
-                    CSSSelector(selector)(target)).strip()
-
-
-def parse_html(html):
-    from lxml.html.soupparser import fromstring
-    return fromstring(html)
-
-
-def extract_link_from_email(email, url_base):
-    url_piece = url_base + '/confirm_email?token='
-    match = re.search(re.escape(url_piece) + r'(?P<token>\S+)(?=\s)',
-                      email.get_payload())
-    assert match is not None
-    return match.group()
-
-
 class BrowseTest(unittest.TestCase):
+    ''' test browsing to the password reset tool '''
+
+    layer = FUNCTIONAL_TESTING
+
     def setUp(self):
-        self.ui = StubbedPasswordResetTool()
-        self.mock_agent = Mock(spec=eea.usersdb.UsersDB)
-        self.ui._get_ldap_agent = Mock(return_value=self.mock_agent)
+        app = self.layer['app']
+        self.portal = self.layer['portal']
+        manage_add_pwreset_tool(self.portal, 'pwreset')
+        transaction.commit()
+        self.app_url = self.portal.pwreset.absolute_url()
+        self.request = self.layer['portal'].REQUEST
+        self.browser = Browser(app)
+        self.browser.handleErrors = False  # Don't get HTTP 500 pages
 
-        users = [
-            {'id': 'teh-user', 'email': 'testpilot@example.com'},
-        ]
-        filter_users = lambda email: [u for u in users if u['email'] == email]
-        self.mock_agent.search_user_by_email.side_effect = filter_users
+        self.portal.error_log._ignored_exceptions = ()
 
-        self.mail = []
-        self.mail_delivery = Mock()
-        self.mail_delivery.send = lambda afrom, ato, msg: self.mail.append(msg)
+        # pylint: disable=superfluous-parens
+        def raising(self, info):
+            '''print errors'''
+            import traceback
+            traceback.print_tb(info[2])
+            print(info[1])
 
-        gsm = getGlobalSiteManager()
-        gsm.registerUtility(self.mail_delivery, IMailDelivery, "Mail")
+        from Products.SiteErrorLog.SiteErrorLog import SiteErrorLog
+        SiteErrorLog.raising = raising
 
-        app = WsgiApp(self.ui)
+        self.mailhost = getUtility(IMailHost)
+        registry = getUtility(IRegistry)
+        registry["plone.email_from_address"] = "user-directory@plone.org"
+        registry["plone.email_from_name"] = u"Plone test site"
 
-        import wsgi_intercept.mechanize_intercept
-        wsgi_intercept.add_wsgi_intercept('test', 80, lambda: app)
-        self.browser = wsgi_intercept.mechanize_intercept.Browser()
+        request = self.layer['portal'].REQUEST
+        user = get_current()
+        request.AUTHENTICATED_USER = user
+        self.portal.pwreset.REQUEST = self.portal.pwreset.request = request
+        self.mock_agent = self.portal.pwreset._get_ldap_agent()
 
     def tearDown(self):
-        import wsgi_intercept
-        wsgi_intercept.remove_wsgi_intercept('test', 80)
+        mock_agent.set_user_password.reset_mock()
+        portal.send_email.reset_mock()
 
-        gsm = getGlobalSiteManager()
-        gsm.unregisterUtility(self.mail_delivery, IMailDelivery, "Mail")
+    def assert_invalid_token_response(self, page):
+        ''' assert that the tool recognizes a false token '''
+        self.assertEqual(csstext(page, 'div.error'),
+                         "Error\n        Password reset link is invalid, "
+                         "perhaps it has expired. Please try again.")
+        self.assertFalse(self.mock_agent.set_user_password.called)
 
     def test_welcome_page(self):
+        ''' assert the coorect opening of the main index '''
         br = self.browser
-        page = parse_html(br.open('http://test/').read())
+        br.open(self.app_url)
+        page = parse_html(br.contents)
 
-        self.assertEqual(csstext(page, 'h1'), "Reset EIONET account password")
+        self.assertEqual(csstext(page, 'h1'), "Reset Eionet account password")
 
-    def test_enter_email(self):
+    def test_reset_password(self):
+        ''' test the reset password workflow '''
         br = self.browser
-        br.open('http://test/')
-        br.select_form(name='identify')
-        br['email:utf8:ustring'] = "testpilot@example.com"
-        page = parse_html(br.submit().read())
+        br.open(self.app_url)
+        form = br.getForm('identify')
+        form_input = form.getControl(name='email:utf8:ustring')
+        form_input.value = 'testpilot@example.com'
+        form.submit('Reset password')
+        page = parse_html(br.contents)
 
         self.assertTrue("message has been sent" in csstext(page, 'p'))
 
-        self.assertEqual(len(self.ui._tokens), 1)
-        token = list(self.ui._tokens.keys())[0]
+        self.assertEqual(len(self.portal.pwreset._tokens), 1)
 
-        self.assertEqual(len(self.mail), 1)
-        email = parse_email(self.mail[0])
-        self.assertEqual(email['to'], "testpilot@example.com")
-        link = extract_link_from_email(email, 'http://test')
+        self.assertEqual(portal.send_email.call_count, 1)
+        email = portal.send_email.call_args[1]
+        self.assertEqual(email['recipient'], ["testpilot@example.com"])
+        link = extract_link_from_email(email,
+                                       self.portal.pwreset.absolute_url())
+        token = list(self.portal.pwreset._tokens.keys())[0]
         self.assertEqual(link.rsplit('=', 1)[-1], token)
 
-    def test_enter_bad_email(self):
-        br = self.browser
-        br.open('http://test/')
-        br.select_form(name='identify')
-        br['email:utf8:ustring'] = "badtestpilot@example.com"
-        page = parse_html(br.submit().read())
-
-        self.assertEqual(csstext(page, 'div.error-msg'),
-                         "Email address not found in database.")
-        self.assertEqual(len(self.ui._tokens), 0)
-        self.assertEqual(len(self.mail), 0)
-
-    def test_enter_new_password(self):
-        token = self.ui._new_token('teh-user')
-        link = 'http://test/confirm_email?token=' + token
-        br = self.browser
-        page = parse_html(br.open(link).read())
+        link = '%s/confirm_email?token=%s' % (
+            self.portal.pwreset.absolute_url(), token)
+        br.open(link)
+        page = parse_html(br.contents)
 
         self.assertEqual(csstext(page, 'p tt'), 'teh-user')
 
-        br.select_form(name='new-password')
-        br['password:utf8:ustring'] = "NeWpAsS"
-        br['password-confirm:utf8:ustring'] = "NeWpAsS"
-        page = parse_html(br.submit().read())
+        # first should fail with non matching passwords
+        form = br.getForm('new-password')
+        form_input = form.getControl(name='password:utf8:ustring')
+        form_input.value = 'NeWpAsS'
+        form_input = form.getControl(name='password-confirm:utf8:ustring')
+        form_input.value = 'newpass'
+        form.submit('Save new password')
+        page = parse_html(br.contents)
+
+        self.assertEqual(csstext(page, 'div.error'),
+                         "Error\n        Passwords do not match.")
+        form = br.getForm('new-password')
+        form_input = form.getControl(name='password:utf8:ustring')
+        form_input.value = 'NeWpAsS'
+        form_input = form.getControl(name='password-confirm:utf8:ustring')
+        form_input.value = 'NeWpAsS'
+        form.submit('Save new password')
+        page = parse_html(br.contents)
 
         self.mock_agent.set_user_password.assert_called_once_with(
             'teh-user', None, "NeWpAsS")
         self.assertTrue("successfully reset" in csstext(page, 'p'))
 
-    def test_new_passwords_do_not_match(self):
-        token = self.ui._new_token('teh-user')
-        link = 'http://test/confirm_email?token=' + token
+    def test_enter_bad_email(self):
+        ''' test fail on bad email '''
         br = self.browser
-        br.open(link)
-        br.select_form(name='new-password')
-        br['password:utf8:ustring'] = "NeWpAsS"
-        br['password-confirm:utf8:ustring'] = "blah"
-        page = parse_html(br.submit().read())
+        br.open(self.app_url)
+        form = br.getForm('identify')
+        form_input = form.getControl(name='email:utf8:ustring')
+        form_input.value = 'badtestpilot@example.com'
+        form.submit('Reset password')
+        page = parse_html(br.contents)
 
-        self.assertEqual(csstext(page, 'div.error-msg'),
-                         "Passwords do not match.")
-
-        # make sure the new form still works
-        br.select_form(name='new-password')
-        br['password:utf8:ustring'] = "NeWpAsS"
-        br['password-confirm:utf8:ustring'] = "NeWpAsS"
-        page = parse_html(br.submit().read())
-        self.assertTrue("successfully reset" in csstext(page, 'p'))
-
-    def assert_invalid_token_response(self, page):
-        self.assertEqual(csstext(page, 'div.error-msg'),
-                         "Password reset link is invalid, perhaps it has "
-                         "expired. Please try again.")
-        self.assertFalse(self.mock_agent.set_user_password.called)
+        self.assertEqual(csstext(page, 'div.error'),
+                         "Error\n        Email address not found in database.")
+        self.assertEqual(portal.send_email.call_count, 0)
+        self.assertEqual(len(self.portal.pwreset._tokens), 0)
 
     def test_invalid_token_in_link(self):
+        ''' test fail with invalid token in link '''
         token = "bogus-token"
-        link = 'http://test/confirm_email?token=' + token
-        br = self.browser
-        page = parse_html(br.open(link).read())
-
-        self.assert_invalid_token_response(page)
-
-    def test_invalid_token_from_form(self):
-        token = self.ui._new_token('teh-user')
-        link = 'http://test/confirm_email?token=' + token
+        link = '%s/confirm_email?token=%s' % (
+            self.portal.pwreset.absolute_url(), token)
         br = self.browser
         br.open(link)
-        br.select_form(name='new-password')
-        br['password:utf8:ustring'] = "NeWpAsS"
-        br['password-confirm:utf8:ustring'] = "NeWpAsS"
-        del self.ui._tokens[token]
-        page = parse_html(br.submit().read())
+        page = parse_html(br.contents)
 
         self.assert_invalid_token_response(page)
 
     @patch('eea.ldapadmin.pwreset_tool.datetime')
     def test_token_expiry(self, mock_datetime):
-        t0 = datetime(2011, 0o5, 0o2, 13, 30, 22)
+        ''' test fail on expired token '''
+        t0 = datetime.utcnow()
         mock_datetime.utcnow.return_value = t0
-        token = self.ui._new_token('teh-user')
-        link = 'http://test/confirm_email?token=' + token
-
-        mock_datetime.utcnow.return_value = t0 + timedelta(days=1, minutes=1)
         br = self.browser
-        page = parse_html(br.open(link).read())
+        br.open(self.app_url)
+        form = br.getForm('identify')
+        form_input = form.getControl(name='email:utf8:ustring')
+        form_input.value = 'testpilot@example.com'
+        form.submit('Reset password')
+        token = list(self.portal.pwreset._tokens.keys())[0]
+        mock_datetime.utcnow.return_value = t0 + timedelta(days=1, minutes=1)
+        link = '%s/confirm_email?token=%s' % (
+            self.portal.pwreset.absolute_url(), token)
+        br.open(link)
+        page = parse_html(br.contents)
 
         self.assert_invalid_token_response(page)
 
     @patch('eea.ldapadmin.pwreset_tool.datetime')
     def test_token_expiry_in_form(self, mock_datetime):
-        t0 = datetime(2011, 0o5, 0o2, 13, 30, 22)
+        ''' test fail when token expires while in form '''
+        t0 = datetime.utcnow()
         mock_datetime.utcnow.return_value = t0
-        token = self.ui._new_token('teh-user')
-        link = 'http://test/confirm_email?token=' + token
-
         br = self.browser
+        br.open(self.app_url)
+        form = br.getForm('identify')
+        form_input = form.getControl(name='email:utf8:ustring')
+        form_input.value = 'testpilot@example.com'
+        form.submit('Reset password')
+        token = list(self.portal.pwreset._tokens.keys())[0]
+        link = '%s/confirm_email?token=%s' % (
+            self.portal.pwreset.absolute_url(), token)
         br.open(link)
-        br.select_form(name='new-password')
-        br['password:utf8:ustring'] = "NeWpAsS"
-        br['password-confirm:utf8:ustring'] = "NeWpAsS"
-
         mock_datetime.utcnow.return_value = t0 + timedelta(days=1, minutes=1)
-        page = parse_html(br.submit().read())
+        page = parse_html(br.contents)
+        form = br.getForm('new-password')
+        form_input = form.getControl(name='password:utf8:ustring')
+        form_input.value = 'NeWpAsS'
+        form_input = form.getControl(name='password-confirm:utf8:ustring')
+        form_input.value = 'NeWpAsS'
+        form.submit('Save new password')
+        page = parse_html(br.contents)
 
         self.assert_invalid_token_response(page)
 
     def test_no_token_reuse(self):
+        ''' test fail on reusing token '''
         br = self.browser
-        br.open('http://test/')
-        br.select_form(name='identify')
-        br['email:utf8:ustring'] = "testpilot@example.com"
-        br.submit()
-        email = parse_email(self.mail[0])
-        link = extract_link_from_email(email, 'http://test')
-        token = link.rsplit('=')[-1]
+        br.open(self.app_url)
+        form = br.getForm('identify')
+        form_input = form.getControl(name='email:utf8:ustring')
+        form_input.value = 'testpilot@example.com'
+        form.submit('Reset password')
+        token = list(self.portal.pwreset._tokens.keys())[0]
+        link = '%s/confirm_email?token=%s' % (
+            self.portal.pwreset.absolute_url(), token)
+        br.open(link)
+        form = br.getForm('new-password')
+        form_input = form.getControl(name='password:utf8:ustring')
+        form_input.value = 'NeWpAsS'
+        form_input = form.getControl(name='password-confirm:utf8:ustring')
+        form_input.value = 'NeWpAsS'
+        form.submit('Save new password')
 
-        self.assertTrue(token in self.ui._tokens)
+        self.assertFalse(token in self.portal.pwreset._tokens)
 
-        parse_html(br.open(link).read())
-        br.select_form(name='new-password')
-        br['password:utf8:ustring'] = "NeWpAsS"
-        br['password-confirm:utf8:ustring'] = "NeWpAsS"
-        br.submit()
-
-        self.assertFalse(token in self.ui._tokens)
-
-    def test_successful_workflow(self):
+    @patch('eea.ldapadmin.ui_common.CommonTemplateLogic.network_name')
+    def test_network_name_customization(self, mock_network_name):
+        ''' test customisation of network name '''
+        mock_network_name.return_value = 'SINAnet'
         br = self.browser
-        br.open('http://test/')
-        br.select_form(name='identify')
-        br['email:utf8:ustring'] = "testpilot@example.com"
-        br.submit()
-
-        email = parse_email(self.mail[0])
-        link = extract_link_from_email(email, 'http://test')
-        page = parse_html(br.open(link).read())
-        br.select_form(name='new-password')
-        br['password:utf8:ustring'] = "NeWpAsS"
-        br['password-confirm:utf8:ustring'] = "NeWpAsS"
-        page = parse_html(br.submit().read())
-
-        self.mock_agent.set_user_password.assert_called_once_with(
-            'teh-user', None, "NeWpAsS")
-        self.assertTrue("successfully reset" in csstext(page, 'p'))
-
-    @patch('eea.ldapadmin.pwreset_tool.NETWORK_NAME', 'SINAnet')
-    def test_network_name_customization(self):
-        br = self.browser
-        page = parse_html(br.open('http://test/').read())
+        br.open(self.app_url)
+        page = parse_html(br.contents)
 
         self.assertEqual(csstext(page, 'h1'), "Reset SINAnet account password")

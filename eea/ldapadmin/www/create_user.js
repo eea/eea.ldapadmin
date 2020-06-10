@@ -10,7 +10,7 @@ $(function() {
             first_name: fname.val(),
             last_name: lname.val(),
             email: email.val()
-          }
+          };
           $.ajax({
               url: url_search_duplicates,
               data: data,
@@ -21,11 +21,11 @@ $(function() {
        }
     };
     var onBlur = function() {
-        if ($.trim($(this).val()) == "") {
+        if ($.trim($(this).val()) === "") {
             return;
         }
         checkFields();
-    }
+    };
     $('form[name="create-account"]').find(":input").blur(onBlur);
     checkFields();
 });

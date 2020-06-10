@@ -1,16 +1,22 @@
+''' The mock Recorder class '''
 from mock import callargs
 
+
 class Recorder(object):
+    ''' a helper class to follow multiple calls to a mocked method '''
+
     def __init__(self):
         self.call_list = []
 
     def expect(self, *args, **kwargs):
+        ''' store expected calls and arguments '''
         return_value = kwargs.pop('return_value', None)
         side_effect = kwargs.pop('side_effect', None)
         call_spec = (callargs((args, kwargs)), return_value, side_effect)
         self.call_list.append(call_spec)
 
     def assert_end(self):
+        ''' check if all expected calls have have occured '''
         if self.call_list != []:
             raise AssertionError("Expected calls not realized (%d calls)" %
                                  len(self.call_list))

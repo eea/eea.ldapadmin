@@ -1,6 +1,7 @@
+''' ldap configuration '''
+import six
 from eea.usersdb import UsersDB
 from .ui_common import load_template
-import six
 
 
 defaults = {
@@ -17,6 +18,7 @@ defaults = {
 
 
 def read_form(form, edit=False):
+    ''' parse the form config details '''
     config = dict((name, form.get(name, default))
                   for name, default in six.iteritems(defaults))
 
@@ -31,6 +33,8 @@ def read_form(form, edit=False):
 
 
 def ldap_agent_with_config(config, bind=False, secondary=False):
+    ''' return ldap db agent based on config and with or without
+        authentication '''
     db = UsersDB(
         ldap_server=config.get('ldap_server', defaults['ldap_server']),
         # next is for bwd compat with objects created with v1.0.0

@@ -10,9 +10,7 @@ if (!Function.prototype.bind) {
         fToBind = this,
         fNOP    = function() {},
         fBound  = function() {
-          return fToBind.apply(this instanceof fNOP && oThis
-                 ? this
-                 : oThis,
+          return fToBind.apply(this instanceof fNOP && oThis ? this : oThis,
                  aArgs.concat(Array.prototype.slice.call(arguments)));
         };
 
@@ -225,7 +223,10 @@ MembersEditor.prototype = {
         table.find('tbody tr').each(function(){
             var username = $(this).find('td.user_id').html();
             var fullname = $(this).find('td.fullname').html();
-            if (username !== null) usernames.push(username.toString());
+            if (username !== null)
+            {
+                usernames.push(username.toString());
+            }
         });
         return usernames;
     },
@@ -233,7 +234,10 @@ MembersEditor.prototype = {
     _remove_users_from_table: function(table, usernames) {
         _.each(table.find('tbody tr'), function(el){
             var username = $(el).find('td.user_id').html().trim().toString();
-            if (_.contains(usernames, username)) el.remove();
+            if (_.contains(usernames, username))
+            {
+                el.remove();
+            }
         }, this);
     },
 
@@ -252,8 +256,10 @@ MembersEditor.prototype = {
     search_eionet: function(){
         //
         var filter = $("#eionet_search").val().toString().trim();
-        if(!filter.length) return false;
-
+        if(!filter.length)
+        {
+            return false;
+        }
         var self = this;
         this.members_search_table.find('tbody tr').remove();
 
@@ -275,7 +281,10 @@ MembersEditor.prototype = {
         source.find('tbody tr:visible').each(function(){
             var username = $(this).find('td.user_id').html();
             var fullname = $(this).find('td.fullname').html();
-            if (username !== null) res[username] = fullname;
+            if (username !== null)
+            {
+                res[username] = fullname;
+            }
         });
 
         return res;

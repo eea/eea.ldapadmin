@@ -81,7 +81,7 @@
 
         <a class="btn btn-secondary"
             tal:attributes="href string:${common/base_url}/@@edit_members_of_one_role?role_id=${role_id}"
-            tal:condition="python:can_edit_extended_roles and common.context.restrictedTraverse('@@is_extended_enabled')(role_id)">
+            tal:condition="python:can_edit_extended_roles and common.context.restrictedTraverse('is_extended_enabled')(role_id)">
             <img class="middle-image image12" src="/++resource++eea.ldapadmin-www/delete_user.png" />Extended management
         </a>
 

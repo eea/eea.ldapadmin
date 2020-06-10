@@ -1,3 +1,4 @@
+''' Password reset tool '''
 from __future__ import print_function
 import base64
 import hashlib
@@ -7,12 +8,12 @@ from collections import namedtuple
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 
-from zope.component import getUtility
-from zope.sendmail.interfaces import IMailDelivery
+import six
 
 from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
 from App.class_init import InitializeClass
+from plone import api
 from eea.ldapadmin import ldap_config, query
 from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.ui_common import (CommonTemplateLogic, TemplateRenderer,
@@ -23,7 +24,6 @@ from OFS.SimpleItem import SimpleItem
 from persistent.mapping import PersistentMapping
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.statusmessages.interfaces import IStatusMessage
-import six
 
 log = logging.getLogger(__name__)
 
@@ -33,20 +33,21 @@ manage_add_pwreset_tool_html.ldap_config_edit_macro = ldap_config.edit_macro
 manage_add_pwreset_tool_html.config_defaults = lambda: ldap_config.defaults
 
 
-def manage_add_pwreset_tool(parent, id, REQUEST=None):
+def manage_add_pwreset_tool(parent, tool_id, REQUEST=None):
     """ Create a new PasswordResetTool object """
-    form = (REQUEST is not None and REQUEST.form or {})
+    form = (REQUEST.form if REQUEST is not None else {})
     config = ldap_config.read_form(form)
     obj = PasswordResetTool(config)
-    obj.title = form.get('title', id)
-    obj._setId(id)
-    parent._setObject(id, obj)
+    obj.title = form.get('title', tool_id)
+    obj._setId(tool_id)
+    parent._setObject(tool_id, obj)
 
     if REQUEST is not None:
         REQUEST.RESPONSE.redirect(parent.absolute_url() + '/manage_workspace')
 
 
 def _role_parents(role_id):
+    ''' get role parents '''
     if role_id is None:
         return []
     parents = [role_id]
@@ -62,12 +63,15 @@ TokenData = namedtuple('TokenData', 'user_id timestamp')
 
 
 def random_token():
-    bits = hashlib.sha1((str(datetime.now()) + str(random.random())).encode()).digest()
+    ''' create a random token '''
+    bits = hashlib.sha1((str(datetime.now()) +
+                         str(random.random())).encode()).digest()
 
     return base64.urlsafe_b64encode(bits).replace(b'-', b'')[:20]
 
 
 class PasswordResetTool(SimpleItem):
+    ''' Password reset tool '''
     meta_type = 'Eionet Password Reset Tool'
     security = ClassSecurityInfo()
     icon = '++resource++eea.ldapadmin-www/eionet_password_reset_tool.gif'
@@ -79,6 +83,7 @@ class PasswordResetTool(SimpleItem):
 
     _render_template = TemplateRenderer(CommonTemplateLogic)
 
+    # pylint: disable=dangerous-default-value
     def __init__(self, config={}):
         super(PasswordResetTool, self).__init__()
         self._config = PersistentMapping(config)
@@ -87,6 +92,7 @@ class PasswordResetTool(SimpleItem):
     security.declareProtected(view_management_screens, 'get_config')
 
     def get_config(self):
+        ''' return the config dictionary '''
         return dict(self._config)
 
     security.declareProtected(view_management_screens, 'manage_edit')
@@ -111,9 +117,11 @@ class PasswordResetTool(SimpleItem):
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/manage_edit')
 
     def _get_ldap_agent(self, bind=True):
+        ''' get the ldap agent '''
         return ldap_config.ldap_agent_with_config(self._config, bind)
 
     def _predefined_filters(self):
+        ''' return predefined filters '''
         return sorted(self.objectValues([query.Query.meta_type]),
                       key=lambda ob: ob.getId())
 
@@ -127,6 +135,7 @@ class PasswordResetTool(SimpleItem):
         return self._render_template('zpt/pwreset_index.zpt', **options)
 
     def _new_token(self, user_id):
+        ''' generate new token '''
         token = random_token().decode()
         self._tokens[token] = TokenData(user_id, datetime.utcnow())
 
@@ -134,6 +143,7 @@ class PasswordResetTool(SimpleItem):
         return token
 
     def _send_token_email(self, addr_to, token, user_info):
+        ''' send token email '''
         addr_from = "no-reply@eionet.europa.eu"
         email_template = load_template('zpt/pwreset_token_email.zpt')
         expiration_time = datetime.utcnow() + timedelta(days=1)
@@ -151,16 +161,8 @@ class PasswordResetTool(SimpleItem):
         subject = "%s account password recovery" % NETWORK_NAME
         message['Subject'] = subject
 
-        try:
-            from plone import api
-            api.portal.send_email(recipient=[addr_to], sender=addr_from,
-                                  subject=subject, body=message)
-        except ImportError:
-            mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
-            try:
-                mailer.send(addr_from, [addr_to], message.as_string())
-            except AssertionError:
-                mailer.send(addr_from, [addr_to], message)
+        api.portal.send_email(recipient=[addr_to], sender=addr_from,
+                              subject=subject, body=message)
 
     security.declareProtected(view, 'ask_for_password_reset')
 
@@ -220,6 +222,7 @@ class PasswordResetTool(SimpleItem):
         return self._render_template('zpt/pwreset_message.zpt', **options)
 
     def _say_token_expired(self, REQUEST):
+        ''' display message that the token expired '''
         msgs = IStatusMessage(REQUEST)
         msg = (u"Password reset link is invalid, perhaps it has "
                u"expired. Please try again.")
@@ -228,6 +231,7 @@ class PasswordResetTool(SimpleItem):
         REQUEST.RESPONSE.redirect(location)
 
     def _expire_tokens(self):
+        ''' expire tokens after cutoff time '''
         expired = []
         cutoff_time = datetime.utcnow() - timedelta(days=1)
 
@@ -239,7 +243,6 @@ class PasswordResetTool(SimpleItem):
             log.info('Token %r expired.', token)
             del self._tokens[token]
             self._p_changed = True
-
 
     security.declareProtected(view, 'confirm_email')
 
@@ -310,12 +313,12 @@ class PasswordResetTool(SimpleItem):
                             '/messages_html?msg=password-reset')
                 self._p_changed = True
 
-
         REQUEST.RESPONSE.redirect(location)
 
     security.declareProtected(view, 'can_edit_users')
 
     def can_edit_users(self):
+        ''' check permission to edit users '''
         user = self.REQUEST.AUTHENTICATED_USER
 
         return bool(user.has_permission(eionet_edit_users, self))

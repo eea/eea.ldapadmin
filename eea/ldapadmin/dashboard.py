@@ -1,3 +1,4 @@
+''' dashboard configuration '''
 import operator
 import os
 
@@ -78,7 +79,7 @@ FAKES = [
 ]
 
 
-def manage_add_ldap_admin(parent, id, REQUEST=None):
+def manage_add_ldap_admin(parent, tool_id, REQUEST=None):
     """ Create a new Dashboard object """
 
     if REQUEST is not None:
@@ -86,9 +87,9 @@ def manage_add_ldap_admin(parent, id, REQUEST=None):
     else:
         form = {}
     obj = Dashboard()
-    obj.title = form.get('title', id)
-    obj._setId(id)
-    parent._setObject(id, obj)
+    obj.title = form.get('title', tool_id)
+    obj._setId(tool_id)
+    parent._setObject(tool_id, obj)
 
     if REQUEST is not None:
         REQUEST.RESPONSE.redirect(parent.absolute_url() + '/manage_workspace')
@@ -111,6 +112,7 @@ class Dashboard(Folder):
     _render_template = TemplateRenderer(CommonTemplateLogic)
 
     def checkDashboardPermission(self):
+        ''' check permission to access the ldap explorer '''
         return getSecurityManager().checkPermission(
             eionet_access_ldap_explorer, self)
 

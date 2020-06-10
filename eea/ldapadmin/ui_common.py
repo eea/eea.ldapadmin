@@ -1,13 +1,14 @@
+''' common ui methods '''
 from zope.component import getMultiAdapter
-
 from Acquisition import Implicit
 from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin import roles_leaders
 from eea.ldapadmin.countries import get_country
-from .logic_common import _get_user_id, _is_authenticated
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from z3c.pt.pagetemplate import PageTemplateFile as ChameleonTemplate
+
+from .logic_common import _get_user_id, _is_authenticated
 
 
 def get_role_name(agent, role_id):
@@ -27,6 +28,7 @@ def roles_list_to_text(agent, roles):
 
 
 def extend_crumbs(crumbs_html, editor_url, extra_crumbs):
+    ''' Extend the breadcrumb '''
     from lxml.html.soupparser import fromstring
     from lxml.html import tostring
     from lxml.builder import E
@@ -53,7 +55,9 @@ def extend_crumbs(crumbs_html, editor_url, extra_crumbs):
     return tostring(crumbs)
 
 
+# pylint: disable=dangerous-default-value
 def load_template(name, context=None, _memo={}):
+    ''' load the main template '''
     if name not in _memo:
         tpl = ChameleonTemplate(name)
 
@@ -71,10 +75,12 @@ plone5_wrapper = PageTemplateFile('zpt/plone5_wrapper.zpt', globals())
 
 
 class TemplateRenderer(Implicit):
+    ''' the Template renderer '''
     def __init__(self, common_factory=lambda ctx: {}):
         self.common_factory = common_factory
 
     def render(self, template_name, **options):
+        ''' render a given template '''
         context = self.aq_parent
         template = load_template(template_name, context)
 
@@ -89,13 +95,14 @@ class TemplateRenderer(Implicit):
 
         if hasattr(template, 'pt_render'):
             return template.pt_render(namespace)
-        else:
-            return template.__self__.render(**namespace)
+        return template.__self__.render(**namespace)
 
     def browserview(self, context, name):
+        ''' return a named adapter '''
         return getMultiAdapter((context, self.aq_parent.REQUEST), name=name)
 
     def wrap(self, body_html):
+        ''' wrap html in template context '''
         context = self.aq_parent
         plone = False
         # Naaya groupware integration. If present, use the standard template
@@ -106,7 +113,7 @@ class TemplateRenderer(Implicit):
             try:
                 layout = self.aq_parent.getLayoutTool().getCurrentSkin()
                 main_template = layout.getTemplateById('standard_template')
-            except:
+            except Exception:
                 main_template = self.aq_parent.restrictedTraverse(
                     'standard_template.pt')
             main_page_macro = main_template.macros['page']
@@ -132,10 +139,12 @@ class TemplateRenderer(Implicit):
 
 
 class TemplateRendererNoWrap(Implicit):
+    ''' Template renderer with no wrap '''
     def __init__(self, common_factory=lambda ctx: {}):
         self.common_factory = common_factory
 
     def render(self, name, **options):
+        ''' render template '''
         context = self.aq_parent
         template = load_template(name)
         options['context'] = self.aq_parent
@@ -150,52 +159,64 @@ class TemplateRendererNoWrap(Implicit):
 
         if hasattr(template, 'pt_render'):
             return template.pt_render(namespace)
-        else:
-            return template.render(**namespace)
+        return template.render(**namespace)
 
     def __call__(self, name, **options):
         return self.render(name, **options)
 
 
 class CommonTemplateLogic(object):
+    ''' Common template logic '''
     def __init__(self, context):
         self.context = context
 
     def base_url(self):
+        ''' return the absolute url of the context '''
         return self.context.absolute_url()
 
     def site_url(self):
+        ''' return the absolute orl of the root '''
         return self.context.unrestrictedTraverse("/").absolute_url()
 
     def _get_request(self):
+        ''' get request '''
         return self.context.REQUEST
 
     def admin_menu(self):
+        ''' render the admin menu '''
         return self.context._render_template.render("zpt/users/admin_menu.zpt")
 
     def checkPermissionEditOrganisations(self):
+        ''' check permission to edit organisations '''
         return self.context.checkPermissionEditOrganisations()
 
     def can_edit_organisations(self):
+        ''' check permission to edit organisations as defined by the context'''
         return self.context.can_edit_organisations()
 
     def can_edit_organisation(self):
+        ''' check permission to edit organisation as defined by the context'''
         return self.context.can_edit_organisation()
 
     def full_edit_permission(self):
+        ''' check permission to edit users '''
         return self.context.checkPermissionEditUsers()
 
     def is_authenticated(self):
+        ''' check if user is authenticated '''
         return _is_authenticated(self._get_request())
 
     def user_id(self):
+        ''' return the user id '''
         return _get_user_id(self._get_request())
 
     def readonly_alert(self):
+        ''' return a readonly alert message '''
         return self.context._render_template.render(
             "zpt/nfp_nrc/readonly_alert.zpt")
 
     def buttons_bar(self, current_page, role_id, members_in_role=0):
+        ''' render the roles buttons bar '''
         user = self._get_request().AUTHENTICATED_USER
 
         options = {
@@ -215,6 +236,7 @@ class CommonTemplateLogic(object):
         return tr.render('zpt/roles_buttons.zpt', **options)
 
     def search_roles_box(self, pattern=None):
+        ''' render the roles fitlering form '''
         options = {
             'pattern': pattern,
             'predefined_filters': self.context._predefined_filters(),
@@ -225,6 +247,7 @@ class CommonTemplateLogic(object):
 
     @property
     def macros(self):
+        ''' return the template macros '''
         return load_template('zpt/macros.zpt', self.context).macros
 
     @property
@@ -239,11 +262,13 @@ class CommonTemplateLogic(object):
 
         return NETWORK_NAME == 'Eionet'
 
-    @property
+#    @property
     def can_edit_users(self):
+        ''' check permission to edit users '''
         return self.context.can_edit_users()
 
     def code_to_name(self, country_code):
+        ''' return country name from iso code '''
         return get_country(country_code)['name']
 
 

@@ -10,10 +10,9 @@ $(document).ready(function(){
             var ul = $("<ul>");
             for(var i=0; i<data[uid].length; i++){
                 var role = data[uid][i];
-                var li = $("<li>" + role['roles'].join(", ") + " in " +
-                "<a href=\"" + role['ob_url'] +
-                          "\" target=\"blank\">" + role['ob_title']
-                          + "</a></li>");
+                var li = $("<li>" + role.roles.join(", ") + " in " +
+                "<a href=\"" + role.ob_url + "\" target=\"blank\">" +
+                    role.ob_title + "</a></li>");
                 ul.append(li);
             }
             if (data[uid].length) {

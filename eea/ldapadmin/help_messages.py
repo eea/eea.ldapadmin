@@ -1,3 +1,4 @@
+''' dict with help messages '''
 help_messages = {
     'create-user': {
         'id': 'User ID help message',

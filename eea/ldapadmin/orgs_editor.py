@@ -1,3 +1,8 @@
+# pylint: disable=too-many-lines,super-init-not-called,too-many-statements
+# pylint: disable=too-many-branches,too-many-locals,too-many-nested-blocks
+# pylint: disable=too-many-public-methods,dangerous-default-value
+# pylint: disable=global-statement,too-many-instance-attributes
+''' Organisations editor '''
 import codecs
 import itertools
 import logging
@@ -7,31 +12,31 @@ from datetime import datetime
 from email.mime.text import MIMEText
 from io import BytesIO
 
+import six
+from AccessControl import ClassSecurityInfo
+from AccessControl.Permissions import view, view_management_screens
+from AccessControl.unauthorized import Unauthorized
 from zope.component import getUtility
 from zope.sendmail.interfaces import IMailDelivery
 
 import deform
-import eea.usersdb
 import ldap
-from . import ldap_config
-import xlwt
-from AccessControl import ClassSecurityInfo
-from AccessControl.Permissions import view, view_management_screens
-from AccessControl.unauthorized import Unauthorized
-from App.class_init import InitializeClass
-from eea.ldapadmin.constants import NETWORK_NAME
-from eea.ldapadmin.constants import USER_INFO_KEYS
-from .countries import get_country, get_country_options
 from ldap import NO_SUCH_OBJECT
 from ldap import INVALID_DN_SYNTAX
+import xlwt
+from App.class_init import InitializeClass
 from OFS.PropertyManager import PropertyManager
 from OFS.SimpleItem import SimpleItem
 from persistent.mapping import PersistentMapping
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.statusmessages.interfaces import IStatusMessage
+import eea.usersdb
+from eea.ldapadmin.constants import NETWORK_NAME
+from eea.ldapadmin.constants import USER_INFO_KEYS
+from .countries import get_country, get_country_options
+from . import ldap_config
 from .ui_common import (CommonTemplateLogic, TemplateRenderer, extend_crumbs,
                         load_template)
-import six
 
 log = logging.getLogger('orgs_editor')
 
@@ -44,22 +49,23 @@ manage_add_orgs_editor_html.ldap_config_edit_macro = ldap_config.edit_macro
 manage_add_orgs_editor_html.config_defaults = lambda: ldap_config.defaults
 
 
-def manage_add_orgs_editor(parent, id, REQUEST=None):
+def manage_add_orgs_editor(parent, tool_id, REQUEST=None):
     """ Adds a new Eionet Organisations Editor object """
     parent = parent.this()
     form = (REQUEST.form if REQUEST is not None else {})
     config = ldap_config.read_form(form)
     obj = OrganisationsEditor(config)
-    id = id or 'orgeditor'
-    obj.title = form.get('title', id)
-    obj._setId(id)
-    parent._setObject(id, obj)
+    tool_id = tool_id or 'orgeditor'
+    obj.title = form.get('title', tool_id)
+    obj._setId(tool_id)
+    parent._setObject(tool_id, obj)
 
     if REQUEST is not None:
         REQUEST.RESPONSE.redirect(parent.absolute_url() + '/manage_workspace')
 
 
 def get_template_macro(name):
+    ''' get the template macro '''
     return load_template('zpt/orgs_macros.zpt').macros[name]
 
 
@@ -70,10 +76,12 @@ del user_info_edit_schema['last_name']
 
 
 def _is_authenticated(request):
-    return ('Authenticated' in request.AUTHENTICATED_USER.getRoles())
+    ''' check if user is authenticated '''
+    return 'Authenticated' in request.AUTHENTICATED_USER.getRoles()
 
 
 def logged_in_user(request):
+    ''' get the uid of the authenticated user '''
     user_id = ''
 
     if _is_authenticated(request):
@@ -86,6 +94,7 @@ def logged_in_user(request):
 
 
 class OrganisationsEditor(SimpleItem, PropertyManager):
+    ''' Organisations editor '''
     meta_type = 'Eionet Organisations Editor'
     security = ClassSecurityInfo()
     icon = '++resource++eea.ldapadmin-www/eionet_organisations_editor.gif'
@@ -101,9 +110,11 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
     _render_template = TemplateRenderer(CommonTemplateLogic)
 
     def _set_breadcrumbs(self, stack):
+        ''' set the breadcrumbs '''
         self.REQUEST._orgs_editor = stack
 
     def breadcrumbtrail(self):
+        ''' create the breadcrumb trail '''
         crumbs_html = self.aq_parent.breadcrumbtrail(self.REQUEST)
         extra_crumbs = getattr(self.REQUEST, '_orgs_editor', [])
 
@@ -116,6 +127,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
     security.declareProtected(view_management_screens, 'get_config')
 
     def get_config(self):
+        ''' return the object's configuration '''
         return dict(self._config)
 
     security.declareProtected(view_management_screens, 'manage_edit')
@@ -125,6 +137,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
     security.declarePublic('checkPermissionView()')
 
     def checkPermissionView(self):
+        ''' check permission to access object '''
         user = self.REQUEST.AUTHENTICATED_USER
 
         return bool(user.has_permission(view, self))
@@ -132,6 +145,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
     security.declareProtected(view, 'can_edit_organisation')
 
     def can_edit_organisation(self):
+        ''' check permission to edit organisation '''
         user = self.REQUEST.AUTHENTICATED_USER
 
         if user.has_permission(eionet_edit_orgs, self):
@@ -145,12 +159,12 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
             if nfp_country == 'eea':
                 return org_info['country'] in ['eu', 'int']
-            else:
-                return nfp_country == org_info['country']
+            return nfp_country == org_info['country']
 
     security.declarePublic('checkPermissionEditOrganisations()')
 
     def checkPermissionEditOrganisations(self):
+        ''' check permission to edit organisations '''
         user = self.REQUEST.AUTHENTICATED_USER
 
         return bool(user.has_permission(eionet_edit_orgs, self))
@@ -158,6 +172,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
     security.declarePublic('can_edit_organisations')
 
     def can_edit_organisations(self):
+        ''' check if current user can edit organisations '''
         return bool(self.checkPermissionEditOrganisations() or
                     self.nfp_for_country())
 
@@ -169,6 +184,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/manage_edit')
 
     def _get_ldap_agent(self, bind=True, secondary=False):
+        ''' get the ldap agent '''
         agent = ldap_config.ldap_agent_with_config(self._config, bind,
                                                    secondary=secondary)
         agent._author = logged_in_user(self.REQUEST)
@@ -281,7 +297,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             org_sheet.write(i + 2, 3, row['postal_address'], style_normal)
             org_sheet.write(i + 2, 4, row['fax'], style_normal)
             org_sheet.write(i + 2, 5, row['email'], style_normal)
-            members = agent.members_in_org(row['id'])   # TODO: optimize
+            members = agent.members_in_org(row['id'])
             org_sheet.write(i + 2, 6, len(members), style_normal)
 
         org_sheet.col(1).set_width(9000)
@@ -789,6 +805,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         return self._render_template('zpt/orgs_members.zpt', **options)
 
     def notify_on_membership_op(self, user_info, org_info, operation):
+        ''' notify user about membership change '''
         addr_from = "no-reply@eea.europa.eu"
         addr_to = user_info['email']
 
@@ -823,9 +840,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
     def demo_members(self, REQUEST):
         """ view """
-        from ldap import NO_SUCH_OBJECT
 
-        format = REQUEST.form.get('format', 'html')
+        file_format = REQUEST.form.get('format', 'html')
         agent = self._get_ldap_agent()
         orgs_by_id = agent.all_organisations()
 
@@ -856,7 +872,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             'orgs': orgs
         }
 
-        if format == 'csv':
+        if file_format == 'csv':
             import csv
 
             output = BytesIO()
@@ -910,10 +926,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             return None
         user_id_list = REQUEST.form['user_id']
 
-        assert type(user_id_list) is list
+        assert isinstance(user_id_list, list)
 
         for user_id in user_id_list:
-            assert type(user_id) is str
+            assert isinstance(user_id, str)
 
         agent = self._get_ldap_agent(bind=True)
         try:
@@ -947,7 +963,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
             return None
         search_query = REQUEST.form.get('search_query', u"")
-        assert type(search_query) is six.text_type
+        assert isinstance(search_query, six.text_type)
 
         if search_query:
             agent = self._get_ldap_agent()
@@ -986,10 +1002,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             return None
         user_id_list = REQUEST.form['user_id']
 
-        assert type(user_id_list) is list
+        assert isinstance(user_id_list, list)
 
         for user_id in user_id_list:
-            assert type(user_id) is str
+            assert isinstance(user_id, str)
 
         agent = self._get_ldap_agent(bind=True)
         with agent.new_action():
@@ -1012,6 +1028,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                                          '/members_html?id=' + org_id)
 
     def can_edit_users(self, user=None):
+        ''' check if authenticated user can edit users '''
         if user is None:
             user = self.REQUEST.AUTHENTICATED_USER
 
@@ -1042,6 +1059,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         return member_id in org_members
 
     def _add_to_org(self, agent, org_id, user_id):
+        ''' add user to org '''
         try:
             agent.add_to_org(org_id, [user_id])
         except ldap.INSUFFICIENT_ACCESS:
@@ -1055,6 +1073,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                 raise
 
     def _remove_from_all_orgs(self, agent, user_id):
+        ''' remove user from all organisations '''
         orgs = agent.user_organisations(user_id)
 
         for org_dn in orgs:
@@ -1077,7 +1096,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                     raise
 
     def nfp_for_country(self):
-        """ """
+        """ check if authenticated user is NFP, and if yes, return country """
         user_id = self.REQUEST.AUTHENTICATED_USER.getId()
 
         if user_id:
@@ -1094,7 +1113,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                     return group[0].replace('eionet-nfp-oc-', '')
 
     def get_ldap_user_groups(self, user_id):
-        """ """
+        """ return the ldap roles of user """
         agent = self._get_ldap_agent(bind=True, secondary=True)
         ldap_roles = sorted(agent.member_roles_info('user',
                                                     user_id,
@@ -1131,6 +1150,7 @@ VALIDATION_ERRORS = {
 
 
 def validate_org_info(org_id, org_info, create_mode=False):
+    ''' org info validation '''
     errors = {}
 
     if create_mode:
