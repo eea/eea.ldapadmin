@@ -379,33 +379,7 @@ class RolesEditor(Folder):
         permitted_senders = self._get_permitted_senders_info(mail_info)
         user = REQUEST.AUTHENTICATED_USER
 
-        parent = self.getPhysicalRoot()
-        # used to show alternative links in the Locations section
-        has_groupware = False
-
-        all_roles = [role_id] + subrole_ids
         locations = {}
-        # locations is a dict like:
-        # {
-        # 'eionet-nrc': [[('Viewer',
-        #  {'is_site': True,
-        #   'ob': <GroupwareSite at /nfp-eionet>, 'path': ''})],
-        #  [('Contributor',
-        #   {'is_site': True,
-        #    'ob': <GroupwareSite at /eea-west-balkans-cooperation>,
-        #            'path': ''})],
-        # }
-
-        for gsite in parent.objectValues("Groupware site"):
-            has_groupware = True
-            auth_tool = gsite.getAuthenticationTool()
-
-            for source in auth_tool.getSources():
-                for rid, info in source.get_groups_roles_map().items():
-                    if rid in all_roles:
-                        if rid not in locations:
-                            locations[rid] = []
-                        locations[rid].append(info)
 
         def get_user_info(user_dn):
             ''' return the user info from the ldap agent '''
@@ -432,7 +406,6 @@ class RolesEditor(Folder):
             'locations': locations,
             'agent': agent,
             'get_user_info': get_user_info,
-            'has_groupware': has_groupware,
         }
 
         self._set_breadcrumbs(self._role_parents_stack(role_id))
@@ -1122,7 +1095,7 @@ class RolesEditor(Folder):
         REQUEST.RESPONSE.setHeader('Content-Disposition',
                                    "attachment;filename=%s" % filename)
         header = ('Name', 'User ID', 'Email', 'Tel', 'Fax', 'Postal Address',
-                  'Organisation')
+                  'Organisation ID', 'Organisation Title')
 
         if subroles:
             header = ('Subrole', ) + header
@@ -1145,7 +1118,8 @@ class RolesEditor(Folder):
             usr = members['users'][u_id]
             row = [usr['full_name'], usr['id'], usr['email'],
                    usr['phone'], usr['fax'], usr['postal_address'],
-                   usr['organisation']]
+                   usr['organisation'],
+                   agent.org_info(usr['organisation'])['name']]
 
             if subroles:
                 row.insert(0, '\n'.join(usr['roles']))

@@ -40,7 +40,7 @@ validation_errors_fixture = {
 
 class StubbedOrganisationsEditor(OrganisationsEditor):
     ''' Stubbed organisations editor '''
-    def __init__(self, tool_id):
+    def __init__(self):
         super(StubbedOrganisationsEditor, self).__init__()
         self._render_template = TemplateRenderer(CommonTemplateLogic)
         self._render_template.wrap = lambda html: "<html>%s</html>" % html
@@ -57,7 +57,7 @@ class OrganisationsUITest(unittest.TestCase):
     layer = INTEGRATION_TESTING
 
     def setUp(self):
-        self.ui = StubbedOrganisationsEditor('organisations')
+        self.ui = StubbedOrganisationsEditor()
         user = get_current()
         base_setup(self, user)
         self.ui.checkPermissionView = Mock(return_value=True)
@@ -172,8 +172,9 @@ class OrganisationsUITest(unittest.TestCase):
 
         form = page.xpath('//form')[0]
         self.assertEqual(form.attrib['action'], 'URL/edit_organisation')
-        self.assertEqual(form.xpath('//input[@name="id"]')[0].attrib['value'],
-                         'eu_bridgeclub')
+        self.assertEqual(
+            form.xpath('//input[@name="id"]')[0].attrib['value'],
+            'eu_bridgeclub')
 
         for name, value in six.iteritems(org_info_fixture):
             if name == 'postal_address':
@@ -317,7 +318,7 @@ class OrganisationsUIMembersTest(unittest.TestCase):
     layer = INTEGRATION_TESTING
 
     def setUp(self):
-        self.ui = StubbedOrganisationsEditor('organisations')
+        self.ui = StubbedOrganisationsEditor()
         user = get_current()
         base_setup(self, user)
         self.mock_agent.user_organisations = Mock(return_value=[])
@@ -362,8 +363,9 @@ class OrganisationsUIMembersTest(unittest.TestCase):
         form = page.xpath('//form')[0]
         self.assertEqual(form.attrib['action'],
                          'URL/remove_members')
-        self.assertEqual(form.xpath('.//input[@name="id"]')[0].attrib['value'],
-                         'eu_bridgeclub')
+        self.assertEqual(
+            form.xpath('.//input[@name="id"]')[0].attrib['value'],
+            'eu_bridgeclub')
 
         members_td = page.xpath(
             './/table[@class="account-datatable dataTable"]/tbody/tr/td')

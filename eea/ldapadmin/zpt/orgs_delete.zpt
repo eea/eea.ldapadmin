@@ -16,7 +16,7 @@
   <p>
     <input type="hidden" name="id" tal:attributes="value org_info/id"/>
     <input type="submit" value="Yes, delete"/>
-    <a tal:attributes="href string:${common/base_url}/organisation?id=${org_info/id}"
+    <a tal:attributes="href string:${common/base_url}/organisation?org_id=${org_info/id}"
         >Cancel</a>
   </p>
 

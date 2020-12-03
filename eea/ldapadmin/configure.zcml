@@ -20,24 +20,10 @@
     />
 
   <browser:page
-    name="create_user"
-    for=".nfp_nrc.NfpNrc"
-    permission="zope2.View"
-    class=".nfp_nrc.CreateUser"
-    />
-
-  <browser:page
     name="reset_user"
     for=".users_admin.UsersAdmin"
     permission="eionet.EditUsers"
     class=".users_admin.ResetUser"
-    />
-
-  <browser:page
-    name="auto_disable_users"
-    for=".users_admin.UsersAdmin"
-    permission="eionet.EditUsers"
-    class=".users_admin.AutomatedUserDisabler"
     />
 
   <browser:page

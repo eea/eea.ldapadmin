@@ -10,7 +10,7 @@
 
 <form name="add-editor" action="manage_add_query" method="post">
     <p>
-        <label>Object ID: <input name="id" /></label>
+        <label>Object ID: <input name="query_id" /></label>
     </p>
     <p>
         <label>Title: <input name="title" /></label>

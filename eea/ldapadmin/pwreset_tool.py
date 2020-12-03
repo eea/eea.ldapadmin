@@ -313,7 +313,7 @@ class PasswordResetTool(SimpleItem):
                             '/messages_html?msg=password-reset')
                 self._p_changed = True
 
-        REQUEST.RESPONSE.redirect(location)
+        return REQUEST.RESPONSE.redirect(location)
 
     security.declareProtected(view, 'can_edit_users')
 

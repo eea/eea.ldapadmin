@@ -19,12 +19,12 @@ import six
 from six.moves import map
 from six.moves import range
 from six.moves import zip
+from zope.component import getUtility
 import colander
 import jellyfish
 import xlrd
 from dateutil import parser
 from unidecode import unidecode
-from zope.component import getUtility
 from plone import api
 
 import deform
@@ -45,19 +45,19 @@ from transliterate import get_available_language_codes, translit
 from validate_email import INCORRECT_EMAIL, validate_email
 from naaya.ldapdump.interfaces import IDumpReader
 from eea import usersdb
+from eea.usersdb.db_agent import (EmailAlreadyExists, NameAlreadyExists,
+                                  UserNotFound)
 from eea.ldapadmin import eionet_profile
 from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.help_messages import help_messages
-from eea.ldapadmin.ui_common import NaayaViewPageTemplateFile
-from eea.usersdb.db_agent import (EmailAlreadyExists, NameAlreadyExists,
-                                  UserNotFound)
+from eea.ldapadmin.ui_common import NaayaViewPageTemplateFile, orgs_in_country
+from eea.ldapadmin.ui_common import CommonTemplateLogic  # load_template,
+from eea.ldapadmin.ui_common import TemplateRenderer, TemplateRendererNoWrap
+from eea.ldapadmin.ui_common import extend_crumbs, nfp_for_country
+from eea.ldapadmin.import_export import excel_headers_to_object
+from eea.ldapadmin.import_export import generate_excel
+from eea.ldapadmin.import_export import set_response_attachment
 from . import ldap_config
-from .ui_common import CommonTemplateLogic  # load_template,
-from .ui_common import TemplateRenderer, TemplateRendererNoWrap, extend_crumbs
-from .countries import get_country_options
-from .import_export import excel_headers_to_object
-from .import_export import generate_excel
-from .import_export import set_response_attachment
 
 try:
     import simplejson as json
@@ -105,7 +105,6 @@ def generate_user_id(first_name, last_name, agent, id_list):
         return base_uid
 
     for i in range(8):
-        # import pdb; pdb.set_trace() check uid generation
         for letter in string.ascii_lowercase:
             new_uid = base_uid[:8 - i - 1] + letter + base_uid[8 - i:]
 
@@ -113,6 +112,7 @@ def generate_user_id(first_name, last_name, agent, id_list):
                     new_uid in id_list):
 
                 return new_uid
+    return None
 
 
 def process_url(url):
@@ -241,7 +241,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
     def _user_bread(self, uid, stack):
         """ Prepends a breadcrumb with link to main user page """
-        stack.insert(0, (uid, self.absolute_url() + "/edit_user?id=" + uid))
+        stack.insert(0,
+                     (uid, self.absolute_url() + "/edit_user?user_id=" + uid))
 
         return stack
 
@@ -287,6 +288,25 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         return bool(user.has_permission(eionet_edit_users, self))
 
+    security.declarePublic('nfp_has_edit_access')
+
+    def nfp_has_edit_access(self, user):
+        """ check if the user is an NFP and if the country corresponds """
+        nfp_country = nfp_for_country(self)
+
+        if nfp_country:
+            country_orgs = orgs_in_country(self, nfp_country)
+
+            return user['organisation'] in country_orgs
+        return None
+
+    security.declarePublic('can_edit_user')
+
+    def can_edit_user(self, user):
+        ''' check permission to edit organisation '''
+
+        return self.can_edit_users() or self.nfp_has_edit_access(user=user)
+
     security.declarePublic('checkPermissionEditUsers')
 
     def checkPermissionEditUsers(self):
@@ -298,7 +318,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
     def index_html(self, REQUEST):
         """ view """
 
-        if not self.checkPermissionEditUsers() and not self.nfp_has_access():
+        if not self.checkPermissionEditUsers() and not nfp_for_country(self):
             raise Unauthorized
         options = {
             'can_edit': self.can_edit_users(),
@@ -405,7 +425,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         agent.create_user(user_id, user_info)
         agent.set_user_password(user_id, None, password)
 
-        if self.nfp_has_access() or send_helpdesk_email:
+        if nfp_for_country(self) or send_helpdesk_email:
             self._send_new_user_email(
                 user_id, user_info,
                 source=(send_helpdesk_email and 'bulk' or 'nfp'))
@@ -445,24 +465,27 @@ class UsersAdmin(SimpleItem, PropertyManager):
         """ Returns body of confirmation email """
 
         site = api.portal.get()
-        if not self.checkPermissionEditUsers() and not self.nfp_has_access():
+        if not self.checkPermissionEditUsers() and not nfp_for_country(self):
             raise Unauthorized
-        options = {'first_name': first_name, 'user_id': user_id}
+        options = {'first_name': first_name, 'user_id': user_id or 'USER_ID'}
         options['site_title'] = site.title
 
         return self._render_template.render(
             "zpt/users/email_registration_confirmation.zpt",
             **options)
 
+    security.declarePublic('create_user')
+
     def create_user(self, REQUEST):
         """ view """
         agent = self._get_ldap_agent()
 
-        if not (self.checkPermissionEditUsers() or
-                self.nfp_has_access()):
+        permission_to_edit = self.checkPermissionEditUsers()
+        nfp_country = nfp_for_country(self)
+
+        if not (permission_to_edit or nfp_country):
             raise Unauthorized
 
-        nfp_country = self.nfp_for_country()
         form_data = dict(REQUEST.form)
         errors = {}
 
@@ -503,25 +526,36 @@ class UsersAdmin(SimpleItem, PropertyManager):
             schema['email'].validator = colander.All(
                 schema['email'].validator, check_valid_email)
 
+        # no need to make the id mandatory, it will be generated if empty
+        schema['id'].missing = None
+
+        # if the user is an NFP and doesn't have explicit user editing
+        # permission, hide the user id field with a hack
+        # and add a help_text on the reasonToCreate field
+        if not permission_to_edit:
+            schema['id'].description = 'to_be_generated'
+            schema['password'].missing = None
+
+            schema['reasonToCreate'].help_text = (
+                "Please indicate reason of account creation like e.g. "
+                "NRC nomination, data reporter in Reportnet for directive XYZ,"
+                " project XXXX cooperation ....")
+        else:
+            schema['id'].validator = colander.All(
+                schema['id'].validator, no_duplicate_id_validator)
+
         for children in schema.children:
             help_text = help_messages['create-user'].get(children.name, None)
             setattr(children, 'help_text', help_text)
 
-        schema['id'].validator = colander.All(
-            schema['id'].validator, no_duplicate_id_validator)
-
         if self.checkPermissionEditUsers():
-            try:
-                agent_orgs = agent.all_organisations()
-            except ldap.SIZELIMIT_EXCEEDED:
-                secondary_agent = self._get_ldap_agent(secondary=True)
-                agent_orgs = secondary_agent.all_organisations()
+            secondary_agent = self._get_ldap_agent(secondary=True)
+            agent_orgs = secondary_agent.all_organisations()
         else:
-            agent_orgs = self.orgs_in_country(nfp_country)
+            agent_orgs = orgs_in_country(self, nfp_country)
 
         orgs = [{'id': k, 'text': v['name'], 'text_native': v['name_native'],
                  'ldap':True}
-
                 for k, v in agent_orgs.items()]
         org = form_data.get('organisation')
 
@@ -564,15 +598,21 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 msg = u"Please correct the errors below and try again."
                 msgs.add(msg, type='error')
             else:
-                user_id = user_info['id']
+                user_id = user_info.get('id')
+                if not user_id:
+                    user_id = generate_user_id(user_info['first_name'],
+                                               user_info['last_name'],
+                                               agent,
+                                               [])
+                user_info['id'] = user_id
                 agent = self._get_ldap_agent(bind=True)
                 with agent.new_action():
                     user_info.pop('skip_email_validation', None)
                     try:
                         self._create_user(agent, user_info)
-                    except NameAlreadyExists as e:
+                    except NameAlreadyExists:
                         errors['id'] = 'This ID is alreay registered'
-                    except EmailAlreadyExists as e:
+                    except EmailAlreadyExists:
                         errors['email'] = 'This email is alreay registered'
                     else:
                         new_org_id = user_info['organisation']
@@ -597,17 +637,19 @@ class UsersAdmin(SimpleItem, PropertyManager):
                                  user_id)
 
                 if not errors:
+                    if not self.checkPermissionEditUsers():
+                        return REQUEST.RESPONSE.redirect(
+                            'https://www.eionet.europa.eu/directory/user?'
+                            'uid=%s' % user_id)
                     return REQUEST.RESPONSE.redirect(self.absolute_url())
-                else:
-                    msg = u"Please correct the errors below and try again."
-                    msgs.add(msg, type='error')
+                msg = u"Please correct the errors below and try again."
+                msgs.add(msg, type='error')
 
         self._set_breadcrumbs([('Create User', '#')])
         options = {
             'form_data': form_data,
             'errors': errors,
-            'schema': schema,
-            'nfp_access': self.nfp_has_access()
+            'schema': schema
         }
 
         return self._render_template('zpt/users/create.zpt', **options)
@@ -615,7 +657,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
     def find_duplicates(self, REQUEST):
         """ view """
 
-        if not self.checkPermissionEditUsers() and not self.nfp_has_access():
+        if not self.checkPermissionEditUsers() and not nfp_for_country(self):
             raise Unauthorized
         fname = REQUEST.form.get('first_name', '')
         lname = REQUEST.form.get('last_name', '')
@@ -644,8 +686,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         agent = self._get_ldap_agent(bind=True)
         user = agent.user_info(user_id)
 
-        if not (self.checkPermissionEditUsers() or
-                self.nfp_has_edit_access(user=user)):
+        if not self.can_edit_user(user):
             raise Unauthorized
         # message
 
@@ -654,13 +695,10 @@ class UsersAdmin(SimpleItem, PropertyManager):
         else:
             form_data = user
 
-        try:
-            orgs = agent.all_organisations()
-        except ldap.SIZELIMIT_EXCEEDED:
-            secondary_agent = self._get_ldap_agent(secondary=True)
-            orgs = secondary_agent.all_organisations()
+        secondary_agent = self._get_ldap_agent(secondary=True)
+        all_orgs = secondary_agent.all_organisations()
         orgs = [{'id': k, 'text': v['name'], 'text_native': v['name_native'],
-                 'ldap': True} for k, v in orgs.items()]
+                 'ldap': True} for k, v in all_orgs.items()]
         user_orgs = list(agent.user_organisations(user_id))
 
         if not user_orgs:
@@ -668,7 +706,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
             if org:
                 orgs.append(
-                    {'id': org, 'text': org, 'text_native': '', 'ldap': False})
+                    {'id': org, 'text': org, 'text_native': '',
+                     'ldap': False})
         else:
             org = user_orgs[0]
             org_id = agent._org_id(org)
@@ -737,7 +776,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         return self._render_template('zpt/users/edit.zpt', **options)
 
-    security.declareProtected(eionet_edit_users, 'edit_user')
+    security.declarePublic('edit_user')
 
     def edit_user(self, REQUEST):
         """ view """
@@ -746,6 +785,10 @@ class UsersAdmin(SimpleItem, PropertyManager):
             return self.edit_user_html(REQUEST)
 
         user_id = REQUEST.form['id']
+
+        agent = self._get_ldap_agent(bind=True)
+        if not self.can_edit_user(agent.user_info(user_id)):
+            raise Unauthorized
 
         schema = user_info_edit_schema.clone()
         # if the skip_email_validation field exists but is not activated,
@@ -771,7 +814,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
             return self.edit_user_html(REQUEST, REQUEST.form, errors)
         else:
-            agent = self._get_ldap_agent(bind=True)
 
             new_org_id = new_info['organisation']
             new_org_id_valid = agent.org_exists(new_org_id)
@@ -800,6 +842,9 @@ class UsersAdmin(SimpleItem, PropertyManager):
             log.info("%s EDITED USER %s as member of %s",
                      logged_in_user(REQUEST), user_id, new_org_id)
 
+        came_from = REQUEST.get('came_from')
+        if came_from:
+            return REQUEST.RESPONSE.redirect(came_from)
         return REQUEST.RESPONSE.redirect(
             self.absolute_url() + '/edit_user?id=' + user_id)
 
@@ -1052,11 +1097,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
         from ldap import NO_SUCH_OBJECT
         agent = self._get_ldap_agent()
         bulk_emails = []
-        try:
-            orgs = agent.all_organisations()
-        except ldap.SIZELIMIT_EXCEEDED:
-            secondary_agent = self._get_ldap_agent(secondary=True)
-            orgs = secondary_agent.all_organisations()
+        secondary_agent = self._get_ldap_agent(secondary=True)
+        orgs = secondary_agent.all_organisations()
 
         for org_id, info in six.iteritems(orgs):
             members = agent.members_in_org(org_id)
@@ -1076,7 +1118,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
     def eionet_profile(self, REQUEST):
         """ Renders eionet full profile page """
-        uid = REQUEST.form['id']
+        uid = REQUEST.form['user_id']
         agent = self._get_ldap_agent()
         user = agent.user_info(uid)
         options = {'user': user, 'services': eionet_profile.get_endpoints(),
@@ -1119,54 +1161,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         pwreset_tool = site.objectValues('Eionet Password Reset Tool')[0]
         email = user_info['email']
         pwreset_tool.ask_for_password_reset(email=email, on_create=True)
-
-    def nfp_has_access(self):
-        """ check if the user is member of an nfp role """
-
-        return self.nfp_for_country()
-
-    def nfp_has_edit_access(self, user):
-        """ check if the user is an NFP and if the country corresponds """
-        nfp_country = self.nfp_for_country()
-
-        if nfp_country:
-            country_orgs = self.orgs_in_country(nfp_country)
-
-            return user['organisation'] in country_orgs
-
-    def orgs_in_country(self, country):
-        """ return a dict of organisations in countrys """
-        agent = self._get_ldap_agent()
-        try:
-            orgs_by_id = agent.all_organisations()
-        except ldap.SIZELIMIT_EXCEEDED:
-            secondary_agent = self._get_ldap_agent(secondary=True)
-            orgs_by_id = secondary_agent.all_organisations()
-        countries = dict(get_country_options(country=country))
-        orgs = {}
-
-        for org_id, info in six.iteritems(orgs_by_id):
-            country_info = countries.get(info['country'])
-
-            if country_info:
-                orgs[org_id] = info
-
-        return orgs
-
-    def nfp_for_country(self):
-        """ Return country code for which the current user has NFP role
-        or None otherwise"""
-        user_id = self.REQUEST.AUTHENTICATED_USER.getId()
-
-        if user_id:
-            ldap_groups = self.get_ldap_user_groups(user_id)
-
-            for group in ldap_groups:
-                if 'eionet-nfp-cc-' in group[0]:
-                    return group[0].replace('eionet-nfp-cc-', '')
-
-                if 'eionet-nfp-mc-' in group[0]:
-                    return group[0].replace('eionet-nfp-mc-', '')
 
     def get_ldap_user_groups(self, user_id):
         """ return the ldap roles the user is member of """
@@ -1372,7 +1366,7 @@ class BulkUserImporter(BrowserView):
 
                 try:
                     self.context.send_confirmation_email(user_info)
-                except Exception as e:
+                except Exception:
                     msgs.add("Error sending confirmation email to %s"
                              % user_info['email'], type='error')
                 try:
@@ -1688,42 +1682,6 @@ class AutomatedUserDisabler(BrowserView):
         message['Subject'] = "[Report on auto-disabled users]"
         message.set_payload(body.encode('utf-8'), charset='utf-8')
         _send_email(addr_from, addr_to, message)
-
-
-def auto_disable_users():
-    """ A script to automatically disable users
-
-    Should be run as ``bin/zope-instance run /path/to/this/disable_users.py``
-    """
-
-    from AccessControl.SecurityManagement import newSecurityManager
-    from AccessControl.SpecialUsers import system
-    from Globals import DB
-    from Testing.makerequest import makerequest
-    from zope.component import getMultiAdapter
-    import transaction
-
-    app = DB.open().root()['Application']
-
-    def spoofRequest(app):
-        ''' spoof a request '''
-        admin = app.acl_users.getUserById("admin")
-        newSecurityManager(None, admin)
-
-        return makerequest(app)
-
-    app = spoofRequest(app)
-
-    site = app['nfp-eionet']
-    users = site['users']
-    request = users.REQUEST
-    system.id = u'SystemUser'
-    request.AUTHENTICATED_USER = request['AUTHENTICATED_USER'] = system
-    disable_view = getMultiAdapter((users, request), name="auto_disable_users")
-    disable_view()
-
-    transaction.commit()
-    app._p_jar.sync()
 
 
 def check_valid_email(node, value):

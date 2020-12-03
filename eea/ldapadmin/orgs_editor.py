@@ -16,8 +16,6 @@ import six
 from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
 from AccessControl.unauthorized import Unauthorized
-from zope.component import getUtility
-from zope.sendmail.interfaces import IMailDelivery
 
 import deform
 import ldap
@@ -33,10 +31,11 @@ from Products.statusmessages.interfaces import IStatusMessage
 import eea.usersdb
 from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.constants import USER_INFO_KEYS
+from eea.ldapadmin.ui_common import (CommonTemplateLogic, TemplateRenderer,
+                                     extend_crumbs, load_template,
+                                     orgs_in_country, nfp_for_country)
 from .countries import get_country, get_country_options
 from . import ldap_config
-from .ui_common import (CommonTemplateLogic, TemplateRenderer, extend_crumbs,
-                        load_template)
 
 log = logging.getLogger('orgs_editor')
 
@@ -150,7 +149,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
         if user.has_permission(eionet_edit_orgs, self):
             return True
-        nfp_country = self.nfp_for_country()
+        nfp_country = nfp_for_country(self)
 
         if nfp_country:
             agent = self._get_ldap_agent()
@@ -174,7 +173,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
     def can_edit_organisations(self):
         ''' check if current user can edit organisations '''
         return bool(self.checkPermissionEditOrganisations() or
-                    self.nfp_for_country())
+                    nfp_for_country(self))
 
     security.declareProtected(view_management_screens, 'manage_edit_save')
 
@@ -191,23 +190,25 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
         return agent
 
+    security.declareProtected(view, 'index_html')
+
     def index_html(self, REQUEST):
         """ Index of organisations """
         country = REQUEST.get('country')
-        nfp_country = self.nfp_for_country()
-
-        if self.title != 'National Organisations':
-            nfp_country = None
+        nfp_country = nfp_for_country(self)
 
         if not (self.checkPermissionView() or nfp_country):
             raise Unauthorized
-        agent = self._get_ldap_agent(secondary=True)
-        orgs_by_id = agent.all_organisations()
+        if not self.checkPermissionEditOrganisations() and nfp_country:
+            orgs_by_id = orgs_in_country(self, nfp_country)
+        else:
+            agent = self._get_ldap_agent(secondary=True)
+            orgs_by_id = agent.all_organisations()
         countries = dict(get_country_options(country=nfp_country or country))
         orgs = []
 
         for org_id, info in six.iteritems(orgs_by_id):
-            country = countries.get(info['country'].decode())
+            country = countries.get(info['country'])
 
             if country:
                 orgs.append({'id': org_id,
@@ -235,7 +236,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             countries = dict(get_country_options())
             nfp_country = 'all'
         else:
-            nfp_country = self.nfp_for_country()
+            nfp_country = nfp_for_country(self)
 
             if not (self.checkPermissionView() or nfp_country):
                 raise Unauthorized
@@ -244,7 +245,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         orgs = []
 
         for org_id, info in six.iteritems(orgs_by_id):
-            country = countries.get(info['country'].decode())
+            country = countries.get(info['country'])
 
             if country:
                 orgs.append({'id': org_id,
@@ -454,7 +455,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
     def organisation(self, REQUEST):
         """ Index of an organisation """
-        nfp_country = self.nfp_for_country()
+        nfp_country = nfp_for_country(self)
         org_id = REQUEST.form.get('id')
 
         if not org_id:
@@ -483,7 +484,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
             return REQUEST.RESPONSE.redirect(self.absolute_url())
 
-        nfp_country = self.nfp_for_country()
+        nfp_country = nfp_for_country(self)
 
         if self.checkPermissionEditOrganisations():
             countries = get_country_options()
@@ -570,7 +571,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
             return None
 
-        nfp_country = self.nfp_for_country()
+        nfp_country = nfp_for_country(self)
 
         if self.checkPermissionEditOrganisations():
             countries = get_country_options()
@@ -586,10 +587,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         options['org_info'].update(data or {})
 
         org_id = options['org_info']['id']
-        self._set_breadcrumbs([(options['org_info']['id'],
-                                self.absolute_url() + '/organisation?id=%s' %
-                                org_id),
-                               ('Edit Organisation', '#')])
+        self._set_breadcrumbs([
+            (options['org_info']['id'],
+             self.absolute_url() + '/organisation?id=%s' % org_id),
+            ('Edit Organisation', '#')])
 
         return self._render_template('zpt/orgs_edit.zpt', **options)
 
@@ -652,10 +653,9 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         options = {
             'org_id': org_id,
         }
-        self._set_breadcrumbs([(org_id,
-                                self.absolute_url() + '/organisation?id=%s' %
-                                org_id),
-                               ('Rename Organisation', '#')])
+        self._set_breadcrumbs([
+            (org_id, self.absolute_url() + '/organisation?id=%s' % org_id),
+            ('Rename Organisation', '#')])
 
         return self._render_template('zpt/orgs_rename.zpt', **options)
 
@@ -682,7 +682,6 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         if org_id == new_org_id:
             REQUEST.RESPONSE.redirect(self.absolute_url() +
                                       '/organisation?id=' + org_id)
-
             return
 
         agent = self._get_ldap_agent(bind=True)
@@ -696,7 +695,6 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             msgs.add(msg, type='error')
             REQUEST.RESPONSE.redirect(self.absolute_url() +
                                       '/organisation?id=' + org_id)
-
             return
 
         except eea.usersdb.OrgRenameError:
@@ -731,10 +729,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         options = {
             'org_info': self._get_ldap_agent().org_info(org_id),
         }
-        self._set_breadcrumbs([(options['org_info']['id'],
-                                self.absolute_url() + '/organisation?id=%s' %
-                                org_id),
-                               ('Delete Organisation', '#')])
+        self._set_breadcrumbs([
+            (options['org_info']['id'],
+             self.absolute_url() + '/organisation?id=%s' % org_id),
+            ('Delete Organisation', '#')])
 
         return self._render_template('zpt/orgs_delete.zpt', **options)
 
@@ -797,10 +795,9 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             'organisation': agent.org_info(org_id),
             'org_members': org_members,
         }
-        self._set_breadcrumbs([(org_id,
-                                self.absolute_url() + '/organisation?id=%s' %
-                                org_id),
-                               ('Members', '#')])
+        self._set_breadcrumbs([
+            (org_id, self.absolute_url() + '/organisation?id=%s' % org_id),
+            ('Members', '#')])
 
         return self._render_template('zpt/orgs_members.zpt', **options)
 
@@ -828,13 +825,9 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         message['To'] = user_info['email']
         message['Subject'] = subject
 
-        try:
-            from plone import api
-            api.portal.send_email(recipient=[addr_to], sender=addr_from,
-                                  subject=subject, body=message)
-        except ImportError:
-            mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
-            mailer.send(addr_from, [addr_to], message)
+        from plone import api
+        api.portal.send_email(recipient=[addr_to], sender=addr_from,
+                              subject=subject, body=message)
 
     security.declareProtected(eionet_edit_orgs, 'demo_members')
 
@@ -979,13 +972,11 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             'found_users': found_active,
             'found_inactive': len(found_active) != len(found_users)
         }
-        self._set_breadcrumbs([(org_id,
-                                self.absolute_url() + '/organisation?id=%s' %
-                                org_id),
-                               ('Members',
-                                self.absolute_url() + '/members_html?id=%s' %
-                                org_id),
-                               ('Add Members', '#')])
+        self._set_breadcrumbs([
+            (org_id, self.absolute_url() + '/organisation?id=%s' % org_id),
+            ('Members',
+             self.absolute_url() + '/members_html?id=%s' % org_id),
+            ('Add Members', '#')])
 
         return self._render_template('zpt/orgs_add_members.zpt', **options)
 
@@ -1094,23 +1085,6 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                         pass
                 else:
                     raise
-
-    def nfp_for_country(self):
-        """ check if authenticated user is NFP, and if yes, return country """
-        user_id = self.REQUEST.AUTHENTICATED_USER.getId()
-
-        if user_id:
-            ldap_groups = self.get_ldap_user_groups(user_id)
-
-            for group in ldap_groups:
-                if 'eionet-nfp-cc-' in group[0]:
-                    return group[0].replace('eionet-nfp-cc-', '')
-
-                if 'eionet-nfp-mc-' in group[0]:
-                    return group[0].replace('eionet-nfp-mc-', '')
-
-                if 'eionet-nfp-oc-' in group[0]:
-                    return group[0].replace('eionet-nfp-oc-', '')
 
     def get_ldap_user_groups(self, user_id):
         """ return the ldap roles of user """

@@ -50,27 +50,7 @@
               var klass = is_odd + is_disabled_class;
               var user = $('<tr>').addClass(klass)
 
-              var radio = $('<td>');
-              radio.addClass('checkbox-td leader-cell');
-              radio.append(
-                $('<input>')
-                  .attr({type: 'radio',
-                         name: 'leader-for-' + role['role_id'],
-                         value: user_info['id'],
-                         id: 'leader-' + user_info['id'],
-                         checked: (($.inArray(user_info['id'], role['leaders']) != -1) ? 'checked' : false)})
-                  .addClass('leader')
-              ).append(
-                $('<span>')
-                  .addClass('leader_container tipsy-title')
-                  .attr({title: result['naming']['leader']['long']})
-                  .css({display: ($.inArray(user_info['id'], role['leaders']) != -1) ? 'inline' : 'none'})
-                  .text(result['naming']['leader']['short'])
-              );
-              user.append(radio);
-
               var name = $('<td>');
-              name.addClass(user_info['ldap_org'] ? '' : 'red');
               name.append(
                 $('<a>')
                   .attr({href: 'users/edit_user?id=' + user_info['id'] + '&came_from=' + window.location.href})
@@ -124,7 +104,6 @@
                     $('<span>').text('(' + user_info['ldap_org']['id']+ ')')
                   )
                 } else {
-                  $('#problematic:hidden').slideDown();
                   org.append(
                     $('<span>').text(user_info['organisation'])
                   )
@@ -147,24 +126,13 @@
               .append(
                 $('<h3>')
                   .attr('id', role['role_id'])
-                  .text(role['description']).append(
-                    $('<div class="nrc-action-buttons">').html(
-                      ('<a href="add_member_html?role_id='+role['role_id']+'" class="button"><img src="/++resource++eea.ldapadmin-www/users.png" class="middle-image image12" alt="" title="Remove members" /> Add members</a>')
-                    ).append('&nbsp;').append(
-                      $('<a>')
-                        .attr({href: 'remove_members_html?role_id='+role['role_id'],
-                               class: 'last-button button'}).html(
-                          '<img src="/++resource++eea.ldapadmin-www/delete_user.png" class="middle-image image12" alt="" title="Remove members" />')
-                        .text('Remove members')
-                    )
-                  )
+                  .text(role['description'] + ' (' + role['role_id'] + ')')
                 );
                 if (role['users'].length > 0){
                   $('#' + div_id).append(
                     $('<table>').addClass('account-datatable')
                       .append($('<thead>')
                         .append($('<tr>')
-                          .append($('<td>').text('PCP'))
                           .append($('<td>').text('Name'))
                           .append(thead_a)
                         )
@@ -180,7 +148,7 @@
                     $('<a>')
                       .addClass('account-link button')
                       .attr({
-                        href: '#main-container',
+                        href: '#container',
                         title: 'Click to go back to top'
                       })
                       .html('<img src="/++resource++eea.ldapadmin-www/up.png" class="middle-image image12" alt="" title="Back to top" /> Back to top')
@@ -193,15 +161,8 @@
   });
 </script>
 
-<h1> National Reference Centres for <span tal:replace="options/country_name" /></h1>
+<h1> Extranet reporters for <span tal:replace="options/country_name" /></h1>
 <tal:block condition="options/top_role_dns">
-    <ul>
-      <li>You can <b>add or remove members</b> in the NRC roles of your country. Use the Add/Remove members buttons on the top right of each NRC role.</li>
-      <li>You can <b>change profile information</b> of existing NRCs by clicking their names.</li>
-      <li>You can <b>nominate the PCP-s</b> by clicking the corresponding checkbox in the first column of each NRC role.</li>
-    </ul>
-    <div id="problematic" class="system-msg" style="display:none">There are problematic users with regards to their connection to a national organisation (marked with red background)</div>
-
     <!-- hack to load images before the ajax finishes -->
     <div style="opacity 0; position: fixed; z-index: -10; top: 0; left: 0">
       <img src="/++resource++eea.ldapadmin-www/up.png" />
@@ -216,5 +177,6 @@
 <p tal:condition="not: options/top_role_dns" class="search-message">
   <img src="/++resource++eea.ldapadmin-www/info.png" class="middle-image"
        title="Note" alt=""/>
-  No National Reference Centres found.
+  No Extranet reporters found.
 </p>
+
