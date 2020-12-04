@@ -68,6 +68,7 @@ class OrganisationsUITest(unittest.TestCase):
         org_info = dict(org_info_fixture)
         org_info['id'] = 'eu_bridgeclub'
         self.mock_agent.org_info = Mock(return_value=org_info)
+        self.mock_agent.member_roles_info = Mock(return_value=[])
         self.stream = StringIO()
         self.handler = logging.StreamHandler(self.stream)
         self.log = logging.getLogger('orgs_editor')
@@ -173,7 +174,7 @@ class OrganisationsUITest(unittest.TestCase):
         form = page.xpath('//form')[0]
         self.assertEqual(form.attrib['action'], 'URL/edit_organisation')
         self.assertEqual(
-            form.xpath('//input[@name="id"]')[0].attrib['value'],
+            form.xpath('//input[@name="id:utf8:ustring"]')[0].attrib['value'],
             'eu_bridgeclub')
 
         for name, value in six.iteritems(org_info_fixture):
