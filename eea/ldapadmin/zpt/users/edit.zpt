@@ -10,15 +10,15 @@
         <a tal:attributes="href string:/password-reset?email=${options/user/email}"
              class="btn btn-primary" role="button">Reset password</a>
     </li>
-    <li tal:condition="not:disabled_user" class="portletItem">
+    <li tal:condition="python: here.can_edit_users() and not disabled_user" class="portletItem">
           <a tal:attributes="href string:${common/base_url}/disable_user?id=${options/user/id}"
              class="btn btn-primary" role="button">Disable account</a>
     </li>
-    <li tal:condition="disabled_user" class="portletItem">
+    <li tal:condition="python: here.can_edit_users() and disabled_user" class="portletItem">
           <a tal:attributes="href string:${common/base_url}/enable_user?id=${options/user/id}"
              class="btn btn-primary" role="button">Enable account</a>
     </li>
-    <li tal:condition="not:disabled_user" class="portletItem">
+    <li tal:condition="python: here.can_edit_users() and not disabled_user" class="portletItem">
           <a tal:attributes="href string:${common/base_url}/reset_user?id=${options/user/id}"
              class="btn btn-primary" role="button">Reset user roles</a>
     </li>
@@ -57,6 +57,7 @@
     <script>
         $(document).ready(function() { $("#edit-organisation").addClass('pat-select2'); });
     </script>
+    <input name="came_from" type="hidden" tal:attributes="value request/came_from|nothing" />
     </form>
 </div>
 

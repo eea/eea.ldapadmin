@@ -21,8 +21,7 @@
         /* ]]> */
     </script>
 
-    <form action="" method="post" name="create-account"
-        tal:define="nfp_access options/nfp_access">
+    <form action="" method="post" name="create-account">
 
         <table class="account-table">
 
@@ -37,7 +36,10 @@
                     'required': schema_field.required,
                     'help_text': schema_field.help_text
                     }">
-                    <metal:block use-macro="template/macros/form-field" />
+                    <metal:block tal:condition="python:field['label'] != 'to_be_generated'"
+                      use-macro="template/macros/form-field" />
+                    <input tal:condition="python:field['label'] == 'to_be_generated'"
+                      type='hidden' id="edit-id" name="id:utf8:ustring" />
                 </tr>
             </tal:block>
 
@@ -118,7 +120,7 @@
                     input_classes python:['error'] if field['error'] else [];
                     is_textarea python: widget_template == 'textarea';
                     is_select python: widget_template=='select';
-                    is_checkbox python: widget_template=='checkbox';">
+                    is_checkbox python: widget_template=='checkbox'">
                     <span tal:condition="field/required"/>
                     <input tal:condition="python: not (is_textarea or is_select or is_checkbox)"
                         type="text" size="50"

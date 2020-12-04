@@ -135,7 +135,7 @@
     <tal:block condition="python:is_authenticated and options['can_edit']"
         tal:define="locations options/locations">
         <h2>Locations where <tt tal:content="python:role_name or '[ROOT]'" /> has permissions</h2>
-        <div tal:condition="python: (not options['has_groupware']) and options['role_id']">
+        <div tal:condition="options/role_id">
             <ul>
                 <li>
                     <a href="" target="_blank"

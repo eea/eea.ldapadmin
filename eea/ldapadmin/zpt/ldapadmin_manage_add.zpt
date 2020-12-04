@@ -12,7 +12,7 @@
 <form action="manage_add_ldap_admin" method="post"
       name="add-users-admin" class="add-users-admin">
     <label for="edit-id">id</label>
-    <input name="id" id="edit-id" value="eionet_ldap_explorer" />
+    <input name="tool_id" id="edit-id" value="eionet_ldap_explorer" />
     <br />
 
     <label for="edit-title">Title</label>

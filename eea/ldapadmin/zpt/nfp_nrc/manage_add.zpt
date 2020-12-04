@@ -13,7 +13,7 @@
       name="add-nfp-nrc" class="add-nfp-nrc"
       tal:define="config template/config_defaults">
     <label for="edit-id">id</label>
-    <input name="id" id="edit-id" />
+    <input name="tool_id" id="edit-id" />
     <br />
 
     <label for="edit-title">Title</label>

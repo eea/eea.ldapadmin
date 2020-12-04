@@ -1,14 +1,14 @@
 ''' common ui methods '''
+import six
 from zope.component import getMultiAdapter
 from Acquisition import Implicit
 from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin import roles_leaders
-from eea.ldapadmin.countries import get_country
+from eea.ldapadmin.countries import get_country, get_country_options
+from eea.ldapadmin.logic_common import _get_user_id, _is_authenticated
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from z3c.pt.pagetemplate import PageTemplateFile as ChameleonTemplate
-
-from .logic_common import _get_user_id, _is_authenticated
 
 
 def get_role_name(agent, role_id):
@@ -55,6 +55,39 @@ def extend_crumbs(crumbs_html, editor_url, extra_crumbs):
     return tostring(crumbs)
 
 
+def orgs_in_country(context, country):
+    """ return a dict of organisations in countrys """
+    agent = context._get_ldap_agent(secondary=True)
+    orgs_by_id = agent.all_organisations()
+    countries = dict(get_country_options(country=country))
+    orgs = {}
+
+    for org_id, info in six.iteritems(orgs_by_id):
+        country_info = countries.get(info['country'])
+
+        if country_info:
+            orgs[org_id] = info
+
+    return orgs
+
+
+def nfp_for_country(context):
+    """ Return country code for which the current user has NFP role
+        or None otherwise"""
+    user_id = context.REQUEST.AUTHENTICATED_USER.getId()
+
+    if user_id:
+        ldap_groups = context.get_ldap_user_groups(user_id)
+
+        for group in ldap_groups:
+            if ('eionet-nfp-mc-' in group[0] or
+                'eionet-nfp-cc-' in group[0] or
+                    'eionet-nfp-oc-' in group[0]):
+
+                return group[0].rsplit('-', 1)[-1]
+    return None
+
+
 # pylint: disable=dangerous-default-value
 def load_template(name, context=None, _memo={}):
     ''' load the main template '''
@@ -70,7 +103,6 @@ def load_template(name, context=None, _memo={}):
     return _memo[name]
 
 
-zope2_wrapper = PageTemplateFile('zpt/zope2_wrapper.zpt', globals())
 plone5_wrapper = PageTemplateFile('zpt/plone5_wrapper.zpt', globals())
 
 
@@ -84,11 +116,8 @@ class TemplateRenderer(Implicit):
         context = self.aq_parent
         template = load_template(template_name, context)
 
-        try:
-            namespace = template.pt_getContext((), options)
-        except AttributeError:      # Plone5 compatibility
-            namespace = template.__self__._pt_get_context(
-                context, context.REQUEST, options)
+        namespace = template.__self__._pt_get_context(
+            context, context.REQUEST, options)
 
         namespace['common'] = self.common_factory(context)
         namespace['browserview'] = self.browserview
@@ -104,29 +133,11 @@ class TemplateRenderer(Implicit):
     def wrap(self, body_html):
         ''' wrap html in template context '''
         context = self.aq_parent
-        plone = False
-        # Naaya groupware integration. If present, use the standard template
-        # of the current site
-        macro = self.aq_parent.restrictedTraverse('/').get('gw_macro')
+        main_template = self.aq_parent.restrictedTraverse(
+            'main_template')
+        main_page_macro = main_template.macros['master']
 
-        if macro:
-            try:
-                layout = self.aq_parent.getLayoutTool().getCurrentSkin()
-                main_template = layout.getTemplateById('standard_template')
-            except Exception:
-                main_template = self.aq_parent.restrictedTraverse(
-                    'standard_template.pt')
-            main_page_macro = main_template.macros['page']
-        else:
-            main_template = self.aq_parent.restrictedTraverse(
-                'main_template')
-            plone = True
-            main_page_macro = main_template.macros['master']
-
-        if plone:
-            tmpl = plone5_wrapper.__of__(context)
-        else:
-            tmpl = zope2_wrapper.__of__(context)
+        tmpl = plone5_wrapper.__of__(context)
 
         return tmpl(main_page_macro=main_page_macro, body_html=body_html)
 
@@ -150,11 +161,7 @@ class TemplateRendererNoWrap(Implicit):
         options['context'] = self.aq_parent
         options['request'] = self.aq_parent.REQUEST
 
-        try:
-            namespace = template.pt_getContext((), options)
-        except AttributeError:      # Plone5 compatibility
-            namespace = template._pt_get_context(
-                context, context.REQUEST, options)
+        namespace = template._pt_get_context(context, context.REQUEST, options)
         namespace['common'] = self.common_factory(context)
 
         if hasattr(template, 'pt_render'):
@@ -270,12 +277,6 @@ class CommonTemplateLogic(object):
     def code_to_name(self, country_code):
         ''' return country name from iso code '''
         return get_country(country_code)['name']
-
-
-def network_name(self):
-    """ E.g. EIONET, SINAnet etc. """
-
-    return NETWORK_NAME
 
 
 class NaayaViewPageTemplateFile(ViewPageTemplateFile):

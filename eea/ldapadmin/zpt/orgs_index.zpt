@@ -53,7 +53,7 @@
           <td>
             <a tal:define="orgs_url string:${common/base_url}/organisation"
               tal:attributes="href string:${orgs_url}?id=${org/id}"
-              tal:content="org/name" />
+              tal:content="string:${org/name} (${org/id})" />
           </td>
         </tr>
       </tbody>
