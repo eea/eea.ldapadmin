@@ -8,7 +8,7 @@ Changelog
 * remove all python2/zope2 specific functionality/support
   [valipod refs #109366]
 * add organisation id in the table listing to allow filtering
- [dumitval refs #125322]
+  [dumitval refs #125322]
 * Add organisation title to the XLS exported fields in role member
   export [dumitval refs #125322]
 * remove possibility to autodisable users [dumitval]
