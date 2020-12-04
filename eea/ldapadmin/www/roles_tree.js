@@ -30,7 +30,7 @@ function subrole_expand(evt) {
     }
     var tr = $(this).parent().parent();
     var subroles_tr_list = tr.data('subroles-box');
-    if(subroles_tr_list === null || subroles_tr_list == undefined) {
+    if(subroles_tr_list === null || subroles_tr_list === undefined) {
         fetch_subroles(tr);
     } else {
         subroles_tr_list.show();
