@@ -73,7 +73,8 @@
               name.addClass(user_info['ldap_org'] ? '' : 'red');
               name.append(
                 $('<a>')
-                  .attr({href: 'users/edit_user?id=' + user_info['id'] + '&came_from=' + window.location.href})
+                  .attr({href: '/directory/user?uid=' + user_info['id'],
+                         target: '_blank'})
                   .text(user_info['full_name'])
               )
               user.append(name);
@@ -149,7 +150,7 @@
                   .attr('id', role['role_id'])
                   .text(role['description']).append(
                     $('<div class="nrc-action-buttons">').html(
-                      ('<a href="add_member_html?role_id='+role['role_id']+'" class="button"><img src="/++resource++eea.ldapadmin-www/users.png" class="middle-image image12" alt="" title="Remove members" /> Add members</a>')
+                      ('<a href="add_member_html?role_id='+role['role_id']+'" class="button"><img src="/++resource++eea.ldapadmin-www/users.png" class="middle-image image12" alt="" title="Add members" /> Add members</a>')
                     ).append('&nbsp;').append(
                       $('<a>')
                         .attr({href: 'remove_members_html?role_id='+role['role_id'],

@@ -54,7 +54,8 @@
               name.addClass(user_info['ldap_org'] ? '' : 'red');
               name.append(
                 $('<a>')
-                  .attr({href: 'users/edit_user?id=' + user_info['id'] + '&came_from=' + window.location.href})
+                  .attr({href: '/directory/user?uid=' + user_info['id'],
+                         target: '_blank'})
                   .text(user_info['full_name'])
               )
               user.append(name);

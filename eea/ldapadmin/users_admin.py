@@ -288,25 +288,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         return bool(user.has_permission(eionet_edit_users, self))
 
-    security.declarePublic('nfp_has_edit_access')
-
-    def nfp_has_edit_access(self, user):
-        """ check if the user is an NFP and if the country corresponds """
-        nfp_country = nfp_for_country(self)
-
-        if nfp_country:
-            country_orgs = orgs_in_country(self, nfp_country)
-
-            return user['organisation'] in country_orgs
-        return None
-
-    security.declarePublic('can_edit_user')
-
-    def can_edit_user(self, user):
-        ''' check permission to edit organisation '''
-
-        return self.can_edit_users() or self.nfp_has_edit_access(user=user)
-
     security.declarePublic('checkPermissionEditUsers')
 
     def checkPermissionEditUsers(self):
@@ -639,8 +620,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 if not errors:
                     if not self.checkPermissionEditUsers():
                         return REQUEST.RESPONSE.redirect(
-                            'https://www.eionet.europa.eu/directory/user?'
-                            'uid=%s' % user_id)
+                            '/directory/user?uid=%s' % user_id)
                     return REQUEST.RESPONSE.redirect(self.absolute_url())
                 msg = u"Please correct the errors below and try again."
                 msgs.add(msg, type='error')
@@ -676,6 +656,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template_no_wrap('zpt/users/find_duplicates.zpt',
                                              **options)
 
+    security.declareProtected(eionet_edit_users, 'edit_user_html')
+
     def edit_user_html(self, REQUEST, data=None, errors=None):
         """
         View for editing profile information for a given user
@@ -685,10 +667,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         user_id = REQUEST.form['id']
         agent = self._get_ldap_agent(bind=True)
         user = agent.user_info(user_id)
-
-        if not self.can_edit_user(user):
-            raise Unauthorized
-        # message
 
         if data:
             form_data = data
@@ -776,7 +754,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         return self._render_template('zpt/users/edit.zpt', **options)
 
-    security.declarePublic('edit_user')
+    security.declareProtected(eionet_edit_users, 'edit_user')
 
     def edit_user(self, REQUEST):
         """ view """
@@ -787,8 +765,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         user_id = REQUEST.form['id']
 
         agent = self._get_ldap_agent(bind=True)
-        if not self.can_edit_user(agent.user_info(user_id)):
-            raise Unauthorized
 
         schema = user_info_edit_schema.clone()
         # if the skip_email_validation field exists but is not activated,
@@ -842,9 +818,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
             log.info("%s EDITED USER %s as member of %s",
                      logged_in_user(REQUEST), user_id, new_org_id)
 
-        came_from = REQUEST.get('came_from')
-        if came_from:
-            return REQUEST.RESPONSE.redirect(came_from)
         return REQUEST.RESPONSE.redirect(
             self.absolute_url() + '/edit_user?id=' + user_id)
 
@@ -1161,15 +1134,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         pwreset_tool = site.objectValues('Eionet Password Reset Tool')[0]
         email = user_info['email']
         pwreset_tool.ask_for_password_reset(email=email, on_create=True)
-
-    def get_ldap_user_groups(self, user_id):
-        """ return the ldap roles the user is member of """
-        agent = self._get_ldap_agent(bind=True, secondary=True)
-        ldap_roles = sorted(agent.member_roles_info('user',
-                                                    user_id,
-                                                    ('description',)))
-
-        return ldap_roles
 
 
 InitializeClass(UsersAdmin)

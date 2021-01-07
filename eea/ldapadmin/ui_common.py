@@ -77,7 +77,7 @@ def nfp_for_country(context):
     user_id = context.REQUEST.AUTHENTICATED_USER.getId()
 
     if user_id:
-        ldap_groups = context.get_ldap_user_groups(user_id)
+        ldap_groups = get_ldap_user_groups(context, user_id)
 
         for group in ldap_groups:
             if ('eionet-nfp-mc-' in group[0] or
@@ -86,6 +86,16 @@ def nfp_for_country(context):
 
                 return group[0].rsplit('-', 1)[-1]
     return None
+
+
+def get_ldap_user_groups(context, user_id):
+    """ return the ldap roles the user is member of """
+    agent = context._get_ldap_agent(bind=True, secondary=True)
+    ldap_roles = sorted(agent.member_roles_info('user',
+                                                user_id,
+                                                ('description',)))
+
+    return ldap_roles
 
 
 # pylint: disable=dangerous-default-value

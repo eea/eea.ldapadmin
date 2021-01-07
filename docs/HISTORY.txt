@@ -3,6 +3,8 @@ Changelog
 
 2.5-dev0 - (unreleased)
 ---------------------------
+* remove edit user permission for nfps [dumitval]
+* moved some methods to ui_common [dumitval]
 
 2.4 - (2020-12-04)
 ---------------------------
