@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.5-dev0 - (unreleased)
+2.5 - (2021-01-08)
 ---------------------------
 * remove edit user permission for nfps [dumitval]
 * move _is_authenticated, logged_in_user  to logic_common [dumitval]
