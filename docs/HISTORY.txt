@@ -4,7 +4,10 @@ Changelog
 2.5-dev0 - (unreleased)
 ---------------------------
 * remove edit user permission for nfps [dumitval]
-* moved some methods to ui_common [dumitval]
+* move _is_authenticated, _get_ldap_agent, logged_in_user, nfp_for_country
+  orgs_in_country to logic_common [dumitval]
+* _get_ldap_agent default bind=True [dumitval]
+* removed unused code for auto-disabling users [dumitval]
 
 2.4 - (2020-12-04)
 ---------------------------

@@ -98,7 +98,7 @@
                   ).append('&nbsp;');
                   org.append(
                     $('<a>')
-                      .attr({href: 'https://www.eionet.europa.eu/ldap-organisations/organisation?d='
+                      .attr({href: '/ldap-organisations/organisation?d='
                                     + user_info['ldap_org']['id']})
                       .text(user_info['ldap_org']['name'])
                   ).append('&nbsp;');

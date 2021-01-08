@@ -19,6 +19,7 @@ from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.ui_common import (CommonTemplateLogic, TemplateRenderer,
                                      load_template)
 from eea.ldapadmin.users_admin import eionet_edit_users
+from eea.ldapadmin.logic_common import _get_ldap_agent
 from ldap import CONSTRAINT_VIOLATION, NO_SUCH_OBJECT, SCOPE_BASE
 from OFS.SimpleItem import SimpleItem
 from persistent.mapping import PersistentMapping
@@ -116,10 +117,6 @@ class PasswordResetTool(SimpleItem):
         self._config.update(new_config)
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/manage_edit')
 
-    def _get_ldap_agent(self, bind=True):
-        ''' get the ldap agent '''
-        return ldap_config.ldap_agent_with_config(self._config, bind)
-
     def _predefined_filters(self):
         ''' return predefined filters '''
         return sorted(self.objectValues([query.Query.meta_type]),
@@ -176,7 +173,7 @@ class PasswordResetTool(SimpleItem):
         if not email:
             email = REQUEST.form['email']
 
-        agent = self._get_ldap_agent()
+        agent = _get_ldap_agent(self)
         users = agent.search_user_by_email(email)   # , no_disabled=True)
         msgs = IStatusMessage(REQUEST)
 
@@ -283,7 +280,7 @@ class PasswordResetTool(SimpleItem):
         else:
             log.info("Restting password for user %r with token %r",
                      token_data.user_id, token)
-            agent = self._get_ldap_agent(bind=True)
+            agent = _get_ldap_agent(self)
             try:
                 agent.set_user_password(token_data.user_id, None, new_password)
             except CONSTRAINT_VIOLATION as e:

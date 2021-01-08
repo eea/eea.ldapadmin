@@ -1,7 +1,7 @@
 ''' ldap configuration '''
 import six
 from eea.usersdb import UsersDB
-from .ui_common import load_template
+from eea.ldapadmin.ui_common import load_template
 
 
 defaults = {
@@ -32,7 +32,7 @@ def read_form(form, edit=False):
     return config
 
 
-def ldap_agent_with_config(config, bind=False, secondary=False):
+def ldap_agent_with_config(config, bind=True, secondary=False):
     ''' return ldap db agent based on config and with or without
         authentication '''
     db = UsersDB(
