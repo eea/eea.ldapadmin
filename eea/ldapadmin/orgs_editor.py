@@ -162,6 +162,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                     self.nfp_for_country())
 
     def nfp_for_country(self):
+        ''' if the authenticated user is an NFP, return the two letter
+        iso code of the country name '''
         return nfp_for_country(self)
 
     security.declareProtected(view_management_screens, 'manage_edit_save')
