@@ -16,10 +16,10 @@ from App.class_init import InitializeClass
 from plone import api
 from eea.ldapadmin import ldap_config, query
 from eea.ldapadmin.constants import NETWORK_NAME
-from eea.ldapadmin.ui_common import (CommonTemplateLogic, TemplateRenderer,
-                                     load_template)
+from eea.ldapadmin.logic_common import load_template
+from eea.ldapadmin.ui_common import CommonTemplateLogic, TemplateRenderer
 from eea.ldapadmin.users_admin import eionet_edit_users
-from eea.ldapadmin.logic_common import _get_ldap_agent
+from eea.ldapadmin.ldap_config import _get_ldap_agent
 from ldap import CONSTRAINT_VIOLATION, NO_SUCH_OBJECT, SCOPE_BASE
 from OFS.SimpleItem import SimpleItem
 from persistent.mapping import PersistentMapping

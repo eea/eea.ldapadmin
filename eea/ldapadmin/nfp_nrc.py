@@ -23,9 +23,9 @@ from eea import usersdb
 from eea.ldapadmin.countries import get_country
 from eea.ldapadmin.users_admin import eionet_edit_users
 from eea.ldapadmin import ldap_config
+from eea.ldapadmin.ldap_config import _get_ldap_agent
 from eea.ldapadmin import roles_leaders
 from eea.ldapadmin.logic_common import _is_authenticated, logged_in_user
-from eea.ldapadmin.logic_common import _get_ldap_agent
 from .ui_common import get_role_name
 from .ui_common import CommonTemplateLogic
 from .ui_common import TemplateRenderer

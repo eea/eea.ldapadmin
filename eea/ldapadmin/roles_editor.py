@@ -15,10 +15,10 @@ from io import BytesIO
 import six
 from six.moves import filter
 from six.moves import map
+from zope.component import getMultiAdapter
 from lxml.builder import E
 from lxml.html import tostring
 from lxml.html.soupparser import fromstring
-from zope.component import getMultiAdapter
 
 import colander
 import deform
@@ -29,13 +29,13 @@ from App.class_init import InitializeClass
 from DateTime import DateTime
 from eea import usersdb
 from eea.ldapadmin import ldap_config, roles_leaders
+from eea.ldapadmin.ldap_config import _get_ldap_agent
 from eea.ldapadmin.import_export import generate_excel
 from eea.ldapadmin.ui_common import (CommonTemplateLogic,
                                      NaayaViewPageTemplateFile,
                                      TemplateRenderer, get_role_name,
                                      roles_list_to_text)
 from eea.ldapadmin.logic_common import logged_in_user, _is_authenticated
-from eea.ldapadmin.logic_common import _get_ldap_agent
 from OFS.Folder import Folder
 from persistent.mapping import PersistentMapping
 from Products.Five.browser import BrowserView

@@ -48,15 +48,16 @@ from eea.ldapadmin import eionet_profile
 from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.help_messages import help_messages
 from eea.ldapadmin.ui_common import NaayaViewPageTemplateFile
-from eea.ldapadmin.ui_common import CommonTemplateLogic  # load_template,
+from eea.ldapadmin.ui_common import CommonTemplateLogic
 from eea.ldapadmin.ui_common import TemplateRenderer, TemplateRendererNoWrap
 from eea.ldapadmin.ui_common import extend_crumbs
 from eea.ldapadmin.import_export import excel_headers_to_object
 from eea.ldapadmin.import_export import generate_excel
 from eea.ldapadmin.import_export import set_response_attachment
 from eea.ldapadmin import ldap_config
-from eea.ldapadmin.logic_common import logged_in_user, _get_ldap_agent
-from eea.ldapadmin.logic_common import orgs_in_country, nfp_for_country
+from eea.ldapadmin.logic_common import logged_in_user
+from eea.ldapadmin.ldap_config import _get_ldap_agent
+from eea.ldapadmin.ui_common import orgs_in_country, nfp_for_country
 
 try:
     import simplejson as json

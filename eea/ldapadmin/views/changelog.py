@@ -5,7 +5,7 @@ from zope.interface import Attribute, Interface, implementer
 from DateTime.DateTime import DateTime
 from eea.usersdb import factories
 from eea.usersdb.db_agent import UserNotFound
-from eea.ldapadmin.logic_common import _get_ldap_agent
+from eea.ldapadmin.ldap_config import _get_ldap_agent
 from Products.Five import BrowserView
 
 

@@ -3,7 +3,8 @@ from AccessControl import ClassSecurityInfo
 from OFS.PropertyManager import PropertyManager
 from OFS.SimpleItem import SimpleItem
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
-from .ui_common import CommonTemplateLogic, TemplateRenderer
+from eea.ldapadmin.ui_common import CommonTemplateLogic, TemplateRenderer
+from eea.ldapadmin.ldap_config import _get_ldap_agent
 
 manage_add_query_html = PageTemplateFile('zpt/query_manage_add.zpt', globals())
 
@@ -41,7 +42,7 @@ class Query(SimpleItem, PropertyManager):
 
     def _get_ldap_agent(self):
         ''' get the ldap agent '''
-        return self.aq_parent._get_ldap_agent()
+        return _get_ldap_agent(self)
 
     def index_html(self, REQUEST):
         """ view """

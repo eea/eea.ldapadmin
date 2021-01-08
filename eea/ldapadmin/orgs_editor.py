@@ -32,11 +32,12 @@ import eea.usersdb
 from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.constants import USER_INFO_KEYS
 from eea.ldapadmin.ui_common import (CommonTemplateLogic, TemplateRenderer,
-                                     extend_crumbs, load_template)
-from eea.ldapadmin.logic_common import orgs_in_country, nfp_for_country
+                                     extend_crumbs, orgs_in_country,
+                                     nfp_for_country)
 from eea.ldapadmin.logic_common import logged_in_user, _is_authenticated
-from eea.ldapadmin.logic_common import _get_ldap_agent
+from eea.ldapadmin.logic_common import load_template
 from eea.ldapadmin import ldap_config
+from eea.ldapadmin.ldap_config import _get_ldap_agent
 from .countries import get_country, get_country_options
 
 log = logging.getLogger('orgs_editor')
@@ -143,6 +144,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             if nfp_country == 'eea':
                 return org_info['country'] in ['eu', 'int']
             return nfp_country == org_info['country']
+        return False
 
     security.declarePublic('checkPermissionEditOrganisations()')
 
@@ -643,10 +645,9 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         if not self.checkPermissionEditOrganisations():
             msg = "You are not allowed to change the ID of this organisation"
             msgs.add(msg, type='error')
-            REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                      '/organisation?id=' + org_id)
+            return REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                             '/organisation?id=' + org_id)
 
-            return None
         new_org_id = REQUEST.form['new_id']
 
         if not re.match('^[a-z_]+$', new_org_id):
@@ -656,9 +657,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                                              '/organisation?id=' + org_id)
 
         if org_id == new_org_id:
-            REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                      '/organisation?id=' + org_id)
-            return
+            return REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                             '/organisation?id=' + org_id)
 
         agent = _get_ldap_agent(self)
 
@@ -669,18 +669,15 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             msg = ('Organisation "%s" could not be renamed because "%s" '
                    'already exists.' % (org_id, new_org_id))
             msgs.add(msg, type='error')
-            REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                      '/organisation?id=' + org_id)
-            return
+            return REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                             '/organisation?id=' + org_id)
 
         except eea.usersdb.OrgRenameError:
             msg = ('Renaming of "%s" failed mid-way. Some data may be '
                    'inconsistent. Please inform a system administrator.' %
                    org_id)
             msgs.add(msg, type='error')
-            REQUEST.RESPONSE.redirect(self.absolute_url() + '/')
-
-            return
+            return REQUEST.RESPONSE.redirect(self.absolute_url() + '/')
 
         msg = ('Organisation "%s" renamed to "%s".' % (org_id, new_org_id))
         msgs.add(msg, type='info')
@@ -889,10 +886,9 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             msg = "You are not allowed to remove members from this "\
                 "organisation"
             msgs.add(msg, type='error')
-            REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                      '/members_html?id=' + org_id)
+            return REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                             '/members_html?id=' + org_id)
 
-            return None
         user_id_list = REQUEST.form['user_id']
 
         assert isinstance(user_id_list, list)
@@ -916,8 +912,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                    '(will be implemented)')
             msgs.add(msg, type='error')
 
-        REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                  '/members_html?id=' + org_id)
+        return REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                         '/members_html?id=' + org_id)
 
     def add_members_html(self, REQUEST):
         """ view """
