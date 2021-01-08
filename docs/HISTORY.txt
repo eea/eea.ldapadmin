@@ -1,6 +1,9 @@
 Changelog
 =========
 
+2.6-dev0 - (unreleased)
+---------------------------
+
 2.5 - (2021-01-08)
 ---------------------------
 * remove edit user permission for nfps [dumitval]
