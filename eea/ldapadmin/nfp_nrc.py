@@ -21,16 +21,16 @@ from Products.statusmessages.interfaces import IStatusMessage
 
 from eea import usersdb
 from eea.ldapadmin.countries import get_country
-from eea.ldapadmin.users_admin import (_is_authenticated, eionet_edit_users)
-from . import ldap_config
-from . import roles_leaders
+from eea.ldapadmin.users_admin import eionet_edit_users
+from eea.ldapadmin import ldap_config
+from eea.ldapadmin.ldap_config import _get_ldap_agent
+from eea.ldapadmin import roles_leaders
+from eea.ldapadmin.logic_common import _is_authenticated, logged_in_user
 from .ui_common import get_role_name
 from .ui_common import CommonTemplateLogic
 from .ui_common import TemplateRenderer
 from .ui_common import TemplateRendererNoWrap
 from .ui_common import extend_crumbs
-from .logic_common import _get_user_id
-
 log = logging.getLogger('nfp_nrc')
 
 eionet_access_nfp_nrc = 'Eionet access NFP admin for NRC'
@@ -93,19 +93,6 @@ EXTRANET_REPORTER_ROLES = [
     'extranet-uwwtd-data',
     'extranet-wfd-data'
 ]
-
-
-def logged_in_user(request):
-    ''' return uid of authenticated user '''
-    user_id = ''
-
-    if _is_authenticated(request):
-        user = request.get('AUTHENTICATED_USER', '')
-
-        if user:
-            user_id = user.getId()
-
-    return user_id
 
 
 def code_to_name(country_code):
@@ -373,7 +360,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         `country` (whether he is an NFP member for country)
 
         """
-        uid = _get_user_id(request)
+        uid = logged_in_user(request)
         if not uid:
             return False
         filterstr = ("(&(objectClass=groupOfUniqueNames)(uniqueMember=%s))" %
@@ -406,15 +393,8 @@ class NfpNrc(SimpleItem, PropertyManager):
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/manage_edit')
 
     def _get_ldap_agent(self, bind=True, secondary=False):
-        ''' get the ldap agent '''
-        agent = ldap_config.ldap_agent_with_config(self._config, bind,
-                                                   secondary=secondary)
-        try:
-            agent._author = logged_in_user(self.REQUEST)
-        except AttributeError:
-            agent._author = "System user"
-
-        return agent
+        """ get the ldap agent """
+        return _get_ldap_agent(self, bind, secondary)
 
     security.declareProtected(view, 'index_html')
 
@@ -614,7 +594,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         role_id = REQUEST.form['role_id']
         country_code = role_id.rsplit('-', 1)[-1]
         user_id = REQUEST.form['user_id']
-        agent = self._get_ldap_agent(bind=True)
+        agent = self._get_ldap_agent()
 
         if not self._allowed(agent, REQUEST, country_code):
             return None
@@ -689,7 +669,7 @@ class NfpNrc(SimpleItem, PropertyManager):
     def remove_members(self, REQUEST):
         """ Remove several members from a role """
 
-        agent = self._get_ldap_agent(bind=True)
+        agent = self._get_ldap_agent()
         role_id = REQUEST.form['role_id']
         role_name = get_role_name(agent, role_id)
         country_code = role_id.rsplit('-', 1)[-1]
@@ -737,7 +717,6 @@ class NfpNrc(SimpleItem, PropertyManager):
             return None
         if user_id not in agent.members_in_role(role_id)['users']:
             return None
-        agent = self._get_ldap_agent(bind=True)
         leaders, alternates = agent.role_leaders(role_id)
         REQUEST.RESPONSE.setHeader('Content-Type', 'application/json')
 

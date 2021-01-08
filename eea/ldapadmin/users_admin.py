@@ -11,10 +11,9 @@ import re
 import sqlite3
 import string
 from copy import deepcopy
-from datetime import datetime, timedelta
+from datetime import datetime
 from email.mime.text import MIMEText
 
-import requests
 import six
 from six.moves import map
 from six.moves import range
@@ -23,7 +22,6 @@ from zope.component import getUtility
 import colander
 import jellyfish
 import xlrd
-from dateutil import parser
 from unidecode import unidecode
 from plone import api
 
@@ -45,19 +43,21 @@ from transliterate import get_available_language_codes, translit
 from validate_email import INCORRECT_EMAIL, validate_email
 from naaya.ldapdump.interfaces import IDumpReader
 from eea import usersdb
-from eea.usersdb.db_agent import (EmailAlreadyExists, NameAlreadyExists,
-                                  UserNotFound)
+from eea.usersdb.db_agent import (EmailAlreadyExists, NameAlreadyExists)
 from eea.ldapadmin import eionet_profile
 from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.help_messages import help_messages
-from eea.ldapadmin.ui_common import NaayaViewPageTemplateFile, orgs_in_country
-from eea.ldapadmin.ui_common import CommonTemplateLogic  # load_template,
+from eea.ldapadmin.ui_common import NaayaViewPageTemplateFile
+from eea.ldapadmin.ui_common import CommonTemplateLogic
 from eea.ldapadmin.ui_common import TemplateRenderer, TemplateRendererNoWrap
-from eea.ldapadmin.ui_common import extend_crumbs, nfp_for_country
+from eea.ldapadmin.ui_common import extend_crumbs
 from eea.ldapadmin.import_export import excel_headers_to_object
 from eea.ldapadmin.import_export import generate_excel
 from eea.ldapadmin.import_export import set_response_attachment
-from . import ldap_config
+from eea.ldapadmin import ldap_config
+from eea.ldapadmin.logic_common import logged_in_user
+from eea.ldapadmin.ldap_config import _get_ldap_agent
+from eea.ldapadmin.ui_common import orgs_in_country, nfp_for_country
 
 try:
     import simplejson as json
@@ -148,11 +148,6 @@ def manage_add_users_admin(parent, tool_id, REQUEST=None):
         REQUEST.RESPONSE.redirect(parent.absolute_url() + '/manage_workspace')
 
 
-def _is_authenticated(request):
-    ''' check if user is authenticated '''
-    return 'Authenticated' in request.AUTHENTICATED_USER.getRoles()
-
-
 def get_users_by_ldap_dump():
     ''' get users from the ldap dump cache '''
     LDAP_DISK_STORAGE = getattr(CONFIG, 'environment',
@@ -194,11 +189,6 @@ def get_duplicates_by_name(name):
             records.append(user['dn'])
 
     return records
-
-
-def logged_in_user(request):
-    ''' return the uid of the authenticated user '''
-    return api.user.get_current().id
 
 
 # this class should be called UsersEditor, similar to OrganisationsEditor
@@ -247,15 +237,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return stack
 
     def _get_ldap_agent(self, bind=True, secondary=False):
-        ''' get the ldap agent '''
-        agent = ldap_config.ldap_agent_with_config(self._config, bind,
-                                                   secondary=secondary)
-        try:
-            agent._author = logged_in_user(self.REQUEST)
-        except AttributeError:
-            agent._author = "System user"
-
-        return agent
+        """ get the ldap agent """
+        return _get_ldap_agent(self, bind, secondary)
 
     def checkPermissionZopeManager(self):
         """ Returns True if user has the manager role in Zope"""
@@ -287,25 +270,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         user = self.REQUEST.AUTHENTICATED_USER
 
         return bool(user.has_permission(eionet_edit_users, self))
-
-    security.declarePublic('nfp_has_edit_access')
-
-    def nfp_has_edit_access(self, user):
-        """ check if the user is an NFP and if the country corresponds """
-        nfp_country = nfp_for_country(self)
-
-        if nfp_country:
-            country_orgs = orgs_in_country(self, nfp_country)
-
-            return user['organisation'] in country_orgs
-        return None
-
-    security.declarePublic('can_edit_user')
-
-    def can_edit_user(self, user):
-        ''' check permission to edit organisation '''
-
-        return self.can_edit_users() or self.nfp_has_edit_access(user=user)
 
     security.declarePublic('checkPermissionEditUsers')
 
@@ -340,7 +304,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         })
 
         if search_name:
-            agent = self._get_ldap_agent(bind=True)
+            agent = self._get_ldap_agent()
             results = sorted(agent.search_user(search_name, lookup),
                              key=lambda x: x['full_name'])
             options['search_results'] = results
@@ -357,7 +321,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         for each year
         """
 
-        agent = self._get_ldap_agent(bind=True)
+        agent = self._get_ldap_agent()
 
         msgid = agent.conn.search_ext(
             agent._user_dn_suffix,
@@ -605,7 +569,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                                                agent,
                                                [])
                 user_info['id'] = user_id
-                agent = self._get_ldap_agent(bind=True)
+                agent = self._get_ldap_agent()
                 with agent.new_action():
                     user_info.pop('skip_email_validation', None)
                     try:
@@ -639,8 +603,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 if not errors:
                     if not self.checkPermissionEditUsers():
                         return REQUEST.RESPONSE.redirect(
-                            'https://www.eionet.europa.eu/directory/user?'
-                            'uid=%s' % user_id)
+                            '/directory/user?uid=%s' % user_id)
                     return REQUEST.RESPONSE.redirect(self.absolute_url())
                 msg = u"Please correct the errors below and try again."
                 msgs.add(msg, type='error')
@@ -676,6 +639,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
         return self._render_template_no_wrap('zpt/users/find_duplicates.zpt',
                                              **options)
 
+    security.declareProtected(eionet_edit_users, 'edit_user_html')
+
     def edit_user_html(self, REQUEST, data=None, errors=None):
         """
         View for editing profile information for a given user
@@ -683,12 +648,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         """
         user_id = REQUEST.form['id']
-        agent = self._get_ldap_agent(bind=True)
+        agent = self._get_ldap_agent()
         user = agent.user_info(user_id)
-
-        if not self.can_edit_user(user):
-            raise Unauthorized
-        # message
 
         if data:
             form_data = data
@@ -776,7 +737,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         return self._render_template('zpt/users/edit.zpt', **options)
 
-    security.declarePublic('edit_user')
+    security.declareProtected(eionet_edit_users, 'edit_user')
 
     def edit_user(self, REQUEST):
         """ view """
@@ -786,9 +747,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         user_id = REQUEST.form['id']
 
-        agent = self._get_ldap_agent(bind=True)
-        if not self.can_edit_user(agent.user_info(user_id)):
-            raise Unauthorized
+        agent = self._get_ldap_agent()
 
         schema = user_info_edit_schema.clone()
         # if the skip_email_validation field exists but is not activated,
@@ -842,9 +801,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
             log.info("%s EDITED USER %s as member of %s",
                      logged_in_user(REQUEST), user_id, new_org_id)
 
-        came_from = REQUEST.get('came_from')
-        if came_from:
-            return REQUEST.RESPONSE.redirect(came_from)
         return REQUEST.RESPONSE.redirect(
             self.absolute_url() + '/edit_user?id=' + user_id)
 
@@ -859,7 +815,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
             if ids:
                 obj = self.aq_parent[ids[0]]
-                org_agent = obj._get_ldap_agent(bind=True)
+                org_agent = obj._get_ldap_agent()
                 org_agent.add_to_org(org_id, [user_id])
             else:
                 raise
@@ -879,7 +835,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
                 if ids:
                     obj = self.aq_parent[ids[0]]
-                    org_agent = obj._get_ldap_agent(bind=True)
+                    org_agent = obj._get_ldap_agent()
                     try:
                         org_agent.remove_from_org(org_id, [user_id])
                     except ldap.NO_SUCH_ATTRIBUTE:    # user is not in org
@@ -907,7 +863,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
     def delete_user_action(self, REQUEST):
         """ Performing the delete action """
         uid = REQUEST.form['id']
-        agent = self._get_ldap_agent(bind=True)
+        agent = self._get_ldap_agent()
         with agent.new_action():
             agent.delete_user(uid)
 
@@ -938,7 +894,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
     def disable_user_action(self, REQUEST):
         """ Performing the disable user action """
         uid = REQUEST.form['id']
-        agent = self._get_ldap_agent(bind=True)
+        agent = self._get_ldap_agent()
         with agent.new_action():
             agent.disable_user(uid)
 
@@ -970,7 +926,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         """ Performing the enable user action """
         uid = REQUEST.form['id']
         restore_roles = REQUEST.form.get('restore_roles')
-        agent = self._get_ldap_agent(bind=True)
+        agent = self._get_ldap_agent()
         with agent.new_action():
             agent.enable_user(uid, restore_roles=restore_roles)
 
@@ -1023,7 +979,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
     def change_password_action(self, REQUEST):
         """ Performing the delete action """
         uid = REQUEST.form['id']
-        agent = self._get_ldap_agent(bind=True)
+        agent = self._get_ldap_agent()
         password = str(REQUEST.form['password'])
         with agent.new_action:
             agent.set_user_password(uid, None, password)
@@ -1162,15 +1118,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         email = user_info['email']
         pwreset_tool.ask_for_password_reset(email=email, on_create=True)
 
-    def get_ldap_user_groups(self, user_id):
-        """ return the ldap roles the user is member of """
-        agent = self._get_ldap_agent(bind=True, secondary=True)
-        ldap_roles = sorted(agent.member_roles_info('user',
-                                                    user_id,
-                                                    ('description',)))
-
-        return ldap_roles
-
 
 InitializeClass(UsersAdmin)
 
@@ -1231,7 +1178,7 @@ class BulkUserImporter(BrowserView):
 
     def read_xls(self, data):
         ''' process the uploaded excel file '''
-        agent = self.context._get_ldap_agent(bind=True)
+        agent = self.context._get_ldap_agent()
         wb = xlrd.open_workbook(file_contents=data)
         ws = wb.sheets()[0]
         header = ws.row_values(0)
@@ -1282,7 +1229,7 @@ class BulkUserImporter(BrowserView):
 
             return self.index()
 
-        agent = self.context._get_ldap_agent(bind=True)
+        agent = self.context._get_ldap_agent()
 
         users_data = []
         errors = []
@@ -1406,7 +1353,7 @@ class ResetUser(BrowserView):
     def __call__(self):
         user_id = self.request.form.get('id')
 
-        agent = self.context._get_ldap_agent(bind=True)
+        agent = self.context._get_ldap_agent()
 
         if 'submit' in self.request.form:
             with agent.new_action():
@@ -1449,7 +1396,7 @@ class MigrateDisabledEmails(BrowserView):
         return metadata
 
     def __call__(self):
-        agent = self.context._get_ldap_agent(bind=True)
+        agent = self.context._get_ldap_agent()
         disabled_users = agent.get_disabled_users()
 
         for user_info in disabled_users:
@@ -1461,227 +1408,6 @@ class MigrateDisabledEmails(BrowserView):
                      user_info['id'])
 
         return "done"
-
-
-class AutomatedUserDisabler(BrowserView):
-    """ A view that will automatically disable users
-    """
-
-    DISABLE_DELTA = timedelta(days=780)
-    ONE_MONTH = timedelta(days=30)
-    SERVICE_URL = "http://ldapmon.eea.europa.eu/export"
-    LDAP_PREDISABLE_FIELDNAME = "employeeNumber"
-
-    def get_login_statistics(self):
-        ''' return the user logon statistics '''
-        data = requests.get(self.SERVICE_URL).json()
-
-        return data
-
-    def get_ldap_users(self):
-        ''' get ldap users from ldapdump cache '''
-        result = []
-        reader = getUtility(IDumpReader)
-
-        for dn, attrs in reader.get_dump():
-            if not dn.startswith('uid='):
-                continue
-
-            if not attrs.get('mail'):   # probably a system user
-                continue
-            result.append(dict(
-                disabled=attrs.get('employeeType', 'enabled') in ['disabled'],
-                dn=dn,
-                email=attrs['mail'],
-                full_name=attrs['cn'],
-                pending_disable=attrs.get(self.LDAP_PREDISABLE_FIELDNAME),
-                username=attrs['uid'],
-            ))
-
-        return result
-
-    def predisable_users(self, agent, users):
-        ''' mark users that will be disabled at next check '''
-        for user in users:
-            log.warn("User will be disabled the next check %s",
-                     user['username'])
-            self.send_predisable_notification_email(user)
-            timestamp = datetime.now().isoformat()
-            try:
-                result = agent.conn.modify_s(
-                    agent._user_dn(user['username']),
-                    [(ldap.MOD_REPLACE, self.LDAP_PREDISABLE_FIELDNAME,
-                      timestamp), ]
-                )
-            except ldap.NO_SUCH_OBJECT:
-                log.info("Could not predisable user: %s", user['dn'])
-
-                continue
-            assert result[:2] == (ldap.RES_MODIFY, [])
-
-    def disable_users(self, agent, users):
-        ''' disable inactive users '''
-        for user in users:
-            username = user.get('username') or user.get('id')
-
-            if not username:
-                continue
-            log.warn("Disabling user %s", username)
-            agent.disable_user(username)
-            self.send_disable_notification_email(user)
-
-    def remove_pending_users(self, agent, users):
-        ''' remove the will-be-disabled flag from users '''
-        for user in users:
-            log.warn("Removing predisable for user %s", user['username'])
-            try:
-                result = agent.conn.modify_s(
-                    agent._user_dn(user['username']),
-                    [(ldap.MOD_REPLACE, self.LDAP_PREDISABLE_FIELDNAME, ''), ]
-                )
-            except ldap.NO_SUCH_OBJECT:
-                log.info("Could not remove predisable for user: %s",
-                         user['dn'])
-
-                continue
-            assert result[:2] == (ldap.RES_MODIFY, [])
-
-    def __call__(self):
-        # call up the login service report
-        # make a list of all users from ldap that are not disabled
-        #       this list should have a "has been notified" value
-        # construct a list of users that should be disabled
-        #       also have a list of users that should be "predisabled"
-        # predisable users
-        # disable users
-        # send emails that they are disabled
-        # send emails to helpdesk that they have been disabled
-
-        users_stats = self.get_login_statistics()
-        all_ldap_users = self.get_ldap_users()
-
-        agent = self.context.restrictedTraverse('ldap-roles')._get_ldap_agent(
-            bind=True)
-
-        now = datetime.now()
-        users_to_disable = []
-        users_to_predisable = []
-        users_to_remove_pending = []
-
-        # only use all_ldap_users to provide a list of users
-
-        for user in all_ldap_users:
-            if user['disabled']:
-                continue
-            username = user['username']
-            try:
-                user = agent.user_info(user['username'])
-            except UserNotFound:
-                continue
-            user['username'] = username
-            last_login = users_stats.get(username)
-
-            if last_login:
-                last_login = parser.parse(last_login)
-                user['last_login'] = last_login
-
-                # check if the user has logged during in the one month period
-                pending_disable = user.get('pending_disable')
-
-                if pending_disable:
-                    pending_disable = parser.parse(pending_disable)
-
-                    if last_login > pending_disable:
-                        users_to_remove_pending.append(user)
-
-                        continue
-
-                if last_login + self.DISABLE_DELTA < now:
-                    if pending_disable:
-                        if (pending_disable + self.ONE_MONTH) < now:
-                            # double check if everything is ok
-
-                            if (last_login + self.DISABLE_DELTA +
-                                    self.ONE_MONTH) < now:
-                                users_to_disable.append(user)
-                    else:
-                        users_to_predisable.append(user)
-
-        self.predisable_users(agent, users_to_predisable)
-        self.disable_users(agent, users_to_disable)
-        self.remove_pending_users(agent, users_to_remove_pending)
-
-        self.send_admin_report_email(users_to_predisable, users_to_disable)
-
-        return "Predisabled %s users, disabled % users" % (
-            len(users_to_predisable), len(users_to_disable)
-        )
-
-    def send_disable_notification_email(self, user):
-        ''' send the notification that user was disabled '''
-        site = api.portal.get()
-        addr_from = "no-reply@eea.europa.eu"
-        addr_to = user['email']
-
-        message = MIMEText('')
-        message['From'] = addr_from
-        message['To'] = addr_to
-
-        options = deepcopy(user)
-        options['site_title'] = site.title
-
-        body = self.context._render_template.render(
-            "zpt/users/email_auto_disabled.zpt",
-            **options)
-
-        message['Subject'] = "[You have been automatically disabled]"
-        message.set_payload(body.encode('utf-8'), charset='utf-8')
-        _send_email(addr_from, addr_to, message)
-
-    def send_predisable_notification_email(self, user):
-        ''' send the notification that the user will be disabled soon '''
-        site = api.portal.get()
-        addr_from = "no-reply@eea.europa.eu"
-        addr_to = user['email']
-
-        message = MIMEText('')
-        message['From'] = addr_from
-        message['To'] = addr_to
-
-        options = deepcopy(user)
-        options['site_title'] = site.title
-
-        body = self.context._render_template.render(
-            "zpt/users/email_auto_predisabled.zpt",
-            **options)
-
-        message['Subject'] = "[You will be automatically disabled]"
-        message.set_payload(body.encode('utf-8'), charset='utf-8')
-        _send_email(addr_from, addr_to, message)
-
-    def send_admin_report_email(self, users_to_predisable, users_to_disable):
-        ''' send a report to administrators '''
-        site = api.portal.get()
-        addr_from = "no-reply@eea.europa.eu"
-        addr_to = 'helpdesk@eea.europa.eu'
-
-        message = MIMEText('')
-        message['From'] = addr_from
-        message['To'] = addr_to
-
-        options = {}
-        options['users_predisable'] = users_to_predisable
-        options['users_disable'] = users_to_disable
-        options['site_title'] = site.title
-        options['days'] = (self.DISABLE_DELTA + self.ONE_MONTH).days
-
-        body = self.context._render_template.render(
-            "zpt/users/email_report_autodisable.zpt",
-            **options)
-
-        message['Subject'] = "[Report on auto-disabled users]"
-        message.set_payload(body.encode('utf-8'), charset='utf-8')
-        _send_email(addr_from, addr_to, message)
 
 
 def check_valid_email(node, value):

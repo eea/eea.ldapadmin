@@ -1,8 +1,7 @@
 ''' ldap configuration '''
 import six
 from eea.usersdb import UsersDB
-from .ui_common import load_template
-
+from eea.ldapadmin.logic_common import logged_in_user, load_template
 
 defaults = {
     'admin_dn': "cn=Eionet Administrator,o=EIONET,l=Europe",
@@ -32,7 +31,7 @@ def read_form(form, edit=False):
     return config
 
 
-def ldap_agent_with_config(config, bind=False, secondary=False):
+def ldap_agent_with_config(config, bind=True, secondary=False):
     ''' return ldap db agent based on config and with or without
         authentication '''
     db = UsersDB(
@@ -64,6 +63,18 @@ def ldap_agent_with_config(config, bind=False, secondary=False):
             db = DualLDAPProxy(db, legacy_db)
 
     return db
+
+
+def _get_ldap_agent(context, bind=True, secondary=False):
+    ''' get the ldap agent '''
+    agent = ldap_agent_with_config(context._config, bind,
+                                   secondary=secondary)
+    try:
+        agent._author = logged_in_user(context.REQUEST)
+    except AttributeError:
+        agent._author = "System user"
+
+    return agent
 
 
 edit_macro = load_template('zpt/ldap_config.zpt').macros['edit']

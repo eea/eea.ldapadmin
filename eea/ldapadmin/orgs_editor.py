@@ -32,10 +32,13 @@ import eea.usersdb
 from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.constants import USER_INFO_KEYS
 from eea.ldapadmin.ui_common import (CommonTemplateLogic, TemplateRenderer,
-                                     extend_crumbs, load_template,
-                                     orgs_in_country, nfp_for_country)
+                                     extend_crumbs, orgs_in_country,
+                                     nfp_for_country)
+from eea.ldapadmin.logic_common import logged_in_user, _is_authenticated
+from eea.ldapadmin.logic_common import load_template
+from eea.ldapadmin import ldap_config
+from eea.ldapadmin.ldap_config import _get_ldap_agent
 from .countries import get_country, get_country_options
-from . import ldap_config
 
 log = logging.getLogger('orgs_editor')
 
@@ -72,24 +75,6 @@ user_info_edit_schema = eea.usersdb.user_info_schema.clone()
 user_info_edit_schema['postal_address'].widget = deform.widget.TextAreaWidget()
 del user_info_edit_schema['first_name']
 del user_info_edit_schema['last_name']
-
-
-def _is_authenticated(request):
-    ''' check if user is authenticated '''
-    return 'Authenticated' in request.AUTHENTICATED_USER.getRoles()
-
-
-def logged_in_user(request):
-    ''' get the uid of the authenticated user '''
-    user_id = ''
-
-    if _is_authenticated(request):
-        user = request.get('AUTHENTICATED_USER', '')
-
-        if user:
-            user_id = user.getId()
-
-    return user_id
 
 
 class OrganisationsEditor(SimpleItem, PropertyManager):
@@ -149,7 +134,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
         if user.has_permission(eionet_edit_orgs, self):
             return True
-        nfp_country = nfp_for_country(self)
+        nfp_country = self.nfp_for_country()
 
         if nfp_country:
             agent = self._get_ldap_agent()
@@ -159,6 +144,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             if nfp_country == 'eea':
                 return org_info['country'] in ['eu', 'int']
             return nfp_country == org_info['country']
+        return False
 
     security.declarePublic('checkPermissionEditOrganisations()')
 
@@ -173,7 +159,12 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
     def can_edit_organisations(self):
         ''' check if current user can edit organisations '''
         return bool(self.checkPermissionEditOrganisations() or
-                    nfp_for_country(self))
+                    self.nfp_for_country())
+
+    def nfp_for_country(self):
+        ''' if the authenticated user is an NFP, return the two letter
+        iso code of the country name '''
+        return nfp_for_country(self)
 
     security.declareProtected(view_management_screens, 'manage_edit_save')
 
@@ -183,19 +174,15 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/manage_edit')
 
     def _get_ldap_agent(self, bind=True, secondary=False):
-        ''' get the ldap agent '''
-        agent = ldap_config.ldap_agent_with_config(self._config, bind,
-                                                   secondary=secondary)
-        agent._author = logged_in_user(self.REQUEST)
-
-        return agent
+        """ get the ldap agent """
+        return _get_ldap_agent(self, bind, secondary)
 
     security.declareProtected(view, 'index_html')
 
     def index_html(self, REQUEST):
         """ Index of organisations """
         country = REQUEST.get('country')
-        nfp_country = nfp_for_country(self)
+        nfp_country = self.nfp_for_country()
 
         if not (self.checkPermissionView() or nfp_country):
             raise Unauthorized
@@ -236,7 +223,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             countries = dict(get_country_options())
             nfp_country = 'all'
         else:
-            nfp_country = nfp_for_country(self)
+            nfp_country = self.nfp_for_country()
 
             if not (self.checkPermissionView() or nfp_country):
                 raise Unauthorized
@@ -455,7 +442,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
     def organisation(self, REQUEST):
         """ Index of an organisation """
-        nfp_country = nfp_for_country(self)
+        nfp_country = self.nfp_for_country()
         org_id = REQUEST.form.get('id')
 
         if not org_id:
@@ -484,7 +471,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
             return REQUEST.RESPONSE.redirect(self.absolute_url())
 
-        nfp_country = nfp_for_country(self)
+        nfp_country = self.nfp_for_country()
 
         if self.checkPermissionEditOrganisations():
             countries = get_country_options()
@@ -538,7 +525,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                                                  errors=errors)
 
         org_id = str(org_id)
-        agent = self._get_ldap_agent(bind=True)
+        agent = self._get_ldap_agent()
         try:
             with agent.new_action():
                 agent.create_org(org_id, org_info)
@@ -571,7 +558,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
             return None
 
-        nfp_country = nfp_for_country(self)
+        nfp_country = self.nfp_for_country()
 
         if self.checkPermissionEditOrganisations():
             countries = get_country_options()
@@ -627,7 +614,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             return self.edit_organisation_html(REQUEST,
                                                dict(org_info, id=org_id))
 
-        agent = self._get_ldap_agent(bind=True)
+        agent = self._get_ldap_agent()
         with agent.new_action():
             agent.set_org_info(org_id, org_info)
 
@@ -667,10 +654,9 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         if not self.checkPermissionEditOrganisations():
             msg = "You are not allowed to change the ID of this organisation"
             msgs.add(msg, type='error')
-            REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                      '/organisation?id=' + org_id)
+            return REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                             '/organisation?id=' + org_id)
 
-            return None
         new_org_id = REQUEST.form['new_id']
 
         if not re.match('^[a-z_]+$', new_org_id):
@@ -680,11 +666,10 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                                              '/organisation?id=' + org_id)
 
         if org_id == new_org_id:
-            REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                      '/organisation?id=' + org_id)
-            return
+            return REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                             '/organisation?id=' + org_id)
 
-        agent = self._get_ldap_agent(bind=True)
+        agent = self._get_ldap_agent()
 
         try:
             with agent.new_action():
@@ -693,18 +678,15 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             msg = ('Organisation "%s" could not be renamed because "%s" '
                    'already exists.' % (org_id, new_org_id))
             msgs.add(msg, type='error')
-            REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                      '/organisation?id=' + org_id)
-            return
+            return REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                             '/organisation?id=' + org_id)
 
         except eea.usersdb.OrgRenameError:
             msg = ('Renaming of "%s" failed mid-way. Some data may be '
                    'inconsistent. Please inform a system administrator.' %
                    org_id)
             msgs.add(msg, type='error')
-            REQUEST.RESPONSE.redirect(self.absolute_url() + '/')
-
-            return
+            return REQUEST.RESPONSE.redirect(self.absolute_url() + '/')
 
         msg = ('Organisation "%s" renamed to "%s".' % (org_id, new_org_id))
         msgs.add(msg, type='info')
@@ -748,7 +730,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                                       '/organisation?id=' + org_id)
 
             return None
-        agent = self._get_ldap_agent(bind=True)
+        agent = self._get_ldap_agent()
         with agent.new_action():
             agent.delete_org(org_id)
 
@@ -913,10 +895,9 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             msg = "You are not allowed to remove members from this "\
                 "organisation"
             msgs.add(msg, type='error')
-            REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                      '/members_html?id=' + org_id)
+            return REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                             '/members_html?id=' + org_id)
 
-            return None
         user_id_list = REQUEST.form['user_id']
 
         assert isinstance(user_id_list, list)
@@ -924,7 +905,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         for user_id in user_id_list:
             assert isinstance(user_id, str)
 
-        agent = self._get_ldap_agent(bind=True)
+        agent = self._get_ldap_agent()
         try:
             with agent.new_action():
                 agent.remove_from_org(org_id, user_id_list)
@@ -940,8 +921,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
                    '(will be implemented)')
             msgs.add(msg, type='error')
 
-        REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                  '/members_html?id=' + org_id)
+        return REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                         '/members_html?id=' + org_id)
 
     def add_members_html(self, REQUEST):
         """ view """
@@ -998,7 +979,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         for user_id in user_id_list:
             assert isinstance(user_id, str)
 
-        agent = self._get_ldap_agent(bind=True)
+        agent = self._get_ldap_agent()
         with agent.new_action():
             for user_id in user_id_list:
                 old_info = agent.user_info(user_id)
@@ -1058,7 +1039,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
             if ids:
                 obj = self.aq_parent[ids[0]]
-                org_agent = obj._get_ldap_agent(bind=True)
+                org_agent = obj._get_ldap_agent()
                 org_agent.add_to_org(org_id, [user_id])
             else:
                 raise
@@ -1078,22 +1059,13 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
                 if ids:
                     obj = self.aq_parent[ids[0]]
-                    org_agent = obj._get_ldap_agent(bind=True)
+                    org_agent = obj._get_ldap_agent()
                     try:
                         org_agent.remove_from_org(org_id, [user_id])
                     except ldap.NO_SUCH_ATTRIBUTE:    # user is not in org
                         pass
                 else:
                     raise
-
-    def get_ldap_user_groups(self, user_id):
-        """ return the ldap roles of user """
-        agent = self._get_ldap_agent(bind=True, secondary=True)
-        ldap_roles = sorted(agent.member_roles_info('user',
-                                                    user_id,
-                                                    ('description',)))
-
-        return ldap_roles
 
 
 InitializeClass(OrganisationsEditor)
