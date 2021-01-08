@@ -302,6 +302,10 @@ class RolesEditor(Folder):
         self._config.update(ldap_config.read_form(REQUEST.form, edit=True))
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/manage_edit')
 
+    def _get_ldap_agent(self, bind=True, secondary=False):
+        """ get the ldap agent """
+        return _get_ldap_agent(self, bind, secondary)
+
     def _predefined_filters(self):
         ''' return predefined filters '''
         return sorted(self.objectValues([query.Query.meta_type]),
@@ -323,7 +327,7 @@ class RolesEditor(Folder):
     def index_html(self, REQUEST):
         """ view """
         role_id = REQUEST.form.get('role_id', None)
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         try:
             role_info = agent.role_info(role_id)
         except usersdb.RoleNotFound:
@@ -392,7 +396,7 @@ class RolesEditor(Folder):
     def table_problematic_roles(self):
         """ A table of all problematic roles
         """
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         roles = []
 
         for role_cn, role_info in agent.all_roles():
@@ -417,7 +421,7 @@ class RolesEditor(Folder):
         breadcrumbs = [('Search', search_url)]
 
         if pattern:
-            agent = _get_ldap_agent(self)
+            agent = self._get_ldap_agent()
             results_html = filter_result_html(agent, pattern,
                                               self._render_template)
             options['results_html'] = results_html
@@ -446,7 +450,7 @@ class RolesEditor(Folder):
             return "You must be logged in to access this page.\n"
 
         pattern = REQUEST.form.get('pattern', '')
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
 
         output_file = StringIO()
         csv_file = csv.writer(output_file)
@@ -585,21 +589,21 @@ class RolesEditor(Folder):
 
     def _merge_roles(self, roles):
         ''' merge roles '''
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
 
         for role_source, role_destination in roles.items():
             agent.merge_roles(role_source, role_destination)
 
     def _prefill_roles(self, roles):
         ''' prefill roles '''
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
 
         for role_destination, role_source in roles.items():
             agent.prefill_roles_from(role_destination, role_source)
 
     def _create_roles(self, roles):
         ''' create roles '''
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
 
         problems = []
 
@@ -623,7 +627,7 @@ class RolesEditor(Folder):
     def _rename_roles(self, roles):
         """ This is actually just changing their description
         """
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
 
         problems = []
 
@@ -670,7 +674,7 @@ class RolesEditor(Folder):
 
             return False
 
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         role_info = agent.role_info(role_id)
 
         return str.encode(agent._user_dn(user.getId())) in role_info['owner']
@@ -698,7 +702,7 @@ class RolesEditor(Folder):
             # top role - can_edit_roles check was sufficient for granting
 
             return False
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         role_info = agent.role_info(role_id)
 
         if agent._user_dn(user.getId()) not in role_info['owner']:
@@ -775,7 +779,7 @@ class RolesEditor(Folder):
             return self.create_role_html(REQUEST)
 
         user_id = logged_in_user(REQUEST)
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         slug = REQUEST.form['slug']
         description = REQUEST.form['description']
         parent_role_id = REQUEST.form.get('parent_role_id', '') or None
@@ -835,7 +839,7 @@ class RolesEditor(Folder):
             raise Unauthorized(("You are not allowed to delete role %s. "
                                 "Owners can only delete empty roles")
                                % role_id)
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
 
         to_remove = list(map(agent._role_id, agent._sub_roles(role_id)))
         options = {
@@ -859,7 +863,7 @@ class RolesEditor(Folder):
                                 "Owners can only delete empty roles")
                                % role_id)
         logged_in = logged_in_user(REQUEST)
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         # first remove users from role
         with agent.new_action():
             for user_id in agent.members_in_role_and_subroles(role_id)[
@@ -892,7 +896,7 @@ class RolesEditor(Folder):
         }
 
         if search_name:
-            agent = _get_ldap_agent(self)
+            agent = self._get_ldap_agent()
             found_users = agent.search_user(search_name)
             active_users = [user for user in found_users
                             if user.get('status') != 'disabled']
@@ -916,7 +920,7 @@ class RolesEditor(Folder):
             raise Unauthorized("You are not allowed to manage members in %s" %
                                role_id)
         user_id = REQUEST.form['user_id']
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         with agent.new_action():
             role_id_list = agent.add_to_role(role_id, 'user', user_id)
         roles_msg = roles_list_to_text(agent, role_id_list)
@@ -936,7 +940,7 @@ class RolesEditor(Folder):
         if not self.can_edit_members(role_id, REQUEST.AUTHENTICATED_USER):
             raise Unauthorized("You are not allowed to manage members in %s" %
                                role_id)
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         options = {
             'role_id': role_id,
             'role_members': role_members(agent, role_id),
@@ -951,7 +955,7 @@ class RolesEditor(Folder):
 
     def remove_members(self, REQUEST):
         """ Remove user several members from a role """
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         role_id = REQUEST.form['role_id']
 
         if not self.can_edit_members(role_id, REQUEST.AUTHENTICATED_USER):
@@ -986,7 +990,7 @@ class RolesEditor(Folder):
             raise Unauthorized("You are not allowed to manage members in %s" %
                                role_id)
         user_id = REQUEST.form['user_id']
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         user_roles = agent.list_member_roles('user', user_id)
         options = {
             'role_id': role_id,
@@ -1003,7 +1007,7 @@ class RolesEditor(Folder):
         this action. Called by remove_user_from_role and delete_role
 
         """
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         with agent.new_action():
             role_id_list = agent.remove_from_role(role_id, 'user', user_id)
         log.info("%s REMOVED USER %r FROM ROLE(S) %r",
@@ -1044,7 +1048,7 @@ class RolesEditor(Folder):
         }
 
         if search_name or user_id:
-            agent = _get_ldap_agent(self)
+            agent = self._get_ldap_agent()
 
             if search_name:
                 options['search_results'] = agent.search_user(search_name)
@@ -1079,7 +1083,7 @@ class RolesEditor(Folder):
         if subroles:
             header = ('Subrole', ) + header
 
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         try:
             agent.role_info(role_id)
         except usersdb.RoleNotFound:
@@ -1114,7 +1118,7 @@ class RolesEditor(Folder):
         if not self.can_edit_members(role_id, REQUEST.AUTHENTICATED_USER):
             raise Unauthorized("You are not allowed to manage members in %s" %
                                role_id)
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         options = {'role_id': role_id,
                    'role_owners': {}}
         user_id_list = REQUEST.form.get('user_id_list', [])
@@ -1187,7 +1191,7 @@ class RolesEditor(Folder):
         if not self.can_edit_members(role_id, REQUEST.AUTHENTICATED_USER):
             raise Unauthorized("You are not allowed to manage senders in %s" %
                                role_id)
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         data = agent.mail_group_info(role_id)
         data['emails'] = '\n'.join([e for e in data['permittedSender']
                                     if '@' in e])
@@ -1214,7 +1218,7 @@ class RolesEditor(Folder):
         if not self.can_edit_members(role_id, REQUEST.AUTHENTICATED_USER):
             raise Unauthorized("You are not allowed to manage senders in %s" %
                                role_id)
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         msgs = IStatusMessage(REQUEST)
 
         if REQUEST.REQUEST_METHOD == 'POST':
@@ -1269,7 +1273,7 @@ class RolesEditor(Folder):
         if not self.can_edit_members(role_id, REQUEST.AUTHENTICATED_USER):
             raise Unauthorized("You are not allowed to manage senders in %s" %
                                role_id)
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         msgs = IStatusMessage(REQUEST)
 
         if REQUEST.REQUEST_METHOD == 'POST':
@@ -1325,7 +1329,7 @@ class RolesEditor(Folder):
         if not self.can_edit_members(role_id, REQUEST.AUTHENTICATED_USER):
             raise Unauthorized("You are not allowed to manage leaders in %s" %
                                role_id)
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         leaders, alternates = agent.role_leaders(role_id)
         members = {}
 
@@ -1356,7 +1360,7 @@ class RolesEditor(Folder):
         if not self.can_edit_members(role_id, REQUEST.AUTHENTICATED_USER):
             raise Unauthorized("You are not allowed to manage leaders in %s" %
                                role_id)
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         crt_leaders, crt_alternates = agent.role_leaders(role_id)
         leader = REQUEST.form.get('leader')
         alternates = REQUEST.form.get('alternate_list', [])
@@ -1407,7 +1411,7 @@ class RolesEditor(Folder):
             raise Unauthorized("You are not allowed to manage members in %s" %
                                role_id)
 
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         try:
             role_info = agent.role_info(role_id)
         except usersdb.RoleNotFound:
@@ -1450,7 +1454,7 @@ class RolesEditor(Folder):
 
         if REQUEST.REQUEST_METHOD == 'POST':
             description = REQUEST.form.get('role_name')
-            agent = _get_ldap_agent(self)
+            agent = self._get_ldap_agent()
             try:
                 with agent.new_action():
                     agent.set_role_description(role_id, description)
@@ -1520,7 +1524,7 @@ class RolesStatistics(BrowserView):
 
     def __call__(self):
 
-        agent = _get_ldap_agent(self.context)
+        agent = self.context._get_ldap_agent()
         this_role_id = self.request.form.get('role_id')
         assert this_role_id
 
@@ -1555,7 +1559,7 @@ class ExtendedManagementEditor(BrowserView):
 
     def handle_enable_extended_management(self):
         ''' set extended management status '''
-        agent = _get_ldap_agent(self.context)
+        agent = self.context._get_ldap_agent()
         role_id = self.request.form.get('role_id')
         assert role_id
         is_extended = self.request.form.get('is_extended') == 'on'
@@ -1566,7 +1570,7 @@ class ExtendedManagementEditor(BrowserView):
 
     def handle_empty_branch(self):
         ''' handle empty branch '''
-        agent = _get_ldap_agent(self.context)
+        agent = self.context._get_ldap_agent()
         role_id = self.request.form.get('role_id')
         assert role_id
 
@@ -1610,7 +1614,7 @@ class ExtendedManagementEditor(BrowserView):
 
     def view(self):
         ''' render statistics index '''
-        agent = _get_ldap_agent(self.context)
+        agent = self.context._get_ldap_agent()
         this_role_id = self.request.form.get('role_id')
         assert this_role_id
 
@@ -1660,7 +1664,7 @@ class IsExtendedEnabled(BrowserView):
     """
 
     def __call__(self, role_id):
-        agent = _get_ldap_agent(self.context)
+        agent = self.context._get_ldap_agent()
 
         if not role_id:
             return False
@@ -1720,7 +1724,7 @@ class EditMembersOfOneRole(BrowserView):
 
     def view(self):
         ''' edit members of one role - view '''
-        agent = _get_ldap_agent(self.context)
+        agent = self.context._get_ldap_agent()
         this_role_id = self.request.form.get('role_id')
         assert this_role_id
 
@@ -1770,7 +1774,7 @@ class EditMembersOfOneRole(BrowserView):
 
     def processForm(self):
         ''' form processing '''
-        agent = _get_ldap_agent(self.context)
+        agent = self.context._get_ldap_agent()
         role_id = self.request.form.get('role_id')
         assert role_id
 
@@ -1829,7 +1833,7 @@ class EditRolesOfOneMember(BrowserView):
     def view(self):
         ''' main view '''
         selected_member = self.request.form.get('member')
-        agent = _get_ldap_agent(self.context)
+        agent = self.context._get_ldap_agent()
 
         this_role_id = self.request.form.get('role_id')
 
@@ -1885,7 +1889,7 @@ class EditRolesOfOneMember(BrowserView):
 
     def processForm(self):
         ''' form processing '''
-        agent = _get_ldap_agent(self.context)
+        agent = self.context._get_ldap_agent()
         role_id = self.request.form.get('role_id')
         assert role_id
 
@@ -1938,7 +1942,7 @@ class ExportExcel(BrowserView):
     ''' Export to Excel '''
 
     def __call__(self):
-        agent = _get_ldap_agent(self.context)
+        agent = self.context._get_ldap_agent()
         this_role_id = self.request.form.get('role_id')
         assert this_role_id
 
@@ -2012,7 +2016,7 @@ class SearchEionet(BrowserView):
     ''' ldap search vor javascript frontend '''
     def __call__(self):
         ldap_filter = self.request.form.get('filter')
-        agent = _get_ldap_agent(self.context)
+        agent = self.context._get_ldap_agent()
         encres = json.dumps(agent.search_user(ldap_filter))
         self.request.response.setHeader("Content-Type", 'application/json')
         self.request.response.setHeader("Content-Length", str(len(encres)))

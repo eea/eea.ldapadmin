@@ -117,6 +117,10 @@ class PasswordResetTool(SimpleItem):
         self._config.update(new_config)
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/manage_edit')
 
+    def _get_ldap_agent(self, bind=True, secondary=False):
+        """ get the ldap agent """
+        return _get_ldap_agent(self, bind, secondary)
+
     def _predefined_filters(self):
         ''' return predefined filters '''
         return sorted(self.objectValues([query.Query.meta_type]),
@@ -173,7 +177,7 @@ class PasswordResetTool(SimpleItem):
         if not email:
             email = REQUEST.form['email']
 
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         users = agent.search_user_by_email(email)   # , no_disabled=True)
         msgs = IStatusMessage(REQUEST)
 
@@ -280,7 +284,7 @@ class PasswordResetTool(SimpleItem):
         else:
             log.info("Restting password for user %r with token %r",
                      token_data.user_id, token)
-            agent = _get_ldap_agent(self)
+            agent = self._get_ldap_agent()
             try:
                 agent.set_user_password(token_data.user_id, None, new_password)
             except CONSTRAINT_VIOLATION as e:

@@ -236,6 +236,10 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         return stack
 
+    def _get_ldap_agent(self, bind=True, secondary=False):
+        """ get the ldap agent """
+        return _get_ldap_agent(self, bind, secondary)
+
     def checkPermissionZopeManager(self):
         """ Returns True if user has the manager role in Zope"""
         user = self.REQUEST.AUTHENTICATED_USER
@@ -300,7 +304,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         })
 
         if search_name:
-            agent = _get_ldap_agent(self)
+            agent = self._get_ldap_agent()
             results = sorted(agent.search_user(search_name, lookup),
                              key=lambda x: x['full_name'])
             options['search_results'] = results
@@ -317,7 +321,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         for each year
         """
 
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
 
         msgid = agent.conn.search_ext(
             agent._user_dn_suffix,
@@ -354,7 +358,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         """ find similar users """
         duplicate_records = []
 
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         duplicates_by_email = agent.search_user_by_email(email)
         duplicate_records.extend(duplicates_by_email)
 
@@ -438,7 +442,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
     def create_user(self, REQUEST):
         """ view """
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
 
         permission_to_edit = self.checkPermissionEditUsers()
         nfp_country = nfp_for_country(self)
@@ -509,7 +513,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
             setattr(children, 'help_text', help_text)
 
         if self.checkPermissionEditUsers():
-            secondary_agent = _get_ldap_agent(self, secondary=True)
+            secondary_agent = self._get_ldap_agent(secondary=True)
             agent_orgs = secondary_agent.all_organisations()
         else:
             agent_orgs = orgs_in_country(self, nfp_country)
@@ -565,7 +569,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
                                                agent,
                                                [])
                 user_info['id'] = user_id
-                agent = _get_ldap_agent(self)
+                agent = self._get_ldap_agent()
                 with agent.new_action():
                     user_info.pop('skip_email_validation', None)
                     try:
@@ -644,7 +648,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         """
         user_id = REQUEST.form['id']
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         user = agent.user_info(user_id)
 
         if data:
@@ -652,7 +656,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         else:
             form_data = user
 
-        secondary_agent = _get_ldap_agent(self, secondary=True)
+        secondary_agent = self._get_ldap_agent(secondary=True)
         all_orgs = secondary_agent.all_organisations()
         orgs = [{'id': k, 'text': v['name'], 'text_native': v['name_native'],
                  'ldap': True} for k, v in all_orgs.items()]
@@ -743,7 +747,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         user_id = REQUEST.form['id']
 
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
 
         schema = user_info_edit_schema.clone()
         # if the skip_email_validation field exists but is not activated,
@@ -811,7 +815,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
             if ids:
                 obj = self.aq_parent[ids[0]]
-                org_agent = _get_ldap_agent(obj)
+                org_agent = obj._get_ldap_agent()
                 org_agent.add_to_org(org_id, [user_id])
             else:
                 raise
@@ -831,7 +835,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
                 if ids:
                     obj = self.aq_parent[ids[0]]
-                    org_agent = _get_ldap_agent(obj)
+                    org_agent = obj._get_ldap_agent()
                     try:
                         org_agent.remove_from_org(org_id, [user_id])
                     except ldap.NO_SUCH_ATTRIBUTE:    # user is not in org
@@ -847,7 +851,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         """
         uid = REQUEST.form['id']
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         user = agent.user_info(uid)
         options = {'user': user}
         self._set_breadcrumbs(self._user_bread(uid, [("Delete User", '#')]))
@@ -859,7 +863,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
     def delete_user_action(self, REQUEST):
         """ Performing the delete action """
         uid = REQUEST.form['id']
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         with agent.new_action():
             agent.delete_user(uid)
 
@@ -878,7 +882,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         """
         uid = REQUEST.form['id']
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         user = agent.user_info(uid)
         options = {'user': user}
         self._set_breadcrumbs(self._user_bread(uid, [("Disable User", '#')]))
@@ -890,7 +894,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
     def disable_user_action(self, REQUEST):
         """ Performing the disable user action """
         uid = REQUEST.form['id']
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         with agent.new_action():
             agent.disable_user(uid)
 
@@ -909,7 +913,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         """
         uid = REQUEST.form['id']
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         user = agent.user_info(uid)
         options = {'user': user}
         self._set_breadcrumbs(self._user_bread(uid, [("Enable User", '#')]))
@@ -922,7 +926,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
         """ Performing the enable user action """
         uid = REQUEST.form['id']
         restore_roles = REQUEST.form.get('restore_roles')
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         with agent.new_action():
             agent.enable_user(uid, restore_roles=restore_roles)
 
@@ -960,7 +964,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
     def change_password(self, REQUEST):
         """ View for changing user password """
         uid = REQUEST.form['id']
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         user = agent.user_info(uid)
         options = {'user': user, 'password': generate_password()}
 
@@ -975,7 +979,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
     def change_password_action(self, REQUEST):
         """ Performing the delete action """
         uid = REQUEST.form['id']
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         password = str(REQUEST.form['password'])
         with agent.new_action:
             agent.set_user_password(uid, None, password)
@@ -1024,7 +1028,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         if options['valid']:
             # search for availability
-            agent = _get_ldap_agent(self)
+            agent = self._get_ldap_agent()
             existing = agent.existing_usernames(options['valid'])
             options['taken'] = list(existing)
             options['valid'] = list(set(options['valid']) -
@@ -1047,9 +1051,9 @@ class UsersAdmin(SimpleItem, PropertyManager):
         Return all email addresses
         """
         from ldap import NO_SUCH_OBJECT
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         bulk_emails = []
-        secondary_agent = _get_ldap_agent(self, secondary=True)
+        secondary_agent = self._get_ldap_agent(secondary=True)
         orgs = secondary_agent.all_organisations()
 
         for org_id, info in six.iteritems(orgs):
@@ -1071,7 +1075,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
     def eionet_profile(self, REQUEST):
         """ Renders eionet full profile page """
         uid = REQUEST.form['user_id']
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         user = agent.user_info(uid)
         options = {'user': user, 'services': eionet_profile.get_endpoints(),
                    'forum_url': FORUM_URL}
@@ -1174,7 +1178,7 @@ class BulkUserImporter(BrowserView):
 
     def read_xls(self, data):
         ''' process the uploaded excel file '''
-        agent = _get_ldap_agent(self.context)
+        agent = self.context._get_ldap_agent()
         wb = xlrd.open_workbook(file_contents=data)
         ws = wb.sheets()[0]
         header = ws.row_values(0)
@@ -1225,7 +1229,7 @@ class BulkUserImporter(BrowserView):
 
             return self.index()
 
-        agent = _get_ldap_agent(self.context)
+        agent = self.context._get_ldap_agent()
 
         users_data = []
         errors = []
@@ -1349,7 +1353,7 @@ class ResetUser(BrowserView):
     def __call__(self):
         user_id = self.request.form.get('id')
 
-        agent = _get_ldap_agent(self.context)
+        agent = self.context._get_ldap_agent()
 
         if 'submit' in self.request.form:
             with agent.new_action():
@@ -1392,7 +1396,7 @@ class MigrateDisabledEmails(BrowserView):
         return metadata
 
     def __call__(self):
-        agent = _get_ldap_agent(self.context)
+        agent = self.context._get_ldap_agent()
         disabled_users = agent.get_disabled_users()
 
         for user_info in disabled_users:

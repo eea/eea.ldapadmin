@@ -5,7 +5,6 @@ from zope.interface import Attribute, Interface, implementer
 from DateTime.DateTime import DateTime
 from eea.usersdb import factories
 from eea.usersdb.db_agent import UserNotFound
-from eea.ldapadmin.ldap_config import _get_ldap_agent
 from Products.Five import BrowserView
 
 
@@ -40,7 +39,7 @@ class BaseActionDetails(BrowserView):
             return entry['author']
 
         try:
-            user_info = _get_ldap_agent(self.base).user_info(entry['author'])
+            user_info = self.base._get_ldap_agent().user_info(entry['author'])
         except UserNotFound:
             return entry['author']
 
@@ -52,7 +51,7 @@ class BaseActionDetails(BrowserView):
             return ''
 
         try:
-            agent = _get_ldap_agent(self.base)
+            agent = self.base._get_ldap_agent()
             user_info = agent.user_info(entry['author'])
         except UserNotFound:
             return ''
@@ -150,7 +149,7 @@ class OrganisationChangelog(BrowserView):
     def entries(self):
         ''' get changelog entries '''
         org_id = self.request.form.get('id').encode()
-        agent = _get_ldap_agent(self.context)
+        agent = self.context._get_ldap_agent()
         org_dn = agent._org_dn(org_id)
 
         log_entries = list(reversed(agent._get_metadata(org_dn)))

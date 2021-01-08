@@ -392,6 +392,10 @@ class NfpNrc(SimpleItem, PropertyManager):
         self._config.update(ldap_config.read_form(REQUEST.form, edit=True))
         REQUEST.RESPONSE.redirect(self.absolute_url() + '/manage_edit')
 
+    def _get_ldap_agent(self, bind=True, secondary=False):
+        """ get the ldap agent """
+        return _get_ldap_agent(self, bind, secondary)
+
     security.declareProtected(view, 'index_html')
 
     def index_html(self, REQUEST):
@@ -399,7 +403,7 @@ class NfpNrc(SimpleItem, PropertyManager):
 
         if not _is_authenticated(REQUEST):
             return self._render_template('zpt/nfp_nrc/index.zpt')
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         user_id = logged_in_user(REQUEST)
         nfps = get_nfp_roles(agent, user_id)
         options = {'nfps': nfps}
@@ -408,7 +412,7 @@ class NfpNrc(SimpleItem, PropertyManager):
 
     def get_top_role_members(self, role_dn, country_code):
         """ get the members of the top role """
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         has_problematic_users = False
         top_role_id = agent._role_id(role_dn)
         filter_country = "%s-*-%s" % (top_role_id, country_code)
@@ -467,7 +471,7 @@ class NfpNrc(SimpleItem, PropertyManager):
 
         country_code = REQUEST.form.get("nfp")
         country_name = code_to_name(country_code)
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
 
         if not self._allowed(agent, REQUEST, country_code):
             raise Unauthorized
@@ -493,7 +497,7 @@ class NfpNrc(SimpleItem, PropertyManager):
 
         country_code = REQUEST.form.get("nfp", 'eea')
         country_name = code_to_name(country_code)
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
 
         if not self._allowed(agent, REQUEST, country_code):
             raise Unauthorized
@@ -519,7 +523,7 @@ class NfpNrc(SimpleItem, PropertyManager):
 
         country_code = REQUEST.form.get("nfp", 'eea')
         country_name = code_to_name(country_code)
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
 
         if not self._allowed(agent, REQUEST, country_code):
             raise Unauthorized
@@ -548,7 +552,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         role_id = REQUEST.form['role_id']
         country_code = role_id.rsplit('-', 1)[-1]
         country_name = code_to_name(country_code)
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         role_name = agent.role_info(role_id)['description']
 
         if not self._allowed(agent, REQUEST, country_code):
@@ -590,7 +594,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         role_id = REQUEST.form['role_id']
         country_code = role_id.rsplit('-', 1)[-1]
         user_id = REQUEST.form['user_id']
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
 
         if not self._allowed(agent, REQUEST, country_code):
             return None
@@ -633,7 +637,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         role_id = REQUEST.form['role_id']
         country_code = role_id.rsplit('-', 1)[-1]
         country_name = code_to_name(country_code)
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         role_name = get_role_name(agent, role_id)
 
         if not self._allowed(agent, REQUEST, country_code):
@@ -665,7 +669,7 @@ class NfpNrc(SimpleItem, PropertyManager):
     def remove_members(self, REQUEST):
         """ Remove several members from a role """
 
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         role_id = REQUEST.form['role_id']
         role_name = get_role_name(agent, role_id)
         country_code = role_id.rsplit('-', 1)[-1]
@@ -704,7 +708,7 @@ class NfpNrc(SimpleItem, PropertyManager):
     def set_pcp(self, REQUEST):
         """ callback that saves the PCP """
 
-        agent = _get_ldap_agent(self)
+        agent = self._get_ldap_agent()
         user_id = REQUEST.form['user_id']
         role_id = REQUEST.form['role_id']
         country_code = role_id.rsplit('-', 1)[-1]
@@ -713,7 +717,6 @@ class NfpNrc(SimpleItem, PropertyManager):
             return None
         if user_id not in agent.members_in_role(role_id)['users']:
             return None
-        agent = _get_ldap_agent(self)
         leaders, alternates = agent.role_leaders(role_id)
         REQUEST.RESPONSE.setHeader('Content-Type', 'application/json')
 
