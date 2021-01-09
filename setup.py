@@ -23,10 +23,8 @@ setup(name=NAME,
       install_requires=[
           'eea.usersdb>=1.3.35',
           'naaya.ldapdump',
-
           'beautifulsoup4',
           'lxml',
-
           'deform>=2.0.8',
           'colander==1.7.0',
           'jellyfish==0.7.2; python_version>"3.0"',
@@ -35,7 +33,6 @@ setup(name=NAME,
           'xlrd>=1.2.0',
           'xlwt',
           'unidecode>1.0',
-
           'requests>2.0',
           'sparql-client',
           'python-dateutil',
