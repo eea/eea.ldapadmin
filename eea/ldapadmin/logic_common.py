@@ -12,10 +12,7 @@ def logged_in_user(request):
     user_id = ''
 
     if _is_authenticated(request):
-        user = request.get('AUTHENTICATED_USER', '')
-
-        if user:
-            user_id = user.getId()
+        user_id = request.AUTHENTICATED_USER.getId()
 
     return user_id
 
