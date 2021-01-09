@@ -5,7 +5,7 @@ Changelog
 ---------------------------
 * Change: Develop [valipod]
 
-2.6-dev0 - (unreleased)
+2.6 - (2021-01-09)
 ---------------------------
 * adapt logged_in_user for testing [dumitval]
 
