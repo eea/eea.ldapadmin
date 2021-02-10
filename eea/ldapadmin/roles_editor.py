@@ -650,7 +650,7 @@ class RolesEditor(Folder):
         arguments have arbitrary number
 
         """
-        if user.name == 'Anonymous User':
+        if user.getUserName() == 'Anonymous User':
             return False
         if self.can_edit_roles(user):
             return True
@@ -670,7 +670,7 @@ class RolesEditor(Folder):
         or any subroles.
 
         """
-        if user.name == 'Anonymous User':
+        if user.getUserName() == 'Anonymous User':
             return False
         if self.can_edit_roles(user):
             return True
@@ -728,7 +728,7 @@ class RolesEditor(Folder):
 
         try:
             agent.create_role(str(role_id), description)
-        except ValueError, e:
+        except ValueError as e:
             msg = unicode(e)
             if 'DN already exists' in msg:
                 msg = 'Role "%s" already exists.' % slug

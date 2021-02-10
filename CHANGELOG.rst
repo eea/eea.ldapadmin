@@ -1,5 +1,6 @@
 1.5.39 (unreleased)
 ------------------------
+* bugfix in Eionet Roles Editor related to the new pluggable auth [dumitval]
 
 1.5.38 (2020-05-25)
 ------------------------
