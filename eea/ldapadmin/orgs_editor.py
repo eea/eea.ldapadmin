@@ -9,7 +9,6 @@ import logging
 import operator
 import re
 from datetime import datetime
-from email.mime.text import MIMEText
 from io import BytesIO
 
 import six
@@ -29,7 +28,6 @@ from persistent.mapping import PersistentMapping
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.statusmessages.interfaces import IStatusMessage
 import eea.usersdb
-from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.constants import USER_INFO_KEYS
 from eea.ldapadmin.ui_common import (CommonTemplateLogic, TemplateRenderer,
                                      extend_crumbs, orgs_in_country,
