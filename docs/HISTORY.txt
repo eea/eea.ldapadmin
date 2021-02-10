@@ -3,10 +3,8 @@ Changelog
 
 2.7-dev0 - (unreleased)
 ---------------------------
-
-2.6 - (2021-01-09)
----------------------------
-* Change: Develop [valipod]
+* fix role export where users have some incorrect data [dumitval]
+* remove unused notify_on_membership_op method [dumitval]
 
 2.6 - (2021-01-09)
 ---------------------------
