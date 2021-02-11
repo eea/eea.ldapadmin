@@ -415,7 +415,9 @@ class NfpNrc(SimpleItem, PropertyManager):
         agent = self._get_ldap_agent()
         has_problematic_users = False
         top_role_id = agent._role_id(role_dn)
-        filter_country = "%s-*-%s" % (top_role_id, country_code)
+        # the country filter should allow any number of items between
+        # top_role_id and country_code (including zero)
+        filter_country = "%s*-%s" % (top_role_id, country_code)
         roles = []
 
         for (dn, attr) in agent.conn.search_s(
