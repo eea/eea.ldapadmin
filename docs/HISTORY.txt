@@ -3,6 +3,7 @@ Changelog
 
 2.7-dev0 - (unreleased)
 ---------------------------
+* remove dependency on validate_email [dumitval]
 * improve/fix extranet_reporters listing - allow any nubmer of bits
   between the top role dn and the country code [dumitval]
 * fix role export where users have some incorrect data [dumitval]
