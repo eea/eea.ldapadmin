@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.7-dev0 - (unreleased)
+2.7 - (2021-02-15)
 ---------------------------
 * remove dependency on validate_email [dumitval]
 * improve/fix extranet_reporters listing - allow any nubmer of bits
