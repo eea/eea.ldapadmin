@@ -1,9 +1,13 @@
 Changelog
 =========
 
-2.6 - (2021-01-09)
+2.7 - (2021-02-15)
 ---------------------------
-* Change: Develop [valipod]
+* remove dependency on validate_email [dumitval]
+* improve/fix extranet_reporters listing - allow any nubmer of bits
+  between the top role dn and the country code [dumitval]
+* fix role export where users have some incorrect data [dumitval]
+* remove unused notify_on_membership_op method [dumitval]
 
 2.6 - (2021-01-09)
 ---------------------------

@@ -40,7 +40,6 @@ from Products.Five.browser import BrowserView
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.statusmessages.interfaces import IStatusMessage
 from transliterate import get_available_language_codes, translit
-from validate_email import INCORRECT_EMAIL, validate_email
 from naaya.ldapdump.interfaces import IDumpReader
 from eea import usersdb
 from eea.usersdb.db_agent import (EmailAlreadyExists, NameAlreadyExists)
@@ -461,34 +460,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
             if list(agent.existing_usernames([value])):
                 raise colander.Invalid(node, 'This username is taken')
 
-        skip_email_validation_node = colander.SchemaNode(
-            colander.Boolean(),
-            title='',
-            name='skip_email_validation',
-            description='Skip extended email validation',
-            widget=deform.widget.CheckboxWidget(),
-        )
-
         schema = user_info_add_schema.clone()
-
-        # add the "skip email validation" field if email fails validation
-        email = form_data.get('email')
-
-        if email:
-            email = email.strip()
-            validity_status = validate_email(email, verify=False, verbose=True)
-
-            if validity_status is not True:
-                email_node = schema['email']
-                pos = schema.children.index(email_node)
-                schema.children.insert(pos + 1, skip_email_validation_node)
-
-        # if the skip_email_validation field exists but is not activated,
-        # add an extra validation to the form
-
-        if not form_data.get('edit-skip_email_validation') == 'on':
-            schema['email'].validator = colander.All(
-                schema['email'].validator, check_valid_email)
 
         # no need to make the id mandatory, it will be generated if empty
         schema['id'].missing = None
@@ -571,7 +543,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 user_info['id'] = user_id
                 agent = self._get_ldap_agent()
                 with agent.new_action():
-                    user_info.pop('skip_email_validation', None)
                     try:
                         self._create_user(agent, user_info)
                     except NameAlreadyExists:
@@ -680,33 +651,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         schema = user_info_edit_schema.clone()
 
-        skip_email_validation_node = colander.SchemaNode(
-            colander.Boolean(),
-            title='',
-            name='skip_email_validation',
-            description='Skip extended email validation',
-            widget=deform.widget.CheckboxWidget(),
-        )
-
-        # add the "skip email validation" field if email fails validation
-        email = form_data.get('email')
-
-        if email:
-            email = email.strip()
-            validity_status = validate_email(email, verify=False, verbose=True)
-
-            if validity_status is not True:
-                email_node = schema['email']
-                pos = schema.children.index(email_node)
-                schema.children.insert(pos + 1, skip_email_validation_node)
-
-        # if the skip_email_validation field exists but is not activated,
-        # add an extra validation to the form
-
-        if not form_data.get('edit-skip_email_validation') == 'on':
-            schema['email'].validator = colander.All(
-                schema['email'].validator, check_valid_email)
-
         choices = [('', '-')]
 
         for org in orgs:
@@ -750,13 +694,6 @@ class UsersAdmin(SimpleItem, PropertyManager):
         agent = self._get_ldap_agent()
 
         schema = user_info_edit_schema.clone()
-        # if the skip_email_validation field exists but is not activated,
-        # add an extra validation to the form
-
-        if not REQUEST.form.get('edit-skip_email_validation') == 'on':
-            schema['email'].validator = colander.All(
-                schema['email'].validator, check_valid_email)
-
         user_form = deform.Form(schema)
         msgs = IStatusMessage(REQUEST)
 
@@ -1408,16 +1345,6 @@ class MigrateDisabledEmails(BrowserView):
                      user_info['id'])
 
         return "done"
-
-
-def check_valid_email(node, value):
-    ''' check if the email is struturally valid '''
-    validity_status = validate_email(value, verify=False, verbose=True)
-
-    if validity_status is not True:
-        if validity_status != INCORRECT_EMAIL:  # avoid a double error message
-            raise colander.Invalid(
-                node, 'This email is possibly invalid. %s' % validity_status)
 
 
 def _transliterate(first_name, last_name, full_name_native, search_helper):

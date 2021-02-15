@@ -1102,7 +1102,8 @@ class RolesEditor(Folder):
             row = [usr['full_name'], usr['id'], usr['email'],
                    usr['phone'], usr['fax'], usr['postal_address'],
                    usr['organisation'],
-                   agent.org_info(usr['organisation'])['name']]
+                   agent.org_info(usr['organisation'].lower())['name']
+                   ]
 
             if subroles:
                 row.insert(0, '\n'.join(usr['roles']))

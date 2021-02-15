@@ -9,7 +9,6 @@ import logging
 import operator
 import re
 from datetime import datetime
-from email.mime.text import MIMEText
 from io import BytesIO
 
 import six
@@ -29,7 +28,6 @@ from persistent.mapping import PersistentMapping
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.statusmessages.interfaces import IStatusMessage
 import eea.usersdb
-from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.constants import USER_INFO_KEYS
 from eea.ldapadmin.ui_common import (CommonTemplateLogic, TemplateRenderer,
                                      extend_crumbs, orgs_in_country,
@@ -782,34 +780,6 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
             ('Members', '#')])
 
         return self._render_template('zpt/orgs_members.zpt', **options)
-
-    def notify_on_membership_op(self, user_info, org_info, operation):
-        ''' notify user about membership change '''
-        addr_from = "no-reply@eea.europa.eu"
-        addr_to = user_info['email']
-
-        if operation == 'approval':
-            email_template = load_template('zpt/org_membership_approved.zpt')
-            subject = "%s: Approved organisation membership" % NETWORK_NAME
-        elif operation == 'rejection':
-            email_template = load_template('zpt/org_membership_rejected.zpt')
-            subject = "%s: Rejected organisation membership" % NETWORK_NAME
-
-        options = {
-            'org_info': org_info,
-            'user_info': user_info,
-            'context': self,
-            'network_name': NETWORK_NAME
-        }
-        message = MIMEText(email_template(**options).encode('utf-8'),
-                           _charset='utf-8')
-        message['From'] = addr_from
-        message['To'] = user_info['email']
-        message['Subject'] = subject
-
-        from plone import api
-        api.portal.send_email(recipient=[addr_to], sender=addr_from,
-                              subject=subject, body=message)
 
     security.declareProtected(eionet_edit_orgs, 'demo_members')
 
