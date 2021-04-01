@@ -3,6 +3,7 @@ Changelog
 
 2.8-dev0 - (unreleased)
 ---------------------------
+* fix creation of eu/int organisations (and add un_) [dumitval]
 
 2.7 - (2021-02-15)
 ---------------------------
