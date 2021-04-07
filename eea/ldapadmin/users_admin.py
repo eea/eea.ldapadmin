@@ -681,17 +681,25 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         return self._render_template('zpt/users/edit.zpt', **options)
 
-    security.declareProtected(eionet_edit_users, 'edit_user')
+    security.declarePublic('edit_user')
 
     def edit_user(self, REQUEST):
         """ view """
 
+        user_id = REQUEST.form['id']
+        agent = self._get_ldap_agent()
+        user_orgs = agent._search_user_in_orgs(user_id)
+        org_country = ''
+        if user_orgs:
+            org_country = user_orgs[0].split('_')[0]
+        nfp_country = nfp_for_country(self)
+        if not self.checkPermissionEditUsers() and (
+                not nfp_country or nfp_country != org_country):
+            # NFP's are only authorized to edit users with belonging to
+            # an organisation from their country.
+            raise Unauthorized
         if REQUEST.method == 'GET':
             return self.edit_user_html(REQUEST)
-
-        user_id = REQUEST.form['id']
-
-        agent = self._get_ldap_agent()
 
         schema = user_info_edit_schema.clone()
         user_form = deform.Form(schema)

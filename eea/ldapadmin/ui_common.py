@@ -284,6 +284,41 @@ def nfp_for_country(context):
     return None
 
 
+def nfp_can_change_user(context, uid, no_org=False):
+    """ check if the authenticated user is an nfp and can edit a user
+    (NFPs can only
+     - edit users that are members of an organisation from their country
+     - add users to such an organisation if they are not
+    member of any org or if their org is from the country of the NFP)
+
+    the 'no_org' parameter should decide what happens if the user is not
+    member of an organisation: such a user cannot be edited by the NFP,
+    but can be added to an org """
+    try:
+        # when called with CommonTemplateLogic as context
+        context = context.context
+    except AttributeError:
+        pass
+    nfp_country = nfp_for_country(context)
+    if not nfp_country:
+        return False
+    agent = context._get_ldap_agent()
+    user_orgs = agent.orgs_for_user(uid)
+    if user_orgs:
+        for org in user_orgs:
+            org_country = agent.org_country(org[0])
+            if org_country == nfp_country:
+                # if any of the user's orgs is the same with the
+                # NFP's country, permision is True
+                return True
+        else:
+            return False
+    # if the user doesn't have an organisation set, NFPs can add
+    # them to any organisation from their country - there is no way
+    # to bind users to a country
+    return no_org
+
+
 def get_ldap_user_groups(context, user_id):
     """ return the ldap roles the user is member of """
     agent = _get_ldap_agent(context, secondary=True)

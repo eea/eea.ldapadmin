@@ -49,7 +49,11 @@
       <tbody>
 
         <tr tal:repeat="org options/sorted_organisations">
-          <td tal:content="string:${org/country} (${org/country_pub_code})" />
+          <td>
+            <tal:block content="string:${org/country}" />
+            <tal:block condition="org/country_pub_code"
+              content="string:(${org/country_pub_code})" />
+          </td>
           <td>
             <a tal:define="orgs_url string:${common/base_url}/organisation"
               tal:attributes="href string:${orgs_url}?id=${org/id}"
