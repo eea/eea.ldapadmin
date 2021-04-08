@@ -21,7 +21,7 @@ setup(name=NAME,
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-          'eea.usersdb>=1.3.35',
+          'eea.usersdb>=2.6',
           'naaya.ldapdump',
           'beautifulsoup4',
           'lxml',

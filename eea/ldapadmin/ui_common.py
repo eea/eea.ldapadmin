@@ -304,15 +304,19 @@ def nfp_can_change_user(context, uid, no_org=False):
         return False
     agent = context._get_ldap_agent()
     user_orgs = agent.orgs_for_user(uid)
+    same_country = False
     if user_orgs:
         for org in user_orgs:
             org_country = agent.org_country(org[0])
             if org_country == nfp_country:
                 # if any of the user's orgs is the same with the
                 # NFP's country, permision is True
-                return True
+                same_country = True
+                break
         else:
             return False
+    if same_country:
+        return True
     # if the user doesn't have an organisation set, NFPs can add
     # them to any organisation from their country - there is no way
     # to bind users to a country
