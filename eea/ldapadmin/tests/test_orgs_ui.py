@@ -44,7 +44,6 @@ class StubbedOrganisationsEditor(OrganisationsEditor):
         super(StubbedOrganisationsEditor, self).__init__()
         self._render_template = TemplateRenderer(CommonTemplateLogic)
         self._render_template.wrap = lambda html: "<html>%s</html>" % html
-        self.can_edit_organisation = Mock(return_value=True)
 
     def absolute_url(self):
         ''' return URL '''

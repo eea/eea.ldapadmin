@@ -81,7 +81,9 @@ def base_setup(context, user):
     context.ui._get_ldap_agent = Mock(return_value=context.mock_agent)
     context.ui.can_delete_role = Mock(return_value=True)
     context.ui.can_edit_members = Mock(return_value=True)
+    context.ui.can_edit_organisation = Mock(return_value=True)
     context.ui.can_edit_organisations = Mock(return_value=True)
+    context.ui.checkPermissionEditOrganisations = Mock(return_value=True)
     context.ui.getPhysicalRoot = Mock(return_value=context.layer['app'])
 
     context.request = context.REQUEST = context.ui.REQUEST = context.layer[
