@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.8-dev0 - (unreleased)
+2.8 - (2021-04-09)
 ---------------------------
 * fix creation of eu/int organisations (and add un) [dumitval]
 * re-enable user editing by NFP if the user belongs to the NFP country
