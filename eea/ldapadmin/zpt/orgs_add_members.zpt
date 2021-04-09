@@ -20,7 +20,9 @@
     <li tal:repeat="user_info options/found_users">
       <label>
         <input type="checkbox" name="user_id:list"
-               tal:attributes="value user_info/id"/>
+               tal:attributes="value user_info/id;
+                               disabled user_info/restricted|nothing;
+                               title python:user_info.get('restricted') and 'This user belongs to an organisation from another country' or ''" />
         <tal:block content="user_info/first_name"/> <tal:block content="user_info/last_name"/>
         (<tt tal:content="user_info/id"></tt>)
       </label>

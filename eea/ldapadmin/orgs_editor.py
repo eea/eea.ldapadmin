@@ -30,8 +30,8 @@ from Products.statusmessages.interfaces import IStatusMessage
 import eea.usersdb
 from eea.ldapadmin.constants import USER_INFO_KEYS
 from eea.ldapadmin.ui_common import (CommonTemplateLogic, TemplateRenderer,
-                                     extend_crumbs, orgs_in_country,
-                                     nfp_for_country)
+                                     extend_crumbs, nfp_for_country,
+                                     nfp_can_change_user)
 from eea.ldapadmin.logic_common import logged_in_user, _is_authenticated
 from eea.ldapadmin.logic_common import load_template
 from eea.ldapadmin import ldap_config
@@ -184,12 +184,9 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
         if not (self.checkPermissionView() or nfp_country):
             raise Unauthorized
-        if not self.checkPermissionEditOrganisations() and nfp_country:
-            orgs_by_id = orgs_in_country(self, nfp_country)
-        else:
-            agent = self._get_ldap_agent(secondary=True)
-            orgs_by_id = agent.all_organisations()
-        countries = dict(get_country_options(country=nfp_country or country))
+        agent = self._get_ldap_agent(secondary=True)
+        orgs_by_id = agent.all_organisations()
+        countries = dict(get_country_options(country))
         orgs = []
 
         for org_id, info in six.iteritems(orgs_by_id):
@@ -894,6 +891,8 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         return REQUEST.RESPONSE.redirect(self.absolute_url() +
                                          '/members_html?id=' + org_id)
 
+    security.declarePublic('add_members_html')
+
     def add_members_html(self, REQUEST):
         """ view """
         org_id = REQUEST.form['id']
@@ -917,6 +916,11 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 
         found_active = [user for user in found_users
                         if user.get('status') != 'disabled']
+        if not self.checkPermissionEditOrganisations():
+            # means the user is an NFP
+            for user in found_active:
+                if not nfp_can_change_user(self, user['id'], no_org=True):
+                    user['restricted'] = True
         options = {
             'org_id': org_id,
             'search_query': search_query,
@@ -938,18 +942,27 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
         if not self.can_edit_organisation():
             msg = "You are not allowed to add members to this organisation"
             IStatusMessage(REQUEST).add(msg, type='error')
-            REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                      '/members_html?id=' + org_id)
+            return REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                             '/members_html?id=' + org_id)
 
-            return None
         user_id_list = REQUEST.form['user_id']
+        agent = self._get_ldap_agent()
+
+        if not self.checkPermissionEditOrganisations():
+            # means the user is an NFP
+            for user in user_id_list:
+                if not nfp_can_change_user(self, user, no_org=True):
+                    msg = ("User %s is member of an organisation from "
+                           "another country" % user)
+                IStatusMessage(REQUEST).add(msg, type='error')
+                return REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                                 '/members_html?id=' + org_id)
 
         assert isinstance(user_id_list, list)
 
         for user_id in user_id_list:
             assert isinstance(user_id, str)
 
-        agent = self._get_ldap_agent()
         with agent.new_action():
             for user_id in user_id_list:
                 old_info = agent.user_info(user_id)
@@ -1041,7 +1054,7 @@ class OrganisationsEditor(SimpleItem, PropertyManager):
 InitializeClass(OrganisationsEditor)
 
 
-id_re = re.compile(r'^[a-z]{2}_[a-z]+$')
+id_re = re.compile(r'(^[a-z]{2}|int)_[a-z]+$')
 phone_re = re.compile(r'^\+[\d ]+$')
 postal_code_re = re.compile(r'^[a-zA-Z]{2}[a-zA-Z0-9\- ]+$')
 
@@ -1060,7 +1073,8 @@ VALIDATION_ERRORS = {
     'postal_code': ('Postal codes must be in international notation (they '
                     'must start with a two-letter country code followed by a '
                     'combination of digits, latin letters, dashes and '
-                    'spaces).'),
+                    'spaces).'
+                    'Leave empty for international organisations.'),
     'country': "The country name is mandatory",
 }
 
