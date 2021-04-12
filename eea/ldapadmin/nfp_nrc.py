@@ -26,11 +26,10 @@ from eea.ldapadmin import ldap_config
 from eea.ldapadmin.ldap_config import _get_ldap_agent
 from eea.ldapadmin import roles_leaders
 from eea.ldapadmin.logic_common import _is_authenticated, logged_in_user
-from .ui_common import get_role_name
-from .ui_common import CommonTemplateLogic
-from .ui_common import TemplateRenderer
-from .ui_common import TemplateRendererNoWrap
-from .ui_common import extend_crumbs
+from eea.ldapadmin.ui_common import get_role_name, extend_crumbs
+from eea.ldapadmin.ui_common import nfp_can_change_user
+from eea.ldapadmin.ui_common import CommonTemplateLogic, TemplateRenderer
+from eea.ldapadmin.ui_common import TemplateRendererNoWrap
 log = logging.getLogger('nfp_nrc')
 
 eionet_access_nfp_nrc = 'Eionet access NFP admin for NRC'
@@ -570,8 +569,12 @@ class NfpNrc(SimpleItem, PropertyManager):
         }
 
         if search_name:
+            search_results = agent.search_user(search_name, no_disabled=True)
+            for user in search_results:
+                if not nfp_can_change_user(self, user['uid'], no_org=False):
+                    user['restricted'] = True
             options['search_results'] = {
-                'users': agent.search_user(search_name, no_disabled=True)
+                'users': search_results
             }
 
         if '-nrc-' in role_id:
@@ -599,6 +602,11 @@ class NfpNrc(SimpleItem, PropertyManager):
         agent = self._get_ldap_agent()
 
         if not self._allowed(agent, REQUEST, country_code):
+            return None
+        if not nfp_can_change_user(self, user_id, no_org=False):
+            # This means somebody is manipulating the DOM in order to
+            # add a user that belongs to an organisation from another
+            # country (the button doesn't normally appear)
             return None
 
         with agent.new_action():

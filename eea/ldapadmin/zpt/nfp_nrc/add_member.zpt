@@ -106,7 +106,8 @@
         </td>
 
         <td class="center">
-          <form tal:attributes="action string:${common/base_url}/add_user"
+          <form tal:condition="not: user_info/restricted|nothing"
+                tal:attributes="action string:${common/base_url}/add_user"
             name="add-user" method="post" style="display: inline">
             <input type="hidden" name="role_id"
                    tal:attributes="value options/role_id" />
@@ -115,6 +116,9 @@
 
             <input type="submit" value="Add" class="primary-button" />
           </form>
+          <tal:block condition="user_info/restricted|nothing"
+              tal:content="string:This user is not member of an organisation
+                            from ${options/country_name}." />
         </td>
       </tr>
     </tbody>
