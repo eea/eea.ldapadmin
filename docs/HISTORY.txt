@@ -1,6 +1,9 @@
 Changelog
 =========
 
+3.0-dev0 - (unreleased)
+---------------------------
+
 2.9 - (2021-04-12)
 ---------------------------
 * restrict adding members to NRC and AWP roles to users from
