@@ -628,10 +628,16 @@ class UsersAdmin(SimpleItem, PropertyManager):
             form_data = user
 
         secondary_agent = self._get_ldap_agent(secondary=True)
-        all_orgs = secondary_agent.all_organisations()
-        orgs = [{'id': k, 'text': v['name'], 'text_native': v['name_native'],
-                 'ldap': True} for k, v in all_orgs.items()]
         user_orgs = list(agent.user_organisations(user_id))
+
+        nfp_country = nfp_for_country(self)
+        if self.checkPermissionEditUsers():
+            secondary_agent = self._get_ldap_agent(secondary=True)
+            agent_orgs = secondary_agent.all_organisations()
+        else:
+            agent_orgs = orgs_in_country(self, nfp_country)
+        orgs = [{'id': k, 'text': v['name'], 'text_native': v['name_native'],
+                 'ldap': True} for k, v in agent_orgs.items()]
 
         if not user_orgs:
             org = form_data.get('organisation')

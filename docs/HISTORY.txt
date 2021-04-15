@@ -1,6 +1,11 @@
 Changelog
 =========
 
+3.0 - (2021-04-15)
+---------------------------
+* restrict available organisations to own country when NFP edits users
+  [valipod]
+
 2.9 - (2021-04-12)
 ---------------------------
 * restrict adding members to NRC and AWP roles to users from
