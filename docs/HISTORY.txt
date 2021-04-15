@@ -3,6 +3,8 @@ Changelog
 
 3.0-dev0 - (unreleased)
 ---------------------------
+* restrict available organisations to own country when NFP edits users
+  [valipod]
 
 2.9 - (2021-04-12)
 ---------------------------
