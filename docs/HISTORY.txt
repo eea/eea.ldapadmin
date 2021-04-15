@@ -1,6 +1,9 @@
 Changelog
 =========
 
+3.1-dev0 - (unreleased)
+---------------------------
+
 3.0 - (2021-04-15)
 ---------------------------
 * restrict available organisations to own country when NFP edits users
