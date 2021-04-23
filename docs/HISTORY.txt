@@ -3,6 +3,8 @@ Changelog
 
 3.1-dev0 - (unreleased)
 ---------------------------
+* display real organisation membership instead of the 'o' property in
+  role listing of members [dumitval]
 
 3.0 - (2021-04-15)
 ---------------------------

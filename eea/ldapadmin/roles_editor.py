@@ -154,6 +154,14 @@ def role_members(agent, role_id, subroles=False, filter_date=None):
         for user_id in members['users']:
             try:
                 users[user_id] = agent.user_info(user_id)
+                orgs_for_user = agent.orgs_for_user(user_id)
+                if orgs_for_user:
+                    users[user_id]['organisation'] = orgs_for_user[0][0]
+                    users[user_id]['organisation_title'] = orgs_for_user[0][1][
+                        0]
+                else:
+                    users[user_id]['organisation'] = ''
+                    users[user_id]['organisation_title'] = ''
             except (NO_SUCH_OBJECT, usersdb.UserNotFound):
                 users[user_id] = {'id': user_id, 'deleted': True}
             else:
@@ -355,6 +363,16 @@ class RolesEditor(Folder):
             except usersdb.UserNotFound:
                 user_infos[user] = {'id': user, 'deleted': True}
         role_owners = dict((x, user_infos[x]) for x in mail_info['owner'])
+        for owner in role_owners:
+            orgs_for_owner = agent.orgs_for_user(owner)
+            if orgs_for_owner:
+                role_owners[owner]['organisation'] = orgs_for_owner[0][0]
+                role_owners[owner]['organisation_title'] = orgs_for_owner[0][
+                    1][0]
+            else:
+                role_owners[owner]['organisation'] = ''
+                role_owners[owner]['organisation_title'] = ''
+
         persons = dict((x, user_infos[x]) for
                        x in mail_info['permittedPerson'])
         permitted_senders = self._get_permitted_senders_info(mail_info)

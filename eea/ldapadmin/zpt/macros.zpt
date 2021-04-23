@@ -43,7 +43,7 @@
                 <td>User ID</td>
                 <td>Email</td>
                 <td>Tel/Fax</td>
-                <td>Organisation</td>
+                <td>Organisation (ID)</td>
             </tal:block>
         </tr>
     </thead>
@@ -75,7 +75,9 @@
                     </td>
                 </tal:block>
                 <td>
-                    <span tal:content="user_info/full_name" />
+                    <a tal:attributes="href string:/directory/user?uid=${user_info/id}">
+                      <span tal:content="user_info/full_name" />
+                    </a>
                     <tal:block condition="naming|string:">
                         <span class="leader_container tipsy-title"
                               tal:condition="python:user_info.get('leader')"
@@ -109,7 +111,12 @@
                 </td>
 
                 <td>
-                    <span tal:content="user_info/organisation" />
+                  <a tal:attributes="href string:/eionet-account-tools/eionet_account_tools/organisations/organisation?id=${user_info/organisation}"><span tal:content="user_info/organisation_title|nothing" /></a>
+                    <tal:block condition="user_info/organisation_title|nothing"
+                      content="string:("
+                      /><span tal:content="user_info/organisation" /><tal:block
+                        condition="user_info/organisation_title|nothing"
+                        content="string:)" />
                 </td>
 
                 </tal:block>
