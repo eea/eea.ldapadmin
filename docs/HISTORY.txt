@@ -5,6 +5,8 @@ Changelog
 ---------------------------
 * display real organisation membership instead of the 'o' property in
   role listing of members [dumitval]
+* add password age and expiration status to the user export from roles
+  (managers only) [dumitval]
 
 3.0 - (2021-04-15)
 ---------------------------

@@ -11,11 +11,13 @@ from collections import defaultdict
 from string import ascii_lowercase, digits
 from io import StringIO
 from io import BytesIO
+from datetime import datetime, timedelta
 
 import six
 from six.moves import filter
 from six.moves import map
 from zope.component import getMultiAdapter
+from ldap import SCOPE_BASE
 from lxml.builder import E
 from lxml.html import tostring
 from lxml.html.soupparser import fromstring
@@ -1095,13 +1097,25 @@ class RolesEditor(Folder):
         REQUEST.RESPONSE.setHeader('Content-Type', 'application/vnd.ms-excel')
         REQUEST.RESPONSE.setHeader('Content-Disposition',
                                    "attachment;filename=%s" % filename)
-        header = ('Name', 'User ID', 'Email', 'Tel', 'Fax', 'Postal Address',
-                  'Organisation ID', 'Organisation Title')
+        agent = self._get_ldap_agent()
+        if self.can_edit_roles(REQUEST.AUTHENTICATED_USER):
+            header = (
+                'Name', 'User ID', 'Email', 'Tel', 'Fax', 'Postal Address',
+                'Organisation ID', 'Organisation Title',
+                'Password last changed', 'Password expired')
+            defaultppolicy = agent.conn.search_s(
+                'cn=defaultppolicy,ou=pwpolicies,o=EIONET,l=Europe',
+                SCOPE_BASE)
+            pwdMaxAge = int(defaultppolicy[0][1]['pwdMaxAge'][0]) / (
+                3600 * 24)
+        else:
+            header = (
+                'Name', 'User ID', 'Email', 'Tel', 'Fax', 'Postal Address',
+                'Organisation ID', 'Organisation Title')
 
         if subroles:
             header = ('Subrole', ) + header
 
-        agent = self._get_ldap_agent()
         try:
             agent.role_info(role_id)
         except usersdb.RoleNotFound:
@@ -1122,6 +1136,14 @@ class RolesEditor(Folder):
                    usr['organisation'],
                    agent.org_info(usr['organisation'].lower())['name']
                    ]
+            if self.can_edit_roles(REQUEST.AUTHENTICATED_USER):
+                pwdChangedTime = agent.user_info(usr['id'])['pwdChangedTime']
+                pwdChangedTime = datetime.strptime(pwdChangedTime,
+                                                   '%Y%m%d%H%M%SZ')
+                pwdExpired = datetime.now() - timedelta(
+                    days=pwdMaxAge) > pwdChangedTime
+                row.extend([pwdChangedTime.strftime('%d %b %Y, %H:%m'),
+                            str(pwdExpired)])
 
             if subroles:
                 row.insert(0, '\n'.join(usr['roles']))

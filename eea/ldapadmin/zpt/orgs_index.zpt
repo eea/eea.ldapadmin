@@ -41,7 +41,7 @@
             Country
           </td>
           <td>
-            Organisation Name
+            Organisation Name (ID)
           </td>
         </tr>
       </thead>
