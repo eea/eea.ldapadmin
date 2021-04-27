@@ -62,6 +62,7 @@ user_map_fixture = {
         'phone': u"555 1234",
         'fax': u"555 6789",
         'organisation': "My company",
+        'organisation_id': "my_company",
     },
     'anne': {
         'id': "anne",
@@ -70,6 +71,16 @@ user_map_fixture = {
         'phone': u"555 32879",
         'fax': u"",
         'organisation': "Some Agency",
+        'organisation_id': "so_agency",
+    },
+    'confucius': {
+        'id': "confucius",
+        'full_name': u"孔子",
+        'email': u"confucius@example.com",
+        'phone': u"555 32878",
+        'fax': u"",
+        'organisation': u"儒家",
+        'organisation_id': "cn_agency",
     },
 }
 
@@ -87,6 +98,12 @@ org_map_fixture = {
 }
 
 user_info_fixture = user_map_fixture['jsmith']
+
+
+def orgs_for_user(user_id):
+    """ return orgs of given user, from fixture """
+    return [(user_map_fixture[user_id]['organisation_id'],
+            [user_map_fixture[user_id]['organisation']])]
 
 
 class BrowseTest(unittest.TestCase):
@@ -110,6 +127,7 @@ class BrowseTest(unittest.TestCase):
         self.mock_agent.role_info.return_value = {
             'description': "Various places",
         }
+        self.mock_agent.orgs_for_user.side_effect = orgs_for_user
 
     def test_browse_subroles(self):
         ''' test browse subroles '''
@@ -173,7 +191,8 @@ class BrowseTest(unittest.TestCase):
         self.assertEqual(plaintext(cells[1]), 'jsmith')
         self.assertEqual(plaintext(cells[2]), user_info_fixture['email'])
         self.assertEqual(plaintext(cells[4]),
-                         user_info_fixture['organisation'])
+                         user_info_fixture['organisation'] +
+                         ' (' + user_info_fixture['organisation_id'] + ')')
 
     def test_missing_role(self):
         ''' test on missing role '''
@@ -366,6 +385,7 @@ class AddRemoveRoleMembersTest(unittest.TestCase):
             'permittedSender': ['anyone'],
             'permittedPerson': [],
         }
+        self.mock_agent.orgs_for_user.side_effect = orgs_for_user
         self.request = self.REQUEST = self.ui.REQUEST = self.layer[
             'portal'].REQUEST
         user = get_current()
@@ -525,6 +545,7 @@ class UserSearchTest(unittest.TestCase):
         user = get_current()
         base_setup(self, user)
         self.mock_agent.is_subrole = lambda r1, r2: r1.startswith(r2)
+        self.mock_agent.orgs_for_user.side_effect = orgs_for_user
 
         self.stream = StringIO()
         self.handler = logging.StreamHandler(self.stream)
@@ -643,6 +664,7 @@ class FilterTest(unittest.TestCase):
         self.mock_agent.members_in_role.side_effect = role_membership.get
         self.mock_agent.user_info.side_effect = deepcopy(user_map_fixture).get
         self.mock_agent.org_info.side_effect = deepcopy(org_map_fixture).get
+        self.mock_agent.orgs_for_user.side_effect = orgs_for_user
 
     def check_query_results(self, page):
         ''' check query results '''
@@ -698,6 +720,7 @@ class UserInfoTest(unittest.TestCase):
             'permittedPerson': [],
         }
         self.mock_agent.role_names_in_role.return_value = {}
+        self.mock_agent.orgs_for_user.side_effect = orgs_for_user
         self.role_membership = {'places-bank': {
             'users': ['jsmith'], 'orgs': []}}
         self.mock_agent.filter_roles.side_effect = lambda *args, **kw: \
@@ -735,7 +758,10 @@ class UserInfoTest(unittest.TestCase):
             self.assertEqual(data['User ID'], "jsmith")
             self.assertEqual(data['Email'], "jsmith@example.com")
             self.assertEqual(data['Tel/Fax'], "555 1234\n\n555 6789")
-            self.assertEqual(data['Organisation'], "My company")
+            self.assertEqual(
+                re.sub(' +', ' ', data['Organisation (ID)']).replace('\n',
+                                                                     ''),
+                "My company (my_company)")
 
         self.user.getRoles.return_value = ['Authenticated']
 
@@ -749,18 +775,16 @@ class UserInfoTest(unittest.TestCase):
 
     def test_filter_users_csv(self):
         ''' test filter_users_csv '''
-        self.users['confucius'] = {
-            'id': 'confucius',
-            'full_name': u"孔子", 'organisation': u"儒家",
-            'email': "", 'phone': "", 'fax': ""}
+        self.users['confucius'] = user_map_fixture['confucius']
         self.role_membership['places-china'] = {
             'users': ['confucius'], 'orgs': []}
         self.request.form = {'pattern': 'places-*'}
         expected_rows = [
             ['Role', 'Name', 'User ID', 'Email', 'Tel/Fax', 'Organisation'],
             ["places-bank", "Joe Smith", "jsmith", "jsmith@example.com",
-             "555 1234, 555 6789", "My company"],
-            ["places-china", "孔子", "confucius", "", "", "儒家"],
+             "555 1234, 555 6789", "my_company"],
+            ["places-china", "孔子", "confucius", 'confucius@example.com',
+             '555 32878', "cn_agency"],
         ]
 
         # not logged in
