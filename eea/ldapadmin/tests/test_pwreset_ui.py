@@ -9,7 +9,7 @@ from Products.MailHost.interfaces import IMailHost
 from plone.registry.interfaces import IRegistry
 from plone.api import portal
 from plone.api.user import get_current
-from plone.testing.z2 import Browser
+from plone.testing.zope import Browser
 import eea.usersdb
 from eea.ldapadmin.testing import FUNCTIONAL_TESTING
 from eea.ldapadmin.pwreset_tool import manage_add_pwreset_tool

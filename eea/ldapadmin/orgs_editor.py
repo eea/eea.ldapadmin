@@ -21,7 +21,7 @@ import ldap
 from ldap import NO_SUCH_OBJECT
 from ldap import INVALID_DN_SYNTAX
 import xlwt
-from App.class_init import InitializeClass
+from AccessControl.class_init import InitializeClass
 from OFS.PropertyManager import PropertyManager
 from OFS.SimpleItem import SimpleItem
 from persistent.mapping import PersistentMapping
