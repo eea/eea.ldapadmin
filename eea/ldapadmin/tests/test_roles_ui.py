@@ -101,6 +101,7 @@ user_info_fixture = user_map_fixture['jsmith']
 
 
 def orgs_for_user(user_id):
+    """ return orgs of given user, from fixture """
     return [(user_map_fixture[user_id]['organisation_id'],
             [user_map_fixture[user_id]['organisation']])]
 
@@ -758,8 +759,8 @@ class UserInfoTest(unittest.TestCase):
             self.assertEqual(data['Email'], "jsmith@example.com")
             self.assertEqual(data['Tel/Fax'], "555 1234\n\n555 6789")
             self.assertEqual(
-                re.sub(' +', ' ',  data['Organisation (ID)']).replace('\n',
-                                                                      ''),
+                re.sub(' +', ' ', data['Organisation (ID)']).replace('\n',
+                                                                     ''),
                 "My company (my_company)")
 
         self.user.getRoles.return_value = ['Authenticated']

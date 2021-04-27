@@ -13,6 +13,7 @@ from io import BytesIO
 
 import six
 from AccessControl import ClassSecurityInfo
+from AccessControl.class_init import InitializeClass
 from AccessControl.Permissions import view, view_management_screens
 from AccessControl.unauthorized import Unauthorized
 
@@ -21,7 +22,6 @@ import ldap
 from ldap import NO_SUCH_OBJECT
 from ldap import INVALID_DN_SYNTAX
 import xlwt
-from AccessControl.class_init import InitializeClass
 from OFS.PropertyManager import PropertyManager
 from OFS.SimpleItem import SimpleItem
 from persistent.mapping import PersistentMapping
