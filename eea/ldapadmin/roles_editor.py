@@ -1138,16 +1138,18 @@ class RolesEditor(Folder):
                    ]
             if self.can_edit_roles(REQUEST.AUTHENTICATED_USER):
                 pwdChangedTime = agent.user_info(usr['id'])['pwdChangedTime']
-                pwdChangedTime = datetime.strptime(pwdChangedTime,
-                                                   '%Y%m%d%H%M%SZ')
+                if pwdChangedTime:
+                    pwdChangedTime = datetime.strptime(pwdChangedTime,
+                                                       '%Y%m%d%H%M%SZ')
+                else:
+                    pwdChangedTime = datetime.strptime('19000101', '%Y%m%d')
                 pwdExpired = datetime.now() - timedelta(
                     days=pwdMaxAge) > pwdChangedTime
-                row.extend([pwdChangedTime.strftime('%d %b %Y, %H:%m'),
-                            str(pwdExpired)])
+                row.extend([pwdChangedTime, str(pwdExpired)])
 
             if subroles:
                 row.insert(0, '\n'.join(usr['roles']))
-            rows.append([value for value in row])
+            rows.append(row)
         return generate_excel(header, rows)
 
     security.declareProtected(view, 'edit_owners')
