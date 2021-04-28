@@ -503,7 +503,7 @@ class UsersAdmin(SimpleItem, PropertyManager):
             lambda x, y: (x['text'] > y['text']) - (x['text'] < y['text']))
         orgs.sort(key=comp)
 
-        choices = [('-', '-')]
+        choices = [('-', 'Please select organisation')]
 
         for org in orgs:
             if org['ldap']:
@@ -522,6 +522,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
         if 'submit' in REQUEST.form:
             try:
+                if form_data.get('organisation') == '-':
+                    del form_data['organisation']
                 user_form = deform.Form(schema)
                 user_info = user_form.validate(list(form_data.items()))
                 user_info['search_helper'] = _transliterate(

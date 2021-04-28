@@ -1,6 +1,11 @@
 Changelog
 =========
 
+3.2 - (2021-04-28)
+---------------------------
+* Change: Two bugfixes
+  [valipod]
+
 3.1 - (2021-04-27)
 ---------------------------
 * display real organisation membership instead of the 'o' property in

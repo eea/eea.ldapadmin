@@ -1,5 +1,6 @@
 ''' import and exmport functionality '''
 import logging
+from datetime import datetime
 from io import BytesIO
 import six.moves.urllib.error
 import six.moves.urllib.parse
@@ -73,16 +74,22 @@ def generate_excel(header, rows):
     row = 0
     for col in range(0, len(header)):
         ws.col(col).width = 256 * 50
-    for col in range(0, len(header)):
-        ws.row(row).set_cell_text(col, header[col], style)
+    for col, val in enumerate(header):
+        ws.row(row).set_cell_text(col, val, style)
     style.font = normalfont
     for item in rows:
         row += 1
-        for col in range(0, len(item)):
-            if '\n' in item[col]:
-                ws.row(row).set_cell_text(col, item[col], wrapstyle)
-            else:
-                ws.row(row).set_cell_text(col, item[col], style)
+        for col, val in enumerate(item):
+            style.num_format_str = 'general'
+            try:
+                excel_1900 = datetime.strptime('01/01/1900', '%d/%m/%Y')
+                style.num_format_str = 'dd/MM/yyyy'
+                ws.write(row, col, (val - excel_1900).days + 2, style)
+            except TypeError:
+                if '\n' in val:
+                    ws.write(row, col, val, wrapstyle)
+                else:
+                    ws.write(row, col, val, style)
     output = BytesIO()
     wb.save(output)
     return output.getvalue()
