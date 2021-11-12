@@ -84,7 +84,10 @@ def generate_excel(header, rows):
             try:
                 excel_1900 = datetime.strptime('01/01/1900', '%d/%m/%Y')
                 style.num_format_str = 'dd/MM/yyyy'
-                ws.write(row, col, (val - excel_1900).days + 2, style)
+                if val:
+                    ws.write(row, col, (val - excel_1900).days + 2, style)
+                else:
+                    ws.write(row, col, 1, style)
             except TypeError:
                 if '\n' in val:
                     ws.write(row, col, val, wrapstyle)

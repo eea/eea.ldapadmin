@@ -2,7 +2,8 @@
 # pylint: disable=too-many-branches,too-many-locals,too-many-nested-blocks
 # pylint: disable=too-many-public-methods,dangerous-default-value
 # pylint: disable=global-statement,too-many-instance-attributes
-''' Eionet directory management tools for users with NFP/NRC roles '''
+''' Eionet directory management tools for users with NFP/Eionet Groups
+    (former NRC) roles '''
 import json
 import logging
 import operator
@@ -41,7 +42,7 @@ manage_add_nfp_nrc_html.config_defaults = lambda: ldap_config.defaults
 
 
 def manage_add_nfp_nrc(parent, tool_id, REQUEST=None):
-    """ Adds a new Eionet NFP Admin object """
+    """ Adds a new Eionet Groups Admin object """
     form = (REQUEST.form if REQUEST is not None else {})
     config = ldap_config.read_form(form)
     obj = NfpNrc(config)
@@ -94,6 +95,21 @@ EXTRANET_REPORTER_ROLES = [
 ]
 
 
+EIONET_GROUPS = ["eionet-biodiversity1",
+                 "eionet-biodiversity2",
+                 "eionet-circulareconomy",
+                 "eionet-climatechange",
+                 "eionet-communication",
+                 "eionet-data",
+                 "eionet-foodsystems",
+                 "eionet-foresight",
+                 "eionet-health",
+                 "eionet-landsystems",
+                 "eionet-mobility",
+                 "eionet-soe",
+                 ]
+
+
 def code_to_name(country_code):
     ''' return country name from iso code '''
     return get_country(country_code)['name']
@@ -102,38 +118,36 @@ def code_to_name(country_code):
 class SimplifiedRole(object):
     """
     A simple way of representing and addressing attributes
-    of an NFP/NRC Role
+    of an NFP/Eionet Groups Role
 
     """
 
     def __init__(self, role_id, description):
-        m = re.match(r'^eionet-(nfp|nrc)-(.*)(mc|cc|oc)-([^-]*)$', role_id,
-                     re.IGNORECASE)
-        r = re.match(
+        group = re.match(
+            r'^eionet-(biodiversity1|biodiversity2|climatechange|health|'
+            r'circulareconomy|foresight|soe|foodsystems|landsystems|mobility|'
+            r'data|communication)(.*)-([^-]*)$',
+            role_id, re.IGNORECASE)
+        nfp = re.match(
+            r'^eionet-nfp-(.*)(mc|cc|oc)-([^-]*)$',
+            role_id, re.IGNORECASE)
+        reportnet = re.match(
             r'^reportnet-awp-([^-]*)-reporter-([^-]*)$',
             role_id, re.IGNORECASE)
-        e = re.match(r'^(extranet)-.*-([^-]*)$', role_id, re.IGNORECASE)
+        extranet = re.match(
+            r'^(extranet)-.*-([^-]*)$', role_id, re.IGNORECASE)
+        match = group or nfp or reportnet or extranet
 
-        if m:
-            self.type = m.groups()[0].lower()
-            self.country = m.groups()[3].lower()
-            self.role_id = role_id
-            self.description = description
-        elif r:
-            self.type = r.groups()[0].lower()
-            self.country = r.groups()[1].lower()
-            self.role_id = role_id
-            self.description = description
-        elif e:
-            self.type = e.groups()[0].lower()
-            self.country = e.groups()[1].lower()
+        if match:
+            self.type = match.groups()[0].lower()
+            self.country = match.groups()[-1].lower()
             self.role_id = role_id
             self.description = description
         else:
-            raise ValueError("Not a valid NFP/NRC/Reporter role")
+            raise ValueError("Not a valid NFP/Eionet Groups/Reporter role")
 
-        if not self.country or (m and self.type not in ('nfp', 'nrc')):
-            raise ValueError("Not a valid NFP/NRC/Reporter role")
+        if not self.country:
+            raise ValueError("Not a valid NFP/Eionet Groups/Reporter role")
 
     def set_members_info(self, users=[], orgs=[], leaders=[], alternates=[]):
         ''' set members info '''
@@ -150,38 +164,34 @@ class SimplifiedRole(object):
 class SimplifiedRoleDict(dict):
     """
     A simple way of representing and addressing attributes
-    of an NFP/NRC Role, json ready
+    of an NFP/Eionet Groups Role, json ready
 
     """
 
     def __init__(self, role_id, description):
-        m = re.match(r'^eionet-(nfp|nrc)-(.*)(mc|cc|oc)-([^-]*)$', role_id,
-                     re.IGNORECASE)
-        r = re.match(
+        group = re.match(
+            r'^eionet-(biodiversity1|biodiversity2|climatechange|health|'
+            r'circulareconomy|foresight|soe|foodsystems|landsystems|mobility|'
+            r'data|communication)(.*)-([^-]*)$',
+            role_id, re.IGNORECASE)
+        nfp = re.match(r'^eionet-nfp-(.*)(mc|cc|oc)-([^-]*)$', role_id,
+                       re.IGNORECASE)
+        reportnet = re.match(
             r'^reportnet-awp-([^-]*)-reporter-([^-]*)$',
             role_id, re.IGNORECASE)
-        e = re.match(r'^(extranet)-.*-([^-]*)$', role_id, re.IGNORECASE)
+        extranet = re.match(r'^(extranet)-.*-([^-]*)$', role_id, re.IGNORECASE)
+        match = group or nfp or reportnet or extranet
 
-        if m:
-            self['type'] = m.groups()[0].lower()
-            self['country'] = m.groups()[3].lower()
-            self['role_id'] = role_id
-            self['description'] = description
-        elif r:
-            self['type'] = r.groups()[0].lower()
-            self['country'] = r.groups()[1].lower()
-            self['role_id'] = role_id
-            self['description'] = description
-        elif e:
-            self['type'] = e.groups()[0].lower()
-            self['country'] = e.groups()[1].lower()
+        if match:
+            self['type'] = match.groups()[0].lower()
+            self['country'] = match.groups()[-1].lower()
             self['role_id'] = role_id
             self['description'] = description
         else:
-            raise ValueError("Not a valid NFP/NRC/Reporter role")
+            raise ValueError("Not a valid NFP/Groups/Reporter role")
 
-        if not self['country'] or (m and self['type'] not in ('nfp', 'nrc')):
-            raise ValueError("Not a valid NFP/NRC/Reporter role")
+        if not self['country']:
+            raise ValueError("Not a valid NFP/Group/Reporter role")
 
     def set_members_info(self, users=[], orgs=[], leaders=[], alternates=[]):
         ''' set members info '''
@@ -213,30 +223,28 @@ def get_nfps_for_country(agent, country_code):
     return sorted(out)
 
 
-def _get_roles_for_user(agent, user_id, prefix_dn):
+def _get_roles_for_user(agent, user_id, prefix_dn, branch=""):
     ''' get a list of roles of user '''
     out = []
     filterstr = ("(&(objectClass=groupOfUniqueNames)(uniqueMember=%s))" %
                  agent._user_dn(user_id))
-    branch = ""
-
-    if "eionet-nfp" in prefix_dn:
-        branch = "eionet-nfp-*-*"
-    elif "eionet-nrc" in prefix_dn:
-        branch = "eionet-nrc-*-*"
-    elif "reportnet-awp" in prefix_dn:
-        branch = "reportnet-awp-*-reporter-*"
+    if not branch:
+        if "eionet-nfp" in prefix_dn:
+            branch = "eionet-nfp-*-*"
+        elif "reportnet-awp" in prefix_dn:
+            branch = "reportnet-awp-*-reporter-*"
     roles = agent.filter_roles(
         branch, prefix_dn=prefix_dn,  # "cn=eionet-nrc,cn=eionet"
         filterstr=filterstr, attrlist=("description",))
 
-    for nrc in roles:
-        try:
-            role = SimplifiedRole(nrc[0], nrc[1]['description'][0])
-        except ValueError:
-            continue
-        else:
-            out.append(role)
+    for role in roles:
+        if re.match('.*-[a-z]{2}$', role[0]):
+            try:
+                role_obj = SimplifiedRole(role[0], role[1]['description'][0])
+            except ValueError:
+                continue
+            else:
+                out.append(role_obj)
 
     return sorted(out, key=operator.attrgetter('role_id'))
 
@@ -251,12 +259,17 @@ def get_nfp_roles(agent, user_id=None):
 
 
 def get_nrc_roles(agent, user_id):
-    """ Returns the nrc roles (as SimplifiedRole instances) for current user
+    """ Returns the Eionet Grups (formerly called nrc) roles
+        (as SimplifiedRole instances) for current user
     """
 
-    return _get_roles_for_user(agent,
-                               user_id,
-                               prefix_dn="cn=eionet-nrc,cn=eionet")
+    out = []
+    for role in EIONET_GROUPS:
+        out.extend(_get_roles_for_user(
+            agent, user_id,
+            prefix_dn="cn=%s,cn=eionet" % role,
+            branch=role))
+    return sorted(out, key=operator.attrgetter('role_id'))
 
 
 def get_awp_roles(agent, user_id):
@@ -355,7 +368,7 @@ class NfpNrc(SimpleItem, PropertyManager):
 
     def _allowed(self, agent, request, country_code):
         """
-        Tests if logged in user is allowed to manage NRC members for
+        Tests if logged in user is allowed to manage Eionet Groups members for
         `country` (whether he is an NFP member for country)
 
         """
@@ -370,8 +383,9 @@ class NfpNrc(SimpleItem, PropertyManager):
                                        attrlist=("description",))
 
         if not (bool(nfp_roles) or self.checkPermissionZopeManager()):
-            msg = u"You are not allowed to manage NRC members for %s" \
-                % code_to_name(country_code)
+            msg = (
+                u"You are not allowed to manage Eionet Groups members for %s"
+                % code_to_name(country_code))
             IStatusMessage(request).add(msg, type='error')
             request.RESPONSE.redirect(self.absolute_url())
 
@@ -406,7 +420,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         user_id = logged_in_user(REQUEST)
         nfps = get_nfp_roles(agent, user_id)
         options = {'nfps': nfps}
-
+        
         return self._render_template('zpt/nfp_nrc/index.zpt', **options)
 
     def get_top_role_members(self, role_dn, country_code):
@@ -465,7 +479,7 @@ class NfpNrc(SimpleItem, PropertyManager):
     security.declareProtected(eionet_access_nfp_nrc, 'nrcs')
 
     def nrcs(self, REQUEST):
-        """ view nrcs and members in these roles """
+        """ view Eionet Groups and members in these roles """
 
         if not _is_authenticated(REQUEST):
             pass
@@ -477,14 +491,14 @@ class NfpNrc(SimpleItem, PropertyManager):
         if not self._allowed(agent, REQUEST, country_code):
             raise Unauthorized
 
-        top_role_dns = get_top_role_dns(agent, 'eionet-nrc')
+        top_role_dns = [agent._role_dn(role_id) for role_id in EIONET_GROUPS]
 
         options = {'top_role_dns': top_role_dns,
                    'country': country_code,
                    'agent': agent,
                    'country_name': country_name or country_code,
                    }
-        self._set_breadcrumbs([("Browsing NRC-s in %s" % country_name, '#')])
+        self._set_breadcrumbs([("Browsing Eionet Groups in %s" % country_name, '#')])
 
         return self._render_template('zpt/nfp_nrc/nrcs.zpt', **options)
 
@@ -577,14 +591,16 @@ class NfpNrc(SimpleItem, PropertyManager):
                 'users': search_results
             }
 
-        if '-nrc-' in role_id:
-            self._set_breadcrumbs([("Browsing NRC-s in %s" % country_name,
-                                    self.absolute_url() + '/nrcs?nfp=%s' %
-                                    country_code), ("Add member", '#')])
-        elif '-awp-' in role_id:
+        if '-awp-' in role_id:
             self._set_breadcrumbs([("Browsing reporters in %s" % country_name,
                                     self.absolute_url() + '/awps?nfp=%s' %
                                     country_code), ("Add member", '#')])
+        else:
+            self._set_breadcrumbs([
+                ("Browsing Eionet Groups in %s" % country_name,
+                 self.absolute_url() + '/nrcs?nfp=%s' %
+                 country_code),
+                ("Add member", '#')])
 
         return self._render_template('zpt/nfp_nrc/add_member.zpt', **options)
 
@@ -593,7 +609,7 @@ class NfpNrc(SimpleItem, PropertyManager):
     def add_user(self, REQUEST):
         """ Add user `user_id` to role `role_id`;
 
-        This is used to add a user to an NRC role
+        This is used to add a user to an Eionet Groups role
         """
 
         role_id = REQUEST.form['role_id']
@@ -615,29 +631,29 @@ class NfpNrc(SimpleItem, PropertyManager):
         role_msg = get_role_name(agent, role_id)
         msg = "User %r added to role %s. \n" % (user_id, role_msg)
 
-        # for NRC roles only, test if the added user is member of a national
-        # organisation
+        # for Eionet Groups roles only, test if the added user is member of a
+        # national organisation
 
-        if '-nrc-' in role_id:
+        if self.is_eionet_group(role_id):
             if not get_national_org(agent, user_id, role_id):
-                msg += ("The user you added as an NRC does not have a "
-                        "mandatory reference to an organisation for your "
-                        "country. Please corect!")
+                msg += (
+                    "The user you want to add to an Eionet Group does not"
+                    " have a mandatory reference to an organisation for "
+                    "your country. Please corect!")
 
         IStatusMessage(REQUEST).add(msg, type='info')
 
         log.info("%s ADDED USER %r TO ROLE %r",
                  logged_in_user(REQUEST), user_id, role_id_list)
 
-        if '-nrc-' in role_id:
-            return REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                             '/nrcs?nfp=%s#role_%s' %
-                                             (country_code, role_id))
         if '-awp-' in role_id:
             return REQUEST.RESPONSE.redirect(self.absolute_url() +
                                              '/awps?nfp=%s#role_%s' %
                                              (country_code, role_id))
-        return None
+
+        return REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                         '/nrcs?nfp=%s#role_%s' %
+                                         (country_code, role_id))
 
     security.declareProtected(eionet_access_nfp_nrc, 'remove_members_html')
 
@@ -660,11 +676,11 @@ class NfpNrc(SimpleItem, PropertyManager):
             'role_members': role_members(agent, role_id),
         }
 
-        if '-nrc-' in role_id:
-            self._set_breadcrumbs([("Browsing NRC-s in %s" % country_name,
-                                    self.absolute_url() + '/nrcs?nfp=%s' %
-                                    country_code),
-                                   ("Remove members", "#")])
+        if self.is_eionet_group(role_id):
+            self._set_breadcrumbs([
+                ("Browsing Eionet Groups in %s" % country_name,
+                 self.absolute_url() + '/nrcs?nfp=%s' % country_code),
+                ("Remove members", "#")])
         elif '-awp-' in role_id:
             self._set_breadcrumbs([("Browsing reporters in %s" % country_name,
                                     self.absolute_url() + '/awps?nfp=%s' %
@@ -701,16 +717,14 @@ class NfpNrc(SimpleItem, PropertyManager):
             msg = "Users %r removed from role %s" % (user_id_list, role_name)
             IStatusMessage(REQUEST).add(msg, type='info')
 
-        if '-nrc-' in role_id:
-            return REQUEST.RESPONSE.redirect(self.absolute_url() +
-                                             '/nrcs?nfp=%s#role_%s' %
-                                             (country_code, role_id))
-
         if '-awp-' in role_id:
             return REQUEST.RESPONSE.redirect(self.absolute_url() +
                                              '/awps?nfp=%s#role_%s' %
                                              (country_code, role_id))
-        return None
+
+        return REQUEST.RESPONSE.redirect(self.absolute_url() +
+                                         '/nrcs?nfp=%s#role_%s' %
+                                         (country_code, role_id))
 
     security.declareProtected(eionet_access_nfp_nrc, 'set_pcp')
 
@@ -750,3 +764,11 @@ class NfpNrc(SimpleItem, PropertyManager):
         user = self.REQUEST.AUTHENTICATED_USER
 
         return bool(user.has_permission(view_management_screens, self))
+
+    def is_eionet_group(self, role_id):
+        """ Check if the role belongs to an Eionet Group branch """
+        for role in EIONET_GROUPS:
+            if role in role_id:
+                return True
+
+        return False

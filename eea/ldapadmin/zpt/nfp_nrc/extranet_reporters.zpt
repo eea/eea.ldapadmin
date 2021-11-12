@@ -164,11 +164,6 @@
 
 <h1> Extranet reporters for <span tal:replace="options/country_name" /></h1>
 <tal:block condition="options/top_role_dns">
-    <!-- hack to load images before the ajax finishes -->
-    <div style="opacity 0; position: fixed; z-index: -10; top: 0; left: 0">
-      <img src="/++resource++eea.ldapadmin-www/up.png" />
-      <img src="/++resource++eea.ldapadmin-www/users.png" />
-    </div>
     <p id="loading" class="loading">
     <img src="/++resource++eea.ldapadmin-www/ajax-loader.gif" /> <small>Loading roles and users. <span id="remaining" tal:content="python: len(options['top_role_dns'])" /> remaining.</small>
     </p>
