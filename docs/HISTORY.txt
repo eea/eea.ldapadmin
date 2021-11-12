@@ -1,6 +1,9 @@
 Changelog
 =========
 
+3.4-dev0 - (unreleased)
+---------------------------
+
 4.0 - (2021-11-12)
 ---------------------------
 * changes to support the new Eionet Groups replacing the NFP branch
