@@ -2,13 +2,13 @@
 
 <div class="account-links clear" tal:condition="options/role_id" tal:define="role_id options/role_id">
   <div class="left">
-    <a tal:condition="python: '-nrc-' in role_id"
+    <a tal:condition="python: '-awp-' not in role_id"
       tal:attributes="href string:${common/base_url}/nrcs?nfp=${options/country}#role_${options/role_id};
-                       title string:Back to NRC-s in ${options/country_name}"
+                       title string:Back to Eionet Groups in ${options/country_name}"
        class="button">
          <img src="/++resource++eea.ldapadmin-www/back.png" class="middle-image image12"
-              alt="" tal:attributes="title string:Back to NRC-s in ${options/country}"/>
-         <span tal:content="string:Back to NRC-s in ${options/country_name}" />
+              alt="" tal:attributes="title string:Back to Eionet Groups in ${options/country}"/>
+         <span tal:content="string:Back to Eionet Groups in ${options/country_name}" />
     </a>
     <a tal:condition="python: '-awp-' in role_id"
       tal:attributes="href string:${common/base_url}/awps?nfp=${options/country}#role_${options/role_id};

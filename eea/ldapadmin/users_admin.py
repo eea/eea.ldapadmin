@@ -474,8 +474,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
 
             schema['reasonToCreate'].help_text = (
                 "Please indicate reason of account creation like e.g. "
-                "NRC nomination, data reporter in Reportnet for directive XYZ,"
-                " project XXXX cooperation ....")
+                "Eionet Groups nomination, data reporter in Reportnet for "
+                "directive XYZ, project XXXX cooperation ....")
         else:
             schema['id'].validator = colander.All(
                 schema['id'].validator, no_duplicate_id_validator)
@@ -1106,10 +1106,10 @@ class BulkUserImporter(BrowserView):
 
         if not self.request.form:
             return self.index()
-        else:
-            for name in self.buttons:
-                if name in self.request.form:
-                    return getattr(self, name)()
+        for name in self.buttons:
+            if name in self.request.form:
+                return getattr(self, name)()
+        return None
 
     def index(self):
         ''' main index page '''

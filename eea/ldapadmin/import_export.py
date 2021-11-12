@@ -2,9 +2,7 @@
 import logging
 from datetime import datetime
 from io import BytesIO
-import six.moves.urllib.error
-import six.moves.urllib.parse
-import six.moves.urllib.request
+from six.moves import urllib
 from six.moves import range
 import xlwt
 
@@ -15,11 +13,11 @@ def attachment_header(filename):
     ''' create the attachment header '''
     assert isinstance(filename, str)
     try:
-        value = "filename=%s" % six.moves.urllib.parse.quote(filename)
+        value = "filename=%s" % urllib.parse.quote(filename)
     except Exception as e:
         # import pdb; pdb.set_trace() not tested exception
         logger.error("Error setting filename %s", str(e))
-        value = "filename*=UTF-8''%s" % six.moves.urllib.parse.quote(filename)
+        value = "filename*=UTF-8''%s" % urllib.parse.quote(filename)
     return "attachment; " + value
 
 
@@ -84,7 +82,10 @@ def generate_excel(header, rows):
             try:
                 excel_1900 = datetime.strptime('01/01/1900', '%d/%m/%Y')
                 style.num_format_str = 'dd/MM/yyyy'
-                ws.write(row, col, (val - excel_1900).days + 2, style)
+                if val:
+                    ws.write(row, col, (val - excel_1900).days + 2, style)
+                else:
+                    ws.write(row, col, 1, style)
             except TypeError:
                 if '\n' in val:
                     ws.write(row, col, val, wrapstyle)

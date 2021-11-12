@@ -1141,10 +1141,10 @@ class RolesEditor(Folder):
                 if pwdChangedTime:
                     pwdChangedTime = datetime.strptime(pwdChangedTime,
                                                        '%Y%m%d%H%M%SZ')
+                    pwdExpired = datetime.now() - timedelta(
+                        days=pwdMaxAge) > pwdChangedTime
                 else:
-                    pwdChangedTime = datetime.strptime('19000101', '%Y%m%d')
-                pwdExpired = datetime.now() - timedelta(
-                    days=pwdMaxAge) > pwdChangedTime
+                    pwdExpired = True
                 row.extend([pwdChangedTime, str(pwdExpired)])
 
             if subroles:
@@ -1508,6 +1508,7 @@ class RolesEditor(Folder):
                          logged_in_user(REQUEST), description, role_id)
 
                 return json.dumps({'error': False})
+        return None
 
     security.declareProtected(view_management_screens, 'manage_add_query_html')
     manage_add_query_html = query.manage_add_query_html

@@ -194,20 +194,15 @@
   });
 </script>
 
-<h1> National Reference Centres for <span tal:replace="options/country_name" /></h1>
+<h1> Eionet Groups for <span tal:replace="options/country_name" /></h1>
 <tal:block condition="options/top_role_dns">
     <ul>
-      <li>You can <b>add or remove members</b> in the NRC roles of your country. Use the Add/Remove members buttons on the top right of each NRC role.</li>
-      <li>You can <b>change profile information</b> of existing NRCs by clicking their names.</li>
-      <li>You can <b>nominate the PCP-s</b> by clicking the corresponding checkbox in the first column of each NRC role.</li>
+      <li>You can <b>add or remove members</b> in the Eionet Groups roles of your country. Use the Add/Remove members buttons on the top right of each Eionet Group role.</li>
+      <li>You can <b>change profile information</b> of existing members by clicking their names.</li>
+      <li>You can <b>nominate the PCP-s</b> by clicking the corresponding checkbox in the first column of each Eionet Group.</li>
     </ul>
     <div id="problematic" class="system-msg" style="display:none">There are problematic users with regards to their connection to a national organisation (marked with red background)</div>
 
-    <!-- hack to load images before the ajax finishes -->
-    <div style="opacity 0; position: fixed; z-index: -10; top: 0; left: 0">
-      <img src="/++resource++eea.ldapadmin-www/up.png" />
-      <img src="/++resource++eea.ldapadmin-www/users.png" />
-    </div>
     <p id="loading" class="loading">
     <img src="/++resource++eea.ldapadmin-www/ajax-loader.gif" /> <small>Loading roles and users. <span id="remaining" tal:content="python: len(options['top_role_dns'])" /> remaining.</small>
     </p>
@@ -217,5 +212,5 @@
 <p tal:condition="not: options/top_role_dns" class="search-message">
   <img src="/++resource++eea.ldapadmin-www/info.png" class="middle-image"
        title="Note" alt=""/>
-  No National Reference Centres found.
+  No Eionet Groups found.
 </p>

@@ -21,6 +21,7 @@ def manage_add_query(parent, query_id, title, pattern, REQUEST=None):
         url = parent.absolute_url() + '/manage_workspace'
 
         return REQUEST.RESPONSE.redirect(url)
+    return None
 
 
 class Query(SimpleItem, PropertyManager):

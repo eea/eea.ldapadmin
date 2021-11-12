@@ -170,11 +170,6 @@ class CommonTemplateLogic(object):
         ''' return the user id '''
         return logged_in_user(self._get_request())
 
-    def readonly_alert(self):
-        ''' return a readonly alert message '''
-        return self.context._render_template.render(
-            "zpt/nfp_nrc/readonly_alert.zpt")
-
     def buttons_bar(self, current_page, role_id, members_in_role=0):
         ''' render the roles buttons bar '''
         user = self._get_request().AUTHENTICATED_USER
