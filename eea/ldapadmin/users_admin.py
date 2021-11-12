@@ -1110,6 +1110,7 @@ class BulkUserImporter(BrowserView):
             for name in self.buttons:
                 if name in self.request.form:
                     return getattr(self, name)()
+            return None
 
     def index(self):
         ''' main index page '''

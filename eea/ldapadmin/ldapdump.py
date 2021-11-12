@@ -15,3 +15,4 @@ def dump_ldap(ldap_logging_path):
         log.info("%s does not exist", naaya_ldap_cfg)
     else:
         return main.dump_ldap(naaya_ldap_cfg)
+    return None

@@ -2,9 +2,7 @@
 import logging
 from datetime import datetime
 from io import BytesIO
-import six.moves.urllib.error
-import six.moves.urllib.parse
-import six.moves.urllib.request
+from six.moves import urllib
 from six.moves import range
 import xlwt
 
@@ -15,11 +13,11 @@ def attachment_header(filename):
     ''' create the attachment header '''
     assert isinstance(filename, str)
     try:
-        value = "filename=%s" % six.moves.urllib.parse.quote(filename)
+        value = "filename=%s" % urllib.parse.quote(filename)
     except Exception as e:
         # import pdb; pdb.set_trace() not tested exception
         logger.error("Error setting filename %s", str(e))
-        value = "filename*=UTF-8''%s" % six.moves.urllib.parse.quote(filename)
+        value = "filename*=UTF-8''%s" % urllib.parse.quote(filename)
     return "attachment; " + value
 
 

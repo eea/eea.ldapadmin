@@ -420,7 +420,7 @@ class NfpNrc(SimpleItem, PropertyManager):
         user_id = logged_in_user(REQUEST)
         nfps = get_nfp_roles(agent, user_id)
         options = {'nfps': nfps}
-        
+
         return self._render_template('zpt/nfp_nrc/index.zpt', **options)
 
     def get_top_role_members(self, role_dn, country_code):
@@ -498,7 +498,8 @@ class NfpNrc(SimpleItem, PropertyManager):
                    'agent': agent,
                    'country_name': country_name or country_code,
                    }
-        self._set_breadcrumbs([("Browsing Eionet Groups in %s" % country_name, '#')])
+        self._set_breadcrumbs([
+            ("Browsing Eionet Groups in %s" % country_name, '#')])
 
         return self._render_template('zpt/nfp_nrc/nrcs.zpt', **options)
 

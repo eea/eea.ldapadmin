@@ -1508,6 +1508,7 @@ class RolesEditor(Folder):
                          logged_in_user(REQUEST), description, role_id)
 
                 return json.dumps({'error': False})
+        return None
 
     security.declareProtected(view_management_screens, 'manage_add_query_html')
     manage_add_query_html = query.manage_add_query_html
