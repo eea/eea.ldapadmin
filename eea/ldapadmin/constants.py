@@ -39,4 +39,55 @@ USER_INFO_KEYS = [
     'first_name', 'organisation', 'department', 'email', 'metadata', 'dn',
     'fax', 'postal_address', 'phone', 'employeeNumber', 'modifyTimestamp',
     'mobile', 'full_name_native', 'pwdChangedTime', 'url', 'createTimestamp',
-    'job_title', 'search_helper']
+    'job_title', 'search_helper'
+]
+
+EXTRANET_REPORTER_ROLES = [
+    'extranet-aqipr-h2k',
+    'extranet-aqipr-utd',
+    'extranet-aqipr-val',
+    'extranet-birds-art12data',
+    'extranet-bwd-data',
+    'extranet-clrtap-reporter',
+    'extranet-co2monitoring-reporter',
+    'extranet-dwd-data',
+    'extranet-emerald-reporter',
+    'extranet-energycommunity',
+    'extranet-eprtrlcp-data',
+    'extranet-ets-art21reporter',
+    'extranet-euregistry-reporter',
+    'extranet-floods-data',
+    'extranet-fqd-reporter',
+    'extranet-habides-reporter',
+    'extranet-habitats-art17data',
+    'extranet-ias-reporter',
+    'extranet-ied-ieddat',
+    'extranet-inspire-reporter',
+    'extranet-mcp-reporter',
+    'extranet-mercury-reporter',
+    'extranet-mmr-reporter',
+    'extranet-msfdreporter-data',
+    'extranet-natura2000-reporter',
+    'extranet-necd-reporter',
+    'extranet-nid-reporter',
+    'extranet-noise-reporter',
+    'extranet-res8-reporters',
+    'extranet-uwwtd-data',
+    'extranet-wfd-data'
+]
+
+EIONET_GROUPS = [
+    "eionet-biodiversity1",
+    "eionet-biodiversity2",
+    "eionet-circulareconomy",
+    "eionet-climatecangeadaptation"
+    "eionet-clmatechangemitigation",
+    "eionet-communication",
+    "eionet-data",
+    "eionet-foodsystems",
+    "eionet-foresight",
+    "eionet-health",
+    "eionet-landsystems",
+    "eionet-mobility",
+    "eionet-soe",
+]

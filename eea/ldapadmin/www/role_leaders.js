@@ -45,15 +45,15 @@ $(function () {
     // for setting PCPs in NFP-NRC tool
     $('div#role_listing').on('click', 'div.nrc_role input[class=leader]', function(){
         var checkb = $(this);
-        var role_div = checkb.parents("div.nrc_role");
-        var role_id = role_div.children('h3').attr("id");
+        var role_table = checkb.parents("table");
+        var role_id = role_table.prev('h3').attr("id");
         var user_id = checkb.val();
         $.post("set_pcp", {"role_id": role_id, "user_id": user_id},
                 function (data){
-                    var all_radios = $("input[class=leader]", role_div);
-                    $("span.leader_container", role_div).hide();
+                    var all_radios = $("input[class=leader]", role_table);
+                    $("span.leader_container", role_table).hide();
                     all_radios.attr("checked", false);
-                    var selected = $("input:radio[value=" + data.pcp + "]", role_div);
+                    var selected = $("input:radio[value=" + data.pcp + "]", role_table);
                     if (selected) {
                         selected.attr("checked", true);
                         selected.siblings("span.leader_container").show();
