@@ -5,7 +5,7 @@ The two LDAP attributes that support this feature are `leaderMember` and
 
 """
 import re
-from eea.ldapadmin.nfp_nrc import EIONET_GROUPS
+from eea.ldapadmin.constants import EIONET_GROUPS
 
 
 # Configurations

@@ -21,6 +21,7 @@ from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.statusmessages.interfaces import IStatusMessage
 
 from eea import usersdb
+from eea.ldapadmin.constants import EXTRANET_REPORTER_ROLES, EIONET_GROUPS
 from eea.ldapadmin.countries import get_country
 from eea.ldapadmin.users_admin import eionet_edit_users
 from eea.ldapadmin import ldap_config
@@ -58,57 +59,6 @@ user_info_edit_schema = usersdb.user_info_schema.clone()
 user_info_edit_schema['postal_address'].widget = deform.widget.TextAreaWidget()
 del user_info_edit_schema['first_name']
 del user_info_edit_schema['last_name']
-
-
-EXTRANET_REPORTER_ROLES = [
-    'extranet-aqipr-h2k',
-    'extranet-aqipr-utd',
-    'extranet-aqipr-val',
-    'extranet-birds-art12data',
-    'extranet-bwd-data',
-    'extranet-clrtap-reporter',
-    'extranet-co2monitoring-reporter',
-    'extranet-dwd-data',
-    'extranet-emerald-reporter',
-    'extranet-energycommunity',
-    'extranet-eprtrlcp-data',
-    'extranet-ets-art21reporter',
-    'extranet-euregistry-reporter',
-    'extranet-floods-data',
-    'extranet-fqd-reporter',
-    'extranet-habides-reporter',
-    'extranet-habitats-art17data',
-    'extranet-ias-reporter',
-    'extranet-ied-ieddat',
-    'extranet-inspire-reporter',
-    'extranet-mcp-reporter',
-    'extranet-mercury-reporter',
-    'extranet-mmr-reporter',
-    'extranet-msfdreporter-data',
-    'extranet-natura2000-reporter',
-    'extranet-necd-reporter',
-    'extranet-nid-reporter',
-    'extranet-noise-reporter',
-    'extranet-res8-reporters',
-    'extranet-uwwtd-data',
-    'extranet-wfd-data'
-]
-
-
-EIONET_GROUPS = ["eionet-biodiversity1",
-                 "eionet-biodiversity2",
-                 "eionet-circulareconomy",
-                 "eionet-climatecangeadaptation"
-                 "eionet-clmatechangemitigation",
-                 "eionet-communication",
-                 "eionet-data",
-                 "eionet-foodsystems",
-                 "eionet-foresight",
-                 "eionet-health",
-                 "eionet-landsystems",
-                 "eionet-mobility",
-                 "eionet-soe",
-                 ]
 
 
 def code_to_name(country_code):

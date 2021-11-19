@@ -3,7 +3,7 @@ Changelog
 
 3.4-dev0 - (unreleased)
 ---------------------------
-* fix PHP incorrectly shown on all sibling roles
+* fix PCP incorrectly shown on all sibling roles
   [valipod refs #140578]
 * update climatecangeadaptation and climatechangemitigation role names
   [valipod refs #140578]
