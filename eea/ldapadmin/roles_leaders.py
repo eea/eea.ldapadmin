@@ -5,6 +5,7 @@ The two LDAP attributes that support this feature are `leaderMember` and
 
 """
 import re
+from eea.ldapadmin.nfp_nrc import EIONET_GROUPS
 
 
 # Configurations
@@ -19,14 +20,16 @@ def naming(role_id):
                           'short': 'Dep'},
             'generic_pl': 'official representatives'
         }
-    elif re.match('eionet-nrc-[^-]+-[mc]c-[^-]+', role_id):
-        return {
-            'leader': {'long': 'Primary Contact Point',
-                       'short': 'PCP'},
-            'alternate': {'long': 'Alternate Contact Point',
-                          'short': 'ACP'},
-            'generic_pl': 'primary contact points'
-        }
+    else:
+        for eionet_group in EIONET_GROUPS:
+            if re.match(eionet_group, role_id):
+                return {
+                    'leader': {'long': 'Primary Contact Point',
+                               'short': 'PCP'},
+                    'alternate': {'long': 'Alternate Contact Point',
+                                  'short': 'ACP'},
+                    'generic_pl': 'primary contact points'
+                }
     return {
         'leader': {'long': 'Maintainer',
                    'short': 'Mn'},

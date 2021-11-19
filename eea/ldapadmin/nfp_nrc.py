@@ -98,7 +98,8 @@ EXTRANET_REPORTER_ROLES = [
 EIONET_GROUPS = ["eionet-biodiversity1",
                  "eionet-biodiversity2",
                  "eionet-circulareconomy",
-                 "eionet-climatechange",
+                 "eionet-climatecangeadaptation"
+                 "eionet-clmatechangemitigation",
                  "eionet-communication",
                  "eionet-data",
                  "eionet-foodsystems",
