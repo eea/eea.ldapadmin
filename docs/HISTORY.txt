@@ -3,15 +3,15 @@ Changelog
 
 3.4-dev0 - (unreleased)
 ---------------------------
-
-4.0 - (2021-11-12)
----------------------------
 * fix PHP incorrectly shown on all sibling roles
   [valipod refs #140578]
 * update climatecangeadaptation and climatechangemitigation role names
   [valipod refs #140578]
 * fix PCP label (incorrectly shown as Mn)
   [valipod refs #140578]
+
+3.3 - (2021-11-12)
+---------------------------
 * changes to support the new Eionet Groups replacing the NFP branch
   [valipod refs #140578]
 
