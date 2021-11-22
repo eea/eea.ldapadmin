@@ -75,9 +75,9 @@ class SimplifiedRole(object):
 
     def __init__(self, role_id, description):
         group = re.match(
-            r'^eionet-(biodiversity1|biodiversity2|climatechange|health|'
-            r'circulareconomy|foresight|soe|foodsystems|landsystems|mobility|'
-            r'data|communication)(.*)-([^-]*)$',
+            r'^eionet-(biodiversity|climatechange|health|circulareconomy|'
+            r'foresight|soe|foodsystems|landsystems|mobility|data|'
+            r'communication)(.*)-([^-]*)$',
             role_id, re.IGNORECASE)
         nfp = re.match(
             r'^eionet-nfp-(.*)(mc|cc|oc)-([^-]*)$',

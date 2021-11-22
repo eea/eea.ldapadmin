@@ -1,6 +1,11 @@
 Changelog
 =========
 
+3.5 - (2021-11-22)
+---------------------------
+* fix typo in role id
+  [valipod]
+
 3.4 - (2021-11-19)
 ---------------------------
 * fix PCP incorrectly shown on all sibling roles
