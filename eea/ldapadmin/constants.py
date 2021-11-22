@@ -80,8 +80,8 @@ EIONET_GROUPS = [
     "eionet-biodiversity1",
     "eionet-biodiversity2",
     "eionet-circulareconomy",
-    "eionet-climatecangeadaptation"
-    "eionet-clmatechangemitigation",
+    "eionet-climatechangeadaptation",
+    "eionet-climatechangemitigation",
     "eionet-communication",
     "eionet-data",
     "eionet-foodsystems",

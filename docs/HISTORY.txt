@@ -3,6 +3,8 @@ Changelog
 
 3.5-dev0 - (unreleased)
 ---------------------------
+* fix typo in role id
+  [valipod]
 
 3.4 - (2021-11-19)
 ---------------------------
