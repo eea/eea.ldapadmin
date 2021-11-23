@@ -1,3 +1,4 @@
+import os
 import logging
 from datetime import datetime, timedelta
 from collections import namedtuple
@@ -6,6 +7,7 @@ from email.mime.text import MIMEText
 from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
 from App.class_init import InitializeClass
+from App.config import getConfiguration
 from OFS.SimpleItem import SimpleItem
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from persistent.mapping import PersistentMapping
@@ -24,6 +26,13 @@ manage_add_pwreset_tool_html = PageTemplateFile('zpt/pwreset_manage_add',
                                                 globals())
 manage_add_pwreset_tool_html.ldap_config_edit_macro = ldap_config.edit_macro
 manage_add_pwreset_tool_html.config_defaults = lambda: ldap_config.defaults
+
+CONFIG = getConfiguration()
+if hasattr(CONFIG, 'environment'):
+    CONFIG.environment.update(os.environ)
+
+ADDR_FROM = getattr(CONFIG, 'environment', {}).get(
+    'ADDR_FROM', 'no-reply@groupware.info-rac.org')
 
 def manage_add_pwreset_tool(parent, id, REQUEST=None):
     """ Create a new PasswordResetTool object """
@@ -137,7 +146,6 @@ class PasswordResetTool(SimpleItem):
         return token
 
     def _send_token_email(self, addr_to, token, user_info):
-        addr_from = "no-reply@groupware.info-rac.org"
         email_template = load_template('zpt/pwreset_token_email.zpt')
         options = {
             'token_url': self.absolute_url() + "/confirm_email?token=" + token,
@@ -147,16 +155,16 @@ class PasswordResetTool(SimpleItem):
         }
         message = MIMEText(email_template(**options).encode('utf-8'),
                            _charset='utf-8')
-        message['From'] = addr_from
+        message['From'] = ADDR_FROM
         message['To'] = addr_to
         message['Subject'] = "%s account password recovery" % NETWORK_NAME
 
         try:
             mailer = getUtility(IMailDelivery, name="Mail")
-            mailer.send(addr_from, [addr_to], message.as_string())
+            mailer.send(ADDR_FROM, [addr_to], message.as_string())
         except ComponentLookupError:
             mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
-            mailer.send(addr_from, [addr_to], message)
+            mailer.send(ADDR_FROM, [addr_to], message)
 
     security.declareProtected(view, 'ask_for_password_reset')
     def ask_for_password_reset(self, REQUEST):

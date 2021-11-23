@@ -42,9 +42,16 @@ user_info_add_schema['postal_address'].widget = deform.widget.TextAreaWidget()
 user_info_edit_schema['postal_address'].widget = deform.widget.TextAreaWidget()
 
 CONFIG = getConfiguration()
+if hasattr(CONFIG, 'environment'):
+    CONFIG.environment.update(os.environ)
+
 FORUM_URL = getattr(CONFIG, 'environment', {}).get('FORUM_URL', '')
+ADDR_FROM = getattr(CONFIG, 'environment', {}).get(
+    'ADDR_FROM', 'no-reply@groupware.info-rac.org')
 
 password_letters = '23456789ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+
+
 
 def generate_password():
     return ''.join(random.choice(password_letters) for n in range(8))
@@ -249,10 +256,9 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 agent = self._get_ldap_agent(bind=True)
                 self._create_user(agent, user_info)
 
-                addr_from = "no-reply@groupware.info-rac.org"
                 addr_to = user_info['email']
                 message = MIMEText('')
-                message['From'] = addr_from
+                message['From'] = ADDR_FROM
                 message['To'] = addr_to
 
                 if form_data.has_key('send_confirmation'):
@@ -262,10 +268,10 @@ class UsersAdmin(SimpleItem, PropertyManager):
                     message.set_payload(body.encode('utf-8'), charset='utf-8')
                     try:
                         mailer = getUtility(IMailDelivery, name="Mail")
-                        mailer.send(addr_from, [addr_to], message.as_string())
+                        mailer.send(ADDR_FROM, [addr_to], message.as_string())
                     except ComponentLookupError:
                         mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
-                        mailer.send(addr_from, [addr_to], message)
+                        mailer.send(ADDR_FROM, [addr_to], message)
 
                 email_password_body = self.email_password(user_info['first_name'],
                                                           form_data['password'])
@@ -274,10 +280,10 @@ class UsersAdmin(SimpleItem, PropertyManager):
                                     charset='utf-8')
                 try:
                     mailer = getUtility(IMailDelivery, name="Mail")
-                    mailer.send(addr_from, [addr_to], message.as_string())
+                    mailer.send(ADDR_FROM, [addr_to], message.as_string())
                 except ComponentLookupError:
                     mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
-                    mailer.send(addr_from, [addr_to], message)
+                    mailer.send(ADDR_FROM, [addr_to], message)
 
                 when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 msg = "User %s created (%s)" % (user_id, when)
@@ -396,21 +402,20 @@ class UsersAdmin(SimpleItem, PropertyManager):
         agent.set_user_password(id, None, password)
 
         user_info = agent.user_info(id)
-        addr_from = "no-reply@groupware.info-rac.org"
         addr_to = user_info['email']
         email_password_body = self.email_password(user_info['first_name'],
                                                   password, 'change')
         message = MIMEText(email_password_body.encode('utf-8'),
                            _charset='utf-8')
-        message['From'] = addr_from
+        message['From'] = ADDR_FROM
         message['To'] = addr_to
         message['Subject'] = "%s Account - New password" % NETWORK_NAME
         try:
             mailer = getUtility(IMailDelivery, name="Mail")
-            mailer.send(addr_from, [addr_to], message.as_string())
+            mailer.send(ADDR_FROM, [addr_to], message.as_string())
         except ComponentLookupError:
             mailer = getUtility(IMailDelivery, name="naaya-mail-delivery")
-            mailer.send(addr_from, [addr_to], message)
+            mailer.send(ADDR_FROM, [addr_to], message)
 
         _set_session_message(REQUEST, 'info',
                              'Password changed for "%s".' % id)
