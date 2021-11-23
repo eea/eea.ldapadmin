@@ -7,6 +7,6 @@ setup(name='eea.ldapadmin',
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,
-      install_requires=['eea.usersdb==1.2.0-ispra', 'lxml', 'BeautifulSoup',
+      install_requires=['eea.usersdb', 'lxml', 'BeautifulSoup',
                         'deform', 'colander'],
 )
