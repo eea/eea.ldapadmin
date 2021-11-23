@@ -1,5 +1,8 @@
-1.0.3-ispra (unreleased)
-----------------------
+1.0.4-ispra (unreleased)
+------------------------
+
+1.0.3-ispra (2021-11-23)
+------------------------
 * get email addr from environment variable [dumitval]
 
 1.0.2 (2012-10-29)
