@@ -378,12 +378,9 @@ table.dataTable tr.even td.sorting_1 {
 }
 
 .organisation-listing {
-	width: 70% !important;
+    width: 700px !important;
 }
 
-.organisation-listing table tr td.firstcol{
-	width: 200px;
-}
 /**
  * More actions
 */
@@ -408,7 +405,7 @@ div#operations {
 	z-index: 1001;
 	position: absolute;
 	right: 1.5em;
-	width: 20%;
+	width: 200px;
 	-moz-border-radius: 3px;
 	-webkit-border-radius: 3px;
 	border-radius: 3px;
@@ -746,7 +743,6 @@ div.account-links {
 #confirmation_email{
 	display: none;
 	text-align: left;
-	width: 800px;
 }
 
 /*** Roles-editor ***/
@@ -765,10 +761,6 @@ div.account-links {
 }
 .account-links .low-row{
 	padding-top:15px;
-}
-.potato-menu:after {
-    clear: none;
-    display: inherit;
 }
 
 input.shortcut_country{
@@ -901,27 +893,4 @@ table.dataTable {
 	margin-left: 10px;
 	padding: 1px 5px;
 	height: 22px;
-}
-/** Leader / Alternate feature **/
-.alternate_container, .leader_container
-{
-    background-color: #383;
-    line-height: 21px;
-    font-size: 10px;
-    display: inline-block;
-    height: 21px;
-    color: white;
-    font-weight: bold;
-    padding-left: 8px;
-    padding-right: 8px;
-    -moz-border-radius: 8px;
-    border-radius: 8px;}
-
-.alternate_container{
-    background-color: #333;
-}
-
-/** Eionet Profile **/
-.eionet-profile .roles {
-	display: none;
 }

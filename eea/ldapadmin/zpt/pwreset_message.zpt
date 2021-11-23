@@ -8,12 +8,5 @@
 </p>
 
 <p tal:condition="python:options['message-name'] == 'password-reset'">
-  Your password has been successfully reset. Please allow a
-  <strong>5 minute delay</strong>
-  for the change to propagate to all Eionet services.
-</p>
-
-<p tal:condition="python:options['message-name'] == 'email-disabled'">
-    Your email belongs to a disabled user. You cannot reset the password
-    for a disabled user.
+  Your password has been successfully reset.
 </p>

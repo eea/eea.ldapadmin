@@ -29,15 +29,11 @@
     </tal:block>
 </metal:block>
 
-<!-- requires `is_authenticated` and `users` indexed user_info-s by uid
-     optional: `naming` -->
+<!-- requires `is_authenticated` and `users` indexed user_info-s by uid -->
 <metal:block define-macro="table-user-info">
-    <table class="account-datatable dataTable">
+    <table class="account-datatable dataTable" id="users-datatable">
     <thead>
         <tr>
-            <tal:block condition="rich_view" on-error="string:">
-                <td>Subrole</td>
-            </tal:block>
             <td>Name</td>
             <tal:block condition="is_authenticated">
                 <td>User ID</td>
@@ -61,45 +57,33 @@
         <tal:block repeat="user_id python:sorted(users)" condition="users">
         <tal:block define="user_info python:users[user_id]">
             <tr tal:condition="python: users[user_id].get('deleted') and is_authenticated">
-                <td></td>
-                <td><span tal:content="user_info/id" /></td>
-                <td><strong>User no longer exists.</strong></td>
-                <td></td>
-                <td></td>
+                <td>
+                </td>
+                <td>
+                    <span tal:content="user_info/id" />
+                </td>
+                <td colspan="3">
+                    <strong>User no longer exists.</strong>
+                </td>
             </tr>
 
             <tr tal:condition="python: not users[user_id].get('deleted')">
-                <tal:block condition="rich_view" on-error="string:">
-                    <td>
-                    <ul tal:content="structure python:'<li>%s</li>'%'</li><li>'.join(users[user_id].get('roles', []))" />
-                    </td>
-                </tal:block>
                 <td>
                     <span tal:content="user_info/full_name" />
-                    <tal:block condition="naming|string:">
-                        <span class="leader_container tipsy-title"
-                              tal:condition="python:user_info.get('leader')"
-                              tal:attributes="title naming/leader/long"
-                              tal:content="naming/leader/short"></span>
-                        <span class="alternate_container tipsy-title"
-                              tal:condition="python:user_info.get('alternate')"
-                              tal:attributes="title naming/alternate/long"
-                              tal:content="naming/alternate/short"></span>
-                    </tal:block>
                 </td>
-
+        
                 <tal:block condition="is_authenticated">
                 <td>
                     <span tal:content="user_info/id" />
                 </td>
-
+    
                 <td>
                     <a tal:condition="user_info/email"
                     tal:attributes="href string:mailto:${user_info/email}"
                     tal:content="user_info/email"
                     class="user-email"></a>
                 </td>
-
+    
                 <td>
                     <span class="user-phone"
                        tal:content="user_info/phone" />
@@ -107,22 +91,24 @@
                     <span class="user-phone"
                        tal:content="user_info/fax" />
                 </td>
-
+    
                 <td>
-                    <span tal:content="user_info/organisation" />
+                  <tal:block define="orgs python:user_info['organisation'].split(',')">
+                    <span tal:condition="python:len(orgs)==1"
+                       tal:content="python:orgs[0]" />
+                    <ul tal:condition="python:len(orgs)>1">
+                      <tal:block repeat="organisation orgs">
+                        <li tal:content="organisation" />
+                      </tal:block>
+                    </ul>
+                  </tal:block>
                 </td>
-
                 </tal:block>
             </tr>
         </tal:block>
         </tal:block>
     </tbody>
   </table>
-  <script>
-      jQuery(document).ready(function(){
-        window.data_table.fnDraw();
-      });
-  </script>
 </metal:block>
 
 <!-- Not used! -->

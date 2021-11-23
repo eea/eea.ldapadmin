@@ -9,55 +9,28 @@
     MAILING: <tt tal:content="string:${options/role_id}@roles.eea.eionet.europa.eu"/>
 </a>
 
-    <link rel="stylesheet" type="text/css" media="screen"
-          href="/++resource++eea.ldapadmin-www/jquery-ui.min.css"/>
-
 <script type="text/javascript">
-    function getParameterByName(name) {
-        name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
-        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-            results = regex.exec(location.search);
-        return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-    }
-
     $(document).ready(function(){
         $('.help-tooltip').tipsy({
             gravity: 'se'
         });
 
-        window.data_table  = $('#role-mailing-list table.account-datatable').dataTable({
-            'aaSorting': [[1, "asc"]],
+        $('#role-mailing-list table.account-datatable').dataTable({
+            'aaSorting': [[0, "asc"]],
             'sPaginationType': 'full_numbers',
             'sDom': 'lCfrtip',
             "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
         });
-
-        var $search_widget = $("#DataTables_Table_0_filter");
-        var $datefilter = $search_widget.clone()
-        $datefilter.attr('id', 'datefilter');
-        $datefilter.insertAfter($search_widget);
-        $datefilter.find('label').html("At date: <input type='text' />");
-        $datefilter.find('input').
-            val(getParameterByName('filter_date')).
-            datepicker({onSelect:function(){
-                var url = document.location.href.replace(location.hash, '');
-                var date = $(this).val();
-                $("<form>").
-                    attr({'action':url, 'method':'GET'}).
-                    append($("<input>").attr({'name':'filter_date', value:date})).
-                    append($("<input>").attr({'name':'role_id', value:getParameterByName('role_id')})).
-                    submit();
-        }});
     });
 </script>
 
-<tal:block content="structure python:common.buttons_bar('role_all_members', options['role_id'], options['members_count'])"/>
+<tal:block content="structure python:common.buttons_bar('role_all_members', options['role_id'], len(options['role_members']['users']))"/>
 
 <tal:block content="structure common/message_boxes"/>
 
-<tal:block define="users options/users;
+<tal:block define="users python: options['list'];
                    is_authenticated common/is_authenticated">
-    <div id="role-mailing-list"  tal:define="rich_view python:True">
+    <div id="role-mailing-list">
         <metal:block use-macro="common/macros/table-user-info" />
     </div>
 </tal:block>

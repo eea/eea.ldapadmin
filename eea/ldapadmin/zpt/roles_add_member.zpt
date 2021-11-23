@@ -1,6 +1,6 @@
 <script type="text/javascript">
     $(document).ready(function(){
-        window.data_table = $('.dataTable').dataTable({
+        $('.dataTable').dataTable({
             'aaSorting': [[0, "asc"]],
             'sPaginationType': 'full_numbers',
             "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
@@ -129,7 +129,7 @@
   <p class="search-message" tal:condition="not:results/users">
     <img src="/++resource++eea.ldapadmin-www/info.png" class="middle-image"
        title="Note" alt=""/>
-    No matching <tal:block condition="results/inactive_users"><em>active</em></tal:block> users for
+    No matching users for
     <strong tal:content="options/search_name" />.
   </p>
 

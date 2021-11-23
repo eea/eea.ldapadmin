@@ -1,6 +1,6 @@
 <script type="text/javascript">
     $(document).ready(function(){
-        window.data_table = $('.dataTable').dataTable({
+        $('.dataTable').dataTable({
             'aaSorting': [[1, "asc"]],
             'sPaginationType': 'full_numbers',
             "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
@@ -40,7 +40,7 @@
            tal:attributes="checked python:'owners' in senders and 'checked' or ''" /><label for="owners">Owners</label>
             - <span class="info">this role's owners</span></li>
       <li><input type='checkbox' name='senders:list' id='members' value='members'
-           tal:attributes="checked python:'members' in senders and 'checked' or ''" /><label for="members">All members of this mailing list</label>
+           tal:attributes="checked python:'members' in senders and 'checked' or ''" /><label for="members">Members</label>
             - <span class="info">any member of this role (or subrole)</span>
       </li>
       <li>

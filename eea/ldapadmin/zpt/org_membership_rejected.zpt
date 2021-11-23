@@ -1,7 +1,0 @@
-This is an automated message to inform you that the organisation 
-membership on <span tal:replace="options/network_name" /> has been rejected.
-
-You set the organisation "<span tal:replace="options/org_info/name" />" 
-in your profile edit page, but it was rejected by the organisation administrators.
-
-Have a nice day!

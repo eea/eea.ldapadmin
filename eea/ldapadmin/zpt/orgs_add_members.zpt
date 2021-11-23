@@ -7,7 +7,7 @@
       tal:attributes="action string:${common/base_url}/add_members_html">
   <input type="hidden" name="id" tal:attributes="value options/org_id"/>
   <label>
-    Name of user:
+    name:
     <input type="search" name="search_query:utf8:ustring" autofocus="autofocus"
            tal:attributes="value options/search_query"/>
   </label>
@@ -16,6 +16,7 @@
 
 <form name="add-members" method="post" tal:condition="options/found_users"
       tal:attributes="action string:${common/base_url}/add_members">
+
   <ul>
     <li tal:repeat="user_info options/found_users">
       <label>
@@ -26,11 +27,8 @@
       </label>
     </li>
   </ul>
+
   <input type="hidden" name="id" tal:attributes="value options/org_id"/>
   <input type="submit" value="Add to organisation"/>
 
 </form>
-
-<p tal:condition="python:options['search_query'] and not options['found_users']">
-    No <tal:block tal:condition="options/found_inactive"><em>active</em></tal:block> users were found. Please change your search criteria.
-</p>

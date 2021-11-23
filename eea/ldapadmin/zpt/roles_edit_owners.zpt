@@ -1,6 +1,6 @@
 <script type="text/javascript">
     $(document).ready(function(){
-        window.data_table = $('.dataTable').dataTable({
+        $('.dataTable').dataTable({
             'aaSorting': [[1, "asc"]],
             'sPaginationType': 'full_numbers',
             "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
@@ -51,17 +51,6 @@
         <tbody>
             <tal:block tal:repeat="user_id python:sorted(role_owners)">
                 <tr tal:define="user_info python:role_owners[user_id]">
-                  <tal:block condition="python: user_info.get('deleted')">
-                    <td class="checkbox-td">
-                        <input type="checkbox" name="user_id_list:list"
-                            tal:attributes="value user_id" />
-                    </td>
-                    <td><strong>User doesn't exist anymore</strong></td>
-                    <td>
-                        <span tal:content="user_id"/>
-                    </td>
-                  </tal:block>
-                  <tal:block condition="python: not user_info.get('deleted')">
                     <td class="checkbox-td">
                         <input type="checkbox" name="user_id_list:list"
                             tal:attributes="value user_id" />
@@ -72,7 +61,6 @@
                     <td>
                         <span tal:content="user_id"/>
                     </td>
-                  </tal:block>
                 </tr>
             </tal:block>
         </tbody>
@@ -148,19 +136,12 @@
         <input type="submit" value="Add selected as owners" class="primary-button" />
         </form>
         </tal:block>
-        <tal:block condition="not:options/results">
-            <p class="search-message" tal:condition="options/search_name">
-                <img src="/++resource++eea.ldapadmin-www/info.png" class="middle-image"
-                   title="Note" alt=""/>
-                No matching <tal:block condition="options/inactive_users"><em>active</em></tal:block> users for
-                <strong tal:content="options/search_name" />.
-            </p>
-        </tal:block>
+        <p class="search-message" tal:condition="not:options/results">
+            <img src="/++resource++eea.ldapadmin-www/info.png" class="middle-image"
+               title="Note" alt=""/>
+            No matching users for
+            <strong tal:content="options/search_name" />.
+        </p>
     </tal:block>
-    <p class="search-message" tal:condition="options/empty_search|nothing">
-        <img src="/++resource++eea.ldapadmin-www/info.png" class="middle-image"
-           title="Note" alt=""/>
-        No search criteria entered.
-    </p>
 
 </tal:block>

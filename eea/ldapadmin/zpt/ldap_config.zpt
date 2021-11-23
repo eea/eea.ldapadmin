@@ -33,16 +33,4 @@
   <input id="edit-roles_dn" name="roles_dn" size="50"
          tal:attributes="value config/roles_dn|nothing" />
   <br />
-
-  <p>This is a secondary Admin DN used by NFP-NRC Tool</p>
-  <label for="edit-secondary_admin_dn">Secondary Login DN</label>
-  <input id="edit-secondary_admin_dn" name="secondary_admin_dn" size="50"
-         tal:attributes="value config/secondary_admin_dn|nothing" />
-  <br />
-
-  <label for="edit-secondary_admin_pw">Login password</label>
-  <input id="edit-secondary_admin_pw" name="secondary_admin_pw" type="password" size="50"
-         autocomplete="off" />
-  <br />
-
 </metal:block>

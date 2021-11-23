@@ -1,9 +1,0 @@
-<configure xmlns="http://namespaces.zope.org/zope"
-           xmlns:browser="http://namespaces.zope.org/browser"
-           xmlns:five="http://namespaces.zope.org/five">
-
-  <permission id="eionet.ExtendedEditRoles" title="Eionet edit extended roles" />
-  <permission id="eionet.EditUsers" title="Eionet edit users" />
-  <permission id="eionet.EditRoles" title="Eionet edit roles" />
-
-</configure>

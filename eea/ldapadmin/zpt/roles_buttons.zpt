@@ -1,44 +1,17 @@
-<tal:block define="page options/current_page;
-    is_auth python: common.is_authenticated();
-    role_id options/role_id | nothing;
-    can_edit_members options/can_edit_members;
-    can_edit_roles options/can_edit_roles;
-    can_edit_extended_roles options/can_edit_extended_roles;
-    can_delete_role options/can_delete_role;
-    ">
-    <script type="text/javascript">
-    (function($) {
-        $(document).ready(function(){
-            $('#manage-role').ptMenu();
-            $('.button.no-members').click(function(){
-                return window.confirm("This role has no explicit members. Attempting instead to export members in all subroles?");
-            });
-        });
-    })(jQuery);
-    </script>
-<div class="account-links clear" 
-    tal:condition="python: is_auth and (can_edit_members or can_edit_roles or role_id)">
+<tal:block define="page options/current_page">
+<div class="account-links clear" tal:condition="python: common.is_authenticated() and (options['can_edit_members'] or options['can_edit_roles'] or options['role_id'])">
     <div id="right-side-buttons">
       <div class="high-row">
-        <a tal:condition="python: (not role_id) and (can_edit_members and can_edit_roles and is_auth)"
+        <a tal:condition="python: not options['role_id'] and options['can_edit_members'] and options['can_edit_roles'] and common.is_authenticated()"
            tal:attributes="href string:${common/base_url}/create_role_html/?parent_role_id="
            class="button" title="Create role">
           <img src="/++resource++eea.ldapadmin-www/round_plus.png" alt=""
                class="middle-image image12" title="Create new role" />
-           Create role</a>
-
-       <div tal:condition="nothing">
-           <a tal:condition="python: (not role_id) and (can_edit_members and can_edit_roles and is_auth)"
-               tal:attributes="href string:${common/base_url}/import_xls"
-               class="button" title="Import roles .xls file">
-               <img src="/++resource++eea.ldapadmin-www/round_plus.png" alt=""
-                   class="middle-image image12" title="Import Excel File with Roles" />
-               Import file</a>
-       </div>
+          Create role</a>
   
-      <a tal:attributes="href string:${common/base_url}/all_members?role_id=${role_id};
+      <a tal:attributes="href string:${common/base_url}/all_members?role_id=${options/role_id};
                              class python:'current help-tooltip' if page == 'role_all_members' else 'button help-tooltip';"
-             tal:condition="python: role_id and is_auth"
+             tal:condition="python: options['role_id'] and common.is_authenticated()"
              original-title="List all subroles members"
              title="" class="button">
           <img src="/++resource++eea.ldapadmin-www/users.png"
@@ -47,30 +20,30 @@
         </a>
   
         <a tal:define="del_url string:${common/base_url}/delete_role_html"
-           tal:condition="python:role_id and can_delete_role"
-           tal:attributes="href string:${del_url}?role_id=${role_id};
+           tal:condition="python:options['role_id'] and options['can_delete_role']"
+           tal:attributes="href string:${del_url}?role_id=${options/role_id};
                            class python:'current' if page == 'delete_role' else 'button';
                            id string:delete-role"
            >
           <img src="/++resource++eea.ldapadmin-www/delete.png"
                class="middle-image image12" alt="" title="Delete role" />
-          Delete role <span tal:content="role_id" />
+          Delete role <span tal:content="options/role_id" />
         </a>
       </div>
       <div class="low-row">
         <a tal:define="add_url string:${common/base_url}/add_member_html"
-          tal:condition="python:role_id and can_edit_members"
-          tal:attributes="href string:${add_url}?role_id=${role_id};
+          tal:condition="python:options.get('role_id', False) and options['can_edit_members']"
+          tal:attributes="href string:${add_url}?role_id=${options/role_id};
                           class python:'current' if page == 'add_member' else 'button'"
           >
          <img src="/++resource++eea.ldapadmin-www/users.png"
               class="middle-image image12" alt="" title="Add members" />
          Add members
         </a>
-
+  
         <a tal:define="rm_url string:${common/base_url}/remove_members_html"
-           tal:condition="python:role_id and can_edit_members"
-           tal:attributes="href string:${rm_url}?role_id=${role_id};
+           tal:condition="python:options.get('role_id', False) and options['can_edit_members']"
+           tal:attributes="href string:${rm_url}?role_id=${options/role_id};
                            class python:'current' if page == 'remove_members' else 'button';
                            id string:delete-members"
            style="clear: both;">
@@ -78,39 +51,32 @@
                class="middle-image image12" alt="" title="Remove members" />
           Remove members
         </a>
-
-        <a class="button"
-            tal:attributes="href string:${common/base_url}/@@edit_members_of_one_role?role_id=${role_id}" 
-            tal:condition="python:can_edit_extended_roles and common.context.restrictedTraverse('@@is_extended_enabled')(role_id)">
-            <img class="middle-image image12" src="/++resource++eea.ldapadmin-www/delete_user.png" />Extended management
-        </a>
-
       </div>
     </div>
   
     <div id="left-side-buttons">
       <div class="high-row">
         <a tal:attributes="href string:${common/base_url}" class="button"
-           tal:condition="role_id"
+           tal:condition="options/role_id"
             title="Back to roles">
              <img src="/++resource++eea.ldapadmin-www/back.png" class="middle-image image12"
                   alt="" title="Back to top roles" />
              <span tal:content="string:Jump to top roles" />
         </a>
   
-        <tal:block condition="python:role_id and page != 'role' ">
-        <a tal:attributes="href string:${common/base_url}?role_id=${role_id};
-                           title string:Back to ${role_id}"
+        <tal:block condition="python:options.get('role_id') and page != 'role' ">
+        <a tal:attributes="href string:${common/base_url}?role_id=${options/role_id};
+                           title string:Back to ${options/role_id}"
             class="button">
              <img src="/++resource++eea.ldapadmin-www/back.png" class="middle-image image12"
-                  alt="" tal:attributes="title string:Back to ${role_id}"/>
-             <span tal:content="string:Back to ${role_id}" />
+                  alt="" tal:attributes="title string:Back to ${options/role_id}"/>
+             <span tal:content="string:Back to ${options/role_id}" />
         </a>
         </tal:block>
   
         <a tal:define="new_url string:${common/base_url}/create_role_html;
-                       role_param python:role_id or ''"
-           tal:condition="python:role_id and can_edit_members"
+                       role_param python:options['role_id'] or ''"
+           tal:condition="python:options['role_id'] and options['can_edit_members']"
            tal:attributes="href string:${new_url}?parent_role_id=${role_param};
                            class python:'current' if page == 'create_role' else 'button'"
            >
@@ -121,82 +87,53 @@
       </div>
   
       <div class="low-row">
-       <ul id="manage-role" class="button">
-           <li>
-               <a href="#" class="button">
-                   <img src="/++resource++eea.ldapadmin-www/users.png"
-                       class="middle-image image12" alt="" title="Manage senders" />
-                   Manage Role &#x25BC;</a>
-
-               <ul tal:define="role_param python:role_id or ''; 
-                               editable_role python:role_param and can_edit_members">
-                   <li>
-                       <a tal:define="new_url string:${common/base_url}/edit_owners"
-                           tal:condition="editable_role"
-                           tal:attributes="href string:${new_url}?role_id=${role_param}"
-                           >Owners&nbsp;&nbsp;&nbsp;</a>
-                   </li>
-                   <li>
-                       <a tal:define="new_url string:${common/base_url}/edit_senders"
-                           tal:condition="python:common.supports_mailing and editable_role"
-                           tal:attributes="href string:${new_url}?role_id=${role_param}"
-                           >Senders&nbsp;&nbsp;</a>
-                   </li>
-                   <li>
-                       <a tal:define="new_url string:${common/base_url}/edit_leaders_html"
-                           tal:condition="python:editable_role and options.get('leaders_enabled')"
-                           tal:attributes="href string:${new_url}?role_id=${role_param}"
-                           >Memberships</a>
-                   </li>
-                   <li>
-                       <a tal:define="new_url string:${common/base_url}/@@extended_management"
-                           tal:condition="python: editable_role and can_edit_extended_roles"
-                           tal:attributes="href string:${new_url}?role_id=${role_param}"
-                           >Extended management</a>
-                   </li>
-               </ul>
-           </li>
-       </ul>
-
-       <tal:block condition="options/members_in_role"
-                   define="em_url string:${common/base_url}/export_members">
-       <a
-          tal:condition="python:role_id and is_auth"
-          tal:attributes="href string:${em_url}?role_id=${role_id};
-                          class string:button help-tooltip;
-                          original-title python:'%d members in role %s' % (options['members_in_role'], role_id)"
+        <a tal:define="new_url string:${common/base_url}/edit_owners;
+                      role_param python:options['role_id'] or ''"
+          tal:condition="python:options['role_id'] and options['can_edit_members']"
+          tal:attributes="href string:${new_url}?role_id=${role_param};
+                          class python:'current' if page == 'edit_owners' else 'button'"
           >
-         <img src="/++resource++eea.ldapadmin-www/export.png"
-              class="middle-image image12" alt="" title="Export members (xls)" />
-         Export members (xls)
+         <img src="/++resource++eea.ldapadmin-www/users.png"
+              class="middle-image image12" alt="" title="Manage owners" />
+         Manage Owners
        </a>
-       </tal:block>
-       <tal:block condition="not: options/members_in_role"
-                   define="em_url string:${common/base_url}/export_members">
-       <a
-          tal:condition="python:role_id and is_auth"
-          tal:attributes="href string:${em_url}?role_id=${role_id}&subroles=True;
-                          class string:button help-tooltip no-members;
-                          original-title string:No members in role"
+  
+       <a tal:define="new_url string:${common/base_url}/edit_senders;
+                      role_param python:options['role_id'] or ''"
+          tal:condition="python:common.supports_mailing and options['role_id'] and options['can_edit_members']"
+          tal:attributes="href string:${new_url}?role_id=${role_param};
+                          class python:'current' if page == 'edit_senders' else 'button'"
           >
-         <img src="/++resource++eea.ldapadmin-www/export.png"
-              class="middle-image image12" alt="" title="Export members (xls)" />
-         Export members (xls)
+         <img src="/++resource++eea.ldapadmin-www/users.png"
+              class="middle-image image12" alt="" title="Manage senders" />
+         Manage senders
        </a>
-       </tal:block>
-
-       <a tal:condition="python:role_id and is_auth and page == 'role_all_members'"
-          tal:attributes="href string:${common/base_url}/export_members?role_id=${role_id}&subroles=True;
+  
+       <a tal:define="em_url string:${common/base_url}/export_members"
+          tal:condition="python:options.get('role_id', False) and common.is_authenticated()"
+          tal:attributes="href string:${em_url}?role_id=${options/role_id};
                           class string:button help-tooltip;
-                          original-title string: Export all members from ${role_id} and its subroles"
+                          original-title python:str(options['members_in_role']) + ' members in role' + options['role_id'] if options['members_in_role'] else 'No members to export';"
+                          
           >
          <img src="/++resource++eea.ldapadmin-www/export.png"
-              class="middle-image image12" alt="" title="Export all members (xls)" />
-         Export all members (xls)
+              
+              class="middle-image image12" alt="" title="Export members (.csv)" />
+         Export members (.csv)
+       </a>
+  
+       <a tal:condition="python:options.get('role_id', False) and common.is_authenticated() and page == 'role_all_members'"
+          tal:attributes="href string:${common/base_url}/export_members?role_id=${options/role_id}&subroles=True;
+                          class string:button help-tooltip;
+                          original-title string: Export all members from ${options/role_id} and its subroles"
+          >
+         <img src="/++resource++eea.ldapadmin-www/export.png"
+              class="middle-image image12" alt="" title="Export all members (.csv)" />
+         Export all members (.csv)
        </a>
       </div>
     </div>
     <div class="clear"></div>
   </div>
-  <br />
+<br />
 </tal:block>

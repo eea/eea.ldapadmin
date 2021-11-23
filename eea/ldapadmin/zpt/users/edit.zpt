@@ -1,21 +1,8 @@
-<link href="/++resource++eea.ldapadmin-www/selectize/css/selectize.default.css" rel="stylesheet"/>
-<script src="/++resource++eea.ldapadmin-www/selectize/js/standalone/selectize.min.js"></script>
-
-<tal:def tal:define="disabled_user python:options['user'].get('status') == 'disabled'">
 <h1>Editing user data for <span tal:content="python:'%s (%s)'%(options['user']['full_name'], options['user']['id'])"></span></h1>
 
-<div id="operations" >
+<div id="operations">
   <h2>Operations</h2>
-  <ul tal:condition="not:disabled_user">
-    <li>
-    <a tal:attributes="href string:/password-reset?email=${options/user/email}"
-          >Reset password</a>
-    </li>
-    <li>
-      <a tal:attributes="href string:eionet_profile?id=${options/user/id}"
-          >In Eionet services</a>
-    </li>
-
+  <ul>
     <li>
       <a tal:attributes="href string:${options/forum_url}/profile_overview?user=${options/user/id}"
           >Forum Profile overview</a>
@@ -31,20 +18,16 @@
           >Archives Profile overview</a>
     </li>
 
+    <li>
+      <a tal:attributes="href string:${common/base_url}/change_password?id=${options/user/id}"
+          >Change password</a>
+    </li>
   </ul>
   <hr />
   <ul>
-    <li tal:condition="not:disabled_user">
-      <a tal:attributes="href string:${common/base_url}/disable_user?id=${options/user/id}"
-          >Disable account</a>
-    </li>
-    <li tal:condition="disabled_user">
-      <a tal:attributes="href string:${common/base_url}/enable_user?id=${options/user/id}"
-          >Enable account</a>
-    </li>
-    <li tal:condition="not:disabled_user">
-      <a tal:attributes="href string:${common/base_url}/reset_user?id=${options/user/id}"
-          >Reset user roles</a>
+    <li>
+      <a tal:attributes="href string:${common/base_url}/delete_user?id=${options/user/id}"
+          >Delete account</a>
     </li>
   </ul>
 </div>
@@ -57,32 +40,27 @@
     <table class="account-table">
 
       <tal:block repeat="schema_field options/schema">
-          <tr tal:define="full_edit_permission options/context/checkPermissionEditUsers;
-                        field_name schema_field/name;
+        <tr tal:define="field_name schema_field/name;
                         field python:{
                           'name': field_name,
-                          'value': options['form_data'].get(field_name),
+                          'value': options['form_data'][field_name],
                           'label': schema_field.description,
                           'error': options['errors'].get(field_name, None),
                           'widget': schema_field.widget,
                           'required': schema_field.required,
-                          'deform_field':schema_field,
                         }">
           <metal:block use-macro="template/macros/form-field" />
         </tr>
       </tal:block>
-
+    
       <tr>
         <td colspan="2" align="center">
           <input type="submit" value="Apply changes" name="submit"
-                 tal:attributes="disabled disabled_user"
                  class="primary-button" />
         </td>
       </tr>
     </table>
-    <script>
-        $(document).ready(function() { $("#edit-organisation").selectize({create:false}); });
-    </script>
+
     </form>
 </div>
 
@@ -98,52 +76,28 @@
     </td>
     <td tal:define="widget_template field/widget/template|string:textinput;
                     input_classes python:['error'] if field['error'] else [];
-                    is_textarea python: widget_template == 'textarea';
-                    is_select python: widget_template=='select';
-                    is_checkbox python: widget_template=='checkbox';">
+                    is_textarea python: widget_template == 'textarea'">
       <span tal:condition="field/required"/>
-      <input tal:condition="python: not (is_textarea or is_select or is_checkbox)"
+      <input tal:condition="not:is_textarea"
              type="text" size="50"
              tal:attributes="id field_id;
                              class python:' '.join(input_classes +
                                     ['text-input', 'large']);
                              name string:${field/name}:utf8:ustring;
-                             disabled disabled_user;
                              value field/value" />
-      <input type="checkbox" tal:condition="is_checkbox" class="account-checkbox"
-             tal:attributes="id field_id; name field_id" />
       <textarea tal:condition="is_textarea"
                 class="account-textarea large"
                 tal:attributes="id field_id;
-                                disabled disabled_user;
                                 class python:' '.join(input_classes +
                                     ['account-textarea', 'large']);
                                 name string:${field/name}:utf8:ustring"
                 tal:content="field/value"></textarea>
-      <select tal:condition="is_select"
-          tal:attributes="id field_id; 
-                          disabled disabled_user;
-                          name string:${field/name}:utf8:ustring"
-                          >
-          <tal:def tal:define="choices python:field['widget'].values">
-              <option 
-                  tal:repeat="ch choices" 
-                  tal:attributes="value python:ch[0]; selected python:ch[0] == field['value']" 
-                  tal:content="python: ch[1]">1</option>
-          </tal:def>
-      </select>
-
-      <tal:def define="errors python: isinstance(field['error'], list) and field['error'] or [field['error']]">
-        <tal:rep tal:repeat="error errors">
-          <p class="error-hint"
-             tal:attributes="id string:error-${field_id}"
-             tal:condition="error"
-             tal:content="error" />
-        </tal:rep>
-      </tal:def>
+      <p class="error-hint"
+         tal:attributes="id string:error-${field_id}"
+         tal:condition="field/error"
+         tal:content="field/error" />
     </td>
   </tal:block>
 
 </metal:block>
 </tal:block>
-</tal:def>

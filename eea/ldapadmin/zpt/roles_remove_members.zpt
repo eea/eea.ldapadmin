@@ -1,6 +1,6 @@
 <script type="text/javascript">
     $(document).ready(function(){
-        window.data_table = $('.dataTable').dataTable({
+        $('.dataTable').dataTable({
             'aaSorting': [[1, "asc"]],
             'sPaginationType': 'full_numbers',
             "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
@@ -58,7 +58,7 @@
                             tal:attributes="value user_id" />
                     </td>
                     <td>
-                        <span tal:content="user_info/full_name|string:User doesn't exist anymore"/>
+                        <span tal:content="user_info/full_name"/>
                     </td>
                     
                     <td>

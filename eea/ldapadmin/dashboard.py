@@ -1,5 +1,4 @@
 import operator
-import os
 
 from App.config import getConfiguration
 from AccessControl import ClassSecurityInfo, getSecurityManager
@@ -8,7 +7,8 @@ from App.class_init import InitializeClass
 from OFS.Folder import Folder
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 
-from ui_common import SessionMessages, TemplateRenderer, CommonTemplateLogic
+from ui_common import SessionMessages, TemplateRenderer
+from constants import NETWORK_NAME
 
 KNOWN_TYPES = {'Eionet Roles Editor': {
                 'description': ('Browse Roles and Roles\' Members in LDAP'
@@ -34,13 +34,9 @@ KNOWN_TYPES = {'Eionet Roles Editor': {
                 'description': ('NFP Administration - Editing NRC Members'
                                 '<br /><i>[nfps and system administration]</i>')
                 },
-               'My Profile Overview':{
-                'description': ('Overview on my memberships in interest groups,'
+               'Profile Overview':{
+                'description': ('Overview on memberships in interest groups,'
                                 ' Roles and Subscriptions'
-                                '<br /><i>[available to any user]</i>')
-               },
-               'Eionet User Details':{
-                'description': ('Eionet User page (User Directory)'
                                 '<br /><i>[available to any user]</i>')
                }
               }
@@ -54,8 +50,6 @@ SESSION_FORM_ERRORS =  SESSION_PREFIX + '.form_errors'
 eionet_access_ldap_explorer = 'Eionet access LDAP explorer'
 
 CONFIG = getConfiguration()
-CONFIG.environment.update(os.environ)
-
 FORUM_URL = getattr(CONFIG, 'environment', {}).get('FORUM_URL', '')
 
 manage_add_ldap_admin_html = PageTemplateFile('zpt/ldapadmin_manage_add',
@@ -76,7 +70,7 @@ class FakeTool(object):
         self.absolute_url = absolute_url
 
 FAKES = [
-    ('My Profile Overview', 'My Profile Overview',
+    ('Profile Overview', 'My Profile Overview',
      '++resource++eea.ldapadmin-www/profile_overview.png', FORUM_URL+'/profile_overview')
 ]
 
@@ -95,6 +89,22 @@ def manage_add_ldap_admin(parent, id, REQUEST=None):
         REQUEST.RESPONSE.redirect(parent.absolute_url() + '/manage_workspace')
 
 
+class CommonTemplateLogic(object):
+    def __init__(self, context):
+        self.context = context
+
+    def base_url(self):
+        return self.context.absolute_url()
+
+    def message_boxes(self):
+        return SessionMessages(self.context.REQUEST, SESSION_MESSAGES).html()
+
+    @property
+    def network_name(self):
+        """ E.g. EIONET, SINAnet etc. """
+        return NETWORK_NAME
+
+
 class Dashboard(Folder):
     """
     The ldapadmin dashboard acts as container for the ldapadmin tools
@@ -108,7 +118,6 @@ class Dashboard(Folder):
     meta_type = 'Eionet LDAP Explorer'
     icon = '++resource++eea.ldapadmin-www/ldap_dashboard.gif'
     security = ClassSecurityInfo()
-    session_messages = SESSION_MESSAGES
 
     _render_template = TemplateRenderer(CommonTemplateLogic)
 

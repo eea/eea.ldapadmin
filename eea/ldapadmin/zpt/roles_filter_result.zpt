@@ -1,6 +1,6 @@
 <script type="text/javascript">
     $(document).ready(function(){
-        window.data_table = $('.dataTable').dataTable({
+        $('.dataTable').dataTable({
             'aaSorting': [[0, "asc"]],
             'sPaginationType': 'full_numbers',
             "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
@@ -8,11 +8,6 @@
                 "sSearch": "Apply filter _INPUT_ to table"
             }
         });
-
-        $('.tipsy-title').tipsy({
-            gravity: 'se'
-        });
-
     });
 </script>
 
@@ -21,9 +16,52 @@
   <tal:block define="role_members python:options['results'][role_id]">
       <h3>Users in <tt tal:content="python:options['results'][role_id]['name'] or '[ROOT]'" /></h3>
 
-        <tal:block define="users role_members/users; naming python:options['results'][role_id]['naming']">
-          <metal:block use-macro="common/macros/table-user-info" />
-        </tal:block>
+      <table class="account-datatable dataTable">
+        <thead>
+          <tr>
+            <td>Name</td>
+            <tal:block condition="is_authenticated">
+              <td>User ID</td>
+              <td>Email</td>
+              <td>Tel/Fax</td>
+              <td>Organisation</td>
+            </tal:block>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr tal:repeat="user_info role_members/users"
+              tal:attributes="class python:'odd' if path('repeat/user_info/odd') else 'even'">
+            <td>
+              <span tal:content="user_info/full_name" />
+            </td>
+
+            <tal:block condition="is_authenticated">
+              <td>
+                <span tal:content="user_info/id" />
+              </td>
+
+              <td>
+                <a tal:condition="user_info/email"
+                tal:attributes="href string:mailto:${user_info/email}"
+                tal:content="user_info/email"
+                class="user-email"></a>
+              </td>
+
+              <td>
+                <span class="user-phone" tal:content="user_info/phone" />
+                <br />
+                <span class="user-phone" tal:content="user_info/fax" />
+              </td>
+
+              <td>
+                <span tal:content="user_info/organisation" />
+              </td>
+            </tal:block>
+          </tr>
+        </tbody>
+      </table>
+
       <div class="clear">&nbsp;</div>
 
       <div class="left-position">

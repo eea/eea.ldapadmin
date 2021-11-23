@@ -1,17 +1,18 @@
 <tal:block content="structure common/admin_menu" />
 
-<div id="content" tal:define="context options/context">
+<div id="content">
     <h1>Create users using a CSV file</h1>
 
     <tal:block content="structure common/message_boxes"/>
 
-    <form tal:attributes="action string:${context/absolute_url}/@@bulk_create_user"
-        enctype="multipart/form-data"
-        method="post">
+    <form tal:attributes="action string:bulk_create_user_action"
+          enctype="multipart/form-data"
+          method="post">
 
         <p>
-            Enter the user data using this <button type="submit" name="download_template">Excel template</button>
-            and then upload the file here.
+          Enter the user data using
+          <a href="download_csv_template">this CSV template</a>
+          and then upload the file here.
         </p>
 
         <p>
@@ -19,7 +20,7 @@
         </p>
 
         <p>
-            <input type="submit" name="bulk_create" value="Create Accounts"/>
+          <input type="submit" value="Create Accounts"/>
         </p>
     </form>
 </div>

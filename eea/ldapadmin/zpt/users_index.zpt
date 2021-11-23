@@ -2,7 +2,7 @@
 
 <script type="text/javascript">
     $(document).ready(function(){
-        window.data_table = $('.dataTable').dataTable({
+        $('.dataTable').dataTable({
             'aaSorting': [[0, "asc"]],
             'sPaginationType': 'full_numbers',
             "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
@@ -21,13 +21,13 @@
   <div class="search-form">
     <form name="search-form">
       <label for="search-query">
-          Search for:
+        Name of user:
       </label>
       <input type="search" name="name:ustring:utf8" id="search-query"
              class="text-input medium"
              tal:attributes="value options/search_name|string:"/>
       <label for="lookup">
-        in
+        search in
       </label>
       <select id="lookup" name="lookup:list:utf8:ustring" class="select-box">
         <option tal:attributes="selected python:('all' in options['lookup'] or not options['lookup']) and 'selected' or ''"

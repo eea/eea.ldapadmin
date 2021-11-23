@@ -7,7 +7,7 @@
     }
 </style>
 
-<h2 tal:content="string:Add organisations editor"></h2>
+<h2 tal:content="string:Add ${common/network_name} organisations editor"></h2>
 
 <form action="manage_add_orgs_editor" method="post"
       name="add-orgs-editor" class="add-orgs-editor"

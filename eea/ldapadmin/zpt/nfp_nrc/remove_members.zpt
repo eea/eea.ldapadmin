@@ -1,25 +1,20 @@
 <h1>Remove members from <span tal:content="options/role_name"/></h1>
 
-<div class="account-links clear" tal:condition="options/role_id" tal:define="role_id options/role_id">
-  <div class="left">
-    <a tal:condition="python: '-nrc-' in role_id"
-      tal:attributes="href string:${common/base_url}/nrcs?nfp=${options/country}#role_${options/role_id};
-                       title string:Back to NRC-s in ${options/country_name}"
-       class="button">
-         <img src="/++resource++eea.ldapadmin-www/back.png" class="middle-image image12"
-              alt="" tal:attributes="title string:Back to NRC-s in ${options/country}"/>
-         <span tal:content="string:Back to NRC-s in ${options/country_name}" />
-    </a>
-    <a tal:condition="python: '-awp-' in role_id"
-      tal:attributes="href string:${common/base_url}/awps?nfp=${options/country}#role_${options/role_id};
-                       title string:Back to reporters in ${options/country_name}"
-       class="button">
-         <img src="/++resource++eea.ldapadmin-www/back.png" class="middle-image image12"
-              alt="" tal:attributes="title string:Back to reporters in ${options/country}"/>
-         <span tal:content="string:Back to reporters in ${options/country_name}" />
-    </a>
-    &nbsp;
+<div>
+  <div class="account-links clear" tal:condition="options/role_id">
+    
+    <div class="left">
+      <a tal:attributes="href string:${common/base_url}/nrcs?nfp=${options/country}#role_${options/role_id};
+                         title string:Back to NRC-s in ${options/country_name}"
+         class="button">
+           <img src="/++resource++eea.ldapadmin-www/back.png" class="middle-image image12"
+                alt="" tal:attributes="title string:Back to NRC-s in ${options/country}"/>
+           <span tal:content="string:Back to NRC-s in ${options/country_name}" />
+      </a>
+      &nbsp;
+    </div>
   </div>
+  <br />
 </div>
 
 <tal:block content="structure common/message_boxes"/>
@@ -39,17 +34,17 @@
                     <input type="checkbox" class="selectall user_id_list" name="selectall"
                            onclick="selectAll('user_id_list:list');"/>
                 </td>
-
+                
                 <td>
                     Name
                 </td>
-
+                
                 <td>
                     User ID
                 </td>
             </tr>
         </thead>
-
+        
         <tbody>
             <tal:block tal:repeat="user_id python:sorted(role_members['users'])">
                 <tr tal:define="user_info python:role_members['users'][user_id]">
@@ -60,7 +55,7 @@
                     <td>
                         <span tal:content="user_info/full_name"/>
                     </td>
-
+                    
                     <td>
                         <span tal:content="user_id"/>
                     </td>

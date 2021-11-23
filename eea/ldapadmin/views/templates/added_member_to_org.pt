@@ -1,3 +1,0 @@
-<strong>Added members:</strong><br/>
-<div tal:repeat="member view/member" ><span tal:replace="member" /></div>
-

@@ -1,9 +1,0 @@
-<tal:block define="users options/users; is_authenticated options/is_authenticated">
-    <tal:block condition="users">
-        <h2>Suggested similar users</h2>
-        <p>These are user accounts that look very similar to the one you are about to register.<br />
-        If this account indeed already exists, use the password recovery instead.</p>
-        <metal:block use-macro="common/macros/table-user-info" />
-    </tal:block>
-</tal:block>
-

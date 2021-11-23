@@ -1,7 +1,0 @@
-This is an automated message to inform you that the organisation 
-membership on <span tal:replace="options/network_name" /> has been approved.
-
-You set the organisation "<span tal:replace="options/org_info/name" />" 
-in your profile edit page and it was approved by the organisation administrators.
-
-Have a nice day!

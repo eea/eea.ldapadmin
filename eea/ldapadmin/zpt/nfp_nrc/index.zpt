@@ -13,14 +13,15 @@
 
 <tal:block condition="options/nfps">
 <p>You are a National Focal Point for the following countries.<br />
-Click to browse and manage members in National Resource Centres and or Reporters.</p>
+Click to browse and manage members in National Resource Centres.</p>
 
     <table class="account-datatable sub-roles">
         <thead>
             <tr>
                 <td>
-                    Role
+                    NFP ID
                 </td>
+    
                 <td>
                     NFP name
                 </td>
@@ -28,39 +29,24 @@ Click to browse and manage members in National Resource Centres and or Reporters
         </thead>
 
         <tbody>
-          <tal:block repeat="nfp options/nfps">
-            <tal:block define="country nfp/country">
-              <tr tal:attributes="class python:'odd' if path('repeat/nfp/odd') else 'even'">
-                  <td>
-                      <a tal:attributes="href string:${common/base_url}/nrcs?nfp=${nfp/country}"
-                        tal:content="python:'NRC '+common.code_to_name(country)"></a>
-                  </td>
-                  <td tal:content="nfp/description" />
-              </tr>
-              <tr tal:attributes="class python:'odd' if path('repeat/nfp/odd') else 'even'">
-                  <td>
-                      <a tal:attributes="href string:${common/base_url}/awps?nfp=${nfp/country}"
-                        tal:content="python:'Reporter '+common.code_to_name(country)"></a>
-                  </td>
-                  <td tal:content="nfp/description" />
-              </tr>
-              <tr tal:attributes="class python:'odd' if path('repeat/nfp/odd') else 'even'">
-                  <td>
-                      <a tal:attributes="href string:${common/base_url}/extranet_reporters?nfp=${nfp/country}"
-                        tal:content="python:'Extranet reporter '+common.code_to_name(country)"></a>
-                  </td>
-                  <td tal:content="nfp/description" />
-              </tr>
-            </tal:block>
-          </tal:block>
+            <tr tal:repeat="nfp options/nfps"
+                tal:attributes="class python:'odd' if path('repeat/nfp/odd') else 'even'">
+                <td>
+                    <a tal:attributes="href string:${common/base_url}/nrcs?nfp=${nfp/country}"
+                        tal:content="nfp/role_id"></a>
+                </td>
+                <td>
+                    <span tal:content="nfp/description" />
+                </td>
+            </tr>
         </tbody>
     </table>
 </tal:block>
 
 
 <p tal:condition="not: options/nfps">
-The authenticated user (<span tal:content="common/user_id" />)
-  is not a National Focal Point.
+The logged in user (<span tal:content="common/user_id" />)
+  is not a National Focal Point.    
 </p>
 
 </tal:block>
