@@ -1,7 +1,7 @@
 Changelog
 =========
 
-3.6-dev0 - (unreleased)
+3.6 - (2021-12-09)
 ---------------------------
 * tables in nfp_nrc set to datatable
   [valipod refs #142972]
