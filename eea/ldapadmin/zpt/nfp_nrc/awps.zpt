@@ -37,9 +37,6 @@
         success: function(result) {
           count += 1;
           $('#remaining').text(top_role_dns.length - count)
-          if (i1 + 1 == role_dns_count) {
-            $('#loading').slideUp();
-          }
           $.each(result['roles'], function(i2, role){
 
             var users = $('<tbody>');
@@ -125,7 +122,7 @@
             });
 
             $('#' + div_id)
-                .addClass('nrc_role')
+              .addClass('nrc_role')
               .append(
                 $('<h3>')
                   .attr('id', role['role_id'])
@@ -141,32 +138,45 @@
                     )
                   )
                 );
-                if (role['users'].length > 0){
-                  $('#' + div_id).append(
-                    $('<table>').addClass('account-datatable')
-                      .append($('<thead>')
-                        .append($('<tr>')
-                          .append($('<td>').text('Name'))
-                          .append(thead_a)
-                        )
-                      )
-                      .append(users)
+            if (role['users'].length > 0){
+              $('#' + div_id).append(
+                $('<table>').addClass('account-datatable dataTable')
+                  .append($('<thead>')
+                    .append($('<tr>')
+                      .append($('<td>').text('Name'))
+                      .append(thead_a)
                     )
-                  .append($('<div>').addClass('clear').html('&nbsp;'))
-                } else {
-                  $('#' + div_id).append($('<p>').text('No member'))
-                };
-                $('#' + div_id).append(
-                  $('<div>').addClass('left-position').append(
-                    $('<a>')
-                      .addClass('account-link button')
-                      .attr({
-                        href: '#container',
-                        title: 'Click to go back to top'
-                      })
-                      .html('<img src="/++resource++eea.ldapadmin-www/up.png" class="middle-image image12" alt="" title="Back to top" /> Back to top')
                   )
-                ).append($('<div>').addClass('clear').html('&nbsp;'))
+                  .append(users)
+                )
+              .append($('<div>').addClass('clear').html('&nbsp;'))
+            } else {
+              $('#' + div_id).append($('<p>').text('No member'))
+            };
+            $('#' + div_id).append(
+              $('<div>').addClass('left-position').append(
+                $('<a>')
+                  .addClass('account-link button')
+                  .attr({
+                    href: '#container',
+                    title: 'Click to go back to top'
+                  })
+                  .html('<img src="/++resource++eea.ldapadmin-www/up.png" class="middle-image image12" alt="" title="Back to top" /> Back to top')
+              )
+            ).append($('<div>').addClass('clear').html('&nbsp;'))
+            if (i1 + 1 == role_dns_count) {
+              $('#loading').slideUp();
+              requirejs(["datatables.net"], function() {
+                window.data_table = $('.dataTable').dataTable({
+                  "aaSorting": [[0, "asc"]],
+                  "sPaginationType": "full_numbers",
+                  "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                  "oLanguage": {
+                    "sSearch": "Apply filter _INPUT_ to table"
+                  }
+                });
+              });
+            }
           });
         }
       });
