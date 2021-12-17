@@ -3,10 +3,12 @@ Changelog
 
 3.7-dev0 - (unreleased)
 ---------------------------
+* [bugfix] fix initialisation of datatables
+  [valipod refs #142972]
 
 3.6 - (2021-12-09)
 ---------------------------
-* tables in nfp_nrc set to datatable
+* [feature] tables in nfp_nrc set to datatable
   [valipod refs #142972]
 
 3.5 - (2021-11-22)
