@@ -40,11 +40,10 @@
           $.each(result['roles'], function(i2, role){
 
             var users = $('<tbody>');
-            var is_odd = 'odd';
             $.each(role['users'], function(i3, user_info){
               var is_disabled = (user_info['status'] == 'disabled');
               var is_disabled_class = (is_disabled) ? 'disabled_user' : '';
-              var klass = is_odd + is_disabled_class;
+              var klass = is_disabled_class;
               var user = $('<tr>').addClass(klass)
 
               var name = $('<td>');
@@ -116,7 +115,6 @@
               }
 
               users.append(user);
-              is_odd = (is_odd == 'odd') ? 'even' : 'odd';
             });
 
             $('#' + div_id)
@@ -151,24 +149,34 @@
                   })
                   .html('<img src="/++resource++eea.ldapadmin-www/up.png" class="middle-image image12" alt="" title="Back to top" /> Back to top')))
               .append($('<div>').addClass('clear').html('&nbsp;'))
-            if (i1 + 1 == role_dns_count) {
-              $('#loading').slideUp();
-                requirejs(["datatables.net"], function() {
-                window.data_table = $('.dataTable').dataTable({
-                  "aaSorting": [[0, "asc"]],
-                  "sPaginationType": "full_numbers",
-                  "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
-                  "oLanguage": {
-                    "sSearch": "Apply filter _INPUT_ to table"
-                  }
-                });
-              });
-            }
           });
+          /* we run datatable initialisation for each table,
+          so we don't wait until the last ajax call finishes */
+          initialize_datatable();
+          if (top_role_dns.length - count == 0) {
+            $('#loading').slideUp();
+            // initialize_datatable();
+          }
         }
       });
     });
   });
+
+  function initialize_datatable(){
+    requirejs(["datatables.net"], function() {
+      /* since the initialisation is called separately for each new arriving
+       table, we need to avoid the ones already initialised (having no-footer) */
+      window.data_table = $('.dataTable').not('.no-footer')
+        .dataTable({
+          "aaSorting": [[0, "asc"]],
+          "sPaginationType": "full_numbers",
+          "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+          "oLanguage": {
+            "sSearch": "Apply filter _INPUT_ to table"
+          }
+        } )
+    });
+  }
 </script>
 
 <h1> Extranet reporters for <span tal:replace="options/country_name" /></h1>
