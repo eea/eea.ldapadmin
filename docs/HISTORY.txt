@@ -1,7 +1,7 @@
 Changelog
 =========
 
-3.8-dev0 - (unreleased)
+3.8 - (2022-01-13)
 ---------------------------
 * [bugfix] fix PCP set/unset
   [valipod refs #143780]
