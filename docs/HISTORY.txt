@@ -1,6 +1,11 @@
 Changelog
 =========
 
+3.8 - (2022-01-13)
+---------------------------
+* [bugfix] fix PCP set/unset
+  [valipod refs #143780]
+
 3.7 - (2021-12-17)
 ---------------------------
 * [bugfix] fix initialisation of datatables

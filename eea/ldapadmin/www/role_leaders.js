@@ -46,7 +46,7 @@ $(function () {
     $('div#role_listing').on('click', 'div.nrc_role input[class=leader]', function(){
         var checkb = $(this);
         var role_table = checkb.parents("table");
-        var role_id = role_table.prev('h3').attr("id");
+        var role_id = role_table.closest('.form-inline').prev().attr("id");
         var user_id = checkb.val();
         $.post("set_pcp", {"role_id": role_id, "user_id": user_id},
                 function (data){
