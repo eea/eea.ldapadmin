@@ -1,7 +1,7 @@
 Changelog
 =========
 
-3.9-dev0 - (unreleased)
+3.9 - (2022-02-15)
 ---------------------------
 * remove predefined queries in roles search
   [valipod refs #145871]
