@@ -14,7 +14,7 @@ from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
 from App.class_init import InitializeClass
 from plone import api
-from eea.ldapadmin import ldap_config, query
+from eea.ldapadmin import ldap_config
 from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.logic_common import load_template
 from eea.ldapadmin.ui_common import CommonTemplateLogic, TemplateRenderer
@@ -120,11 +120,6 @@ class PasswordResetTool(SimpleItem):
     def _get_ldap_agent(self, bind=True, secondary=False):
         """ get the ldap agent """
         return _get_ldap_agent(self, bind, secondary)
-
-    def _predefined_filters(self):
-        ''' return predefined filters '''
-        return sorted(self.objectValues([query.Query.meta_type]),
-                      key=lambda ob: ob.getId())
 
     security.declareProtected(view, 'index_html')
 

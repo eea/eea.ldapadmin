@@ -194,7 +194,6 @@ class CommonTemplateLogic(object):
         ''' render the roles fitlering form '''
         options = {
             'pattern': pattern,
-            'predefined_filters': self.context._predefined_filters(),
         }
         tr = self.context._render_template
 

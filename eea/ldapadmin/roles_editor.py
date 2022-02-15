@@ -4,7 +4,6 @@
 ''' Editor of LDAP roles '''
 import csv
 import logging
-import operator
 import re
 import sys
 from collections import defaultdict
@@ -315,11 +314,6 @@ class RolesEditor(Folder):
     def _get_ldap_agent(self, bind=True, secondary=False):
         """ get the ldap agent """
         return _get_ldap_agent(self, bind, secondary)
-
-    def _predefined_filters(self):
-        ''' return predefined filters '''
-        return sorted(self.objectValues([query.Query.meta_type]),
-                      key=operator.methodcaller('getId'))
 
     def _get_permitted_senders_info(self, mail_info):
         """ Returns permittedSender-s as {'patterns': [..], 'emails': [..]} """
