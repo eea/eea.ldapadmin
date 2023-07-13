@@ -1,8 +1,10 @@
 Changelog
 =========
 
-4.0-dev0 - (unreleased)
+4.0 - (2023-07-13)
 ---------------------------
+* Change: Update sonarqube tags
+  [valipod]
 
 3.9 - (2022-02-15)
 ---------------------------
