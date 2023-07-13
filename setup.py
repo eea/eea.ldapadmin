@@ -20,6 +20,7 @@ setup(name=NAME,
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,
+      url="https://github.com/eea/eea.ldapadmin",
       install_requires=[
           'eea.usersdb>=2.6',
           'naaya.ldapdump',
