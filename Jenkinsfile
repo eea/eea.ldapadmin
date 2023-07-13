@@ -4,7 +4,7 @@ pipeline {
   environment {
         GIT_NAME = "eea.ldapadmin"
         GIT_HISTORYFILE = "docs/HISTORY.txt"
-        SONARQUBE_TAGS = "plone5demo.eionet.europa.eu"
+        SONARQUBE_TAGS = "www.eionet.europa.eu"
     }
 
   stages {
