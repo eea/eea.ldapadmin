@@ -32,7 +32,7 @@ SPARQL_QUERY = """
          OPTIONAL { <http://rdfdata.eionet.europa.eu/eea/countries/EIONET> skos:member ?ucountry, ?eionetmember }
         }"""  # noqa: E501
 
-SPARQL_ENDPOINT = 'http://semantic.eea.europa.eu/sparql'
+SPARQL_ENDPOINT = 'https://semantic.eea.europa.eu/sparql'
 
 USER_INFO_KEYS = [
     'status', 'last_name', 'uid', 'reasonToCreate', 'full_name', 'id',
