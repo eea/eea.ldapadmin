@@ -856,6 +856,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
         IStatusMessage(REQUEST).add(msg, type='info')
         log.info("%s DISABLED USER %s", logged_in_user(REQUEST), uid)
 
+        if REQUEST.form.get('skip_redirect'):
+            return msg
         return REQUEST.RESPONSE.redirect(self.absolute_url() + '/')
 
     security.declareProtected(eionet_edit_users, 'enable_user')
