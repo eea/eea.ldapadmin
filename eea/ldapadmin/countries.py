@@ -58,8 +58,12 @@ DUMMY = {'code': '',
 def update_countries():
     """ Return country data from EEA Semantic Service
     and store them in json """
-    s = sparql.Service(SPARQL_ENDPOINT)
-    results = [i for i in s.query(SPARQL_QUERY).fetchone()]
+    try:
+        s = sparql.Service(SPARQL_ENDPOINT)
+        results = [i for i in s.query(SPARQL_QUERY).fetchone()]
+    except Exception as e:
+        logger.error("Couldn't import countries: %s", e)
+        results = []
     countries = []
     if results:
         for item in results:
