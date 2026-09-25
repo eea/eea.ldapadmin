@@ -1,6 +1,9 @@
 Changelog
 =========
 
+4.5-dev0 - (unreleased)
+---------------------------
+
 4.4 - (2026-09-25)
 ---------------------------
 * Change: set SPARQL_ENDPOINT to https://cr.eionet.europa.eu/sparql;
