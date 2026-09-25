@@ -1,6 +1,24 @@
 Changelog
 =========
 
+4.4 - (2026-09-25)
+---------------------------
+* Change: set SPARQL_ENDPOINT to https://cr.eionet.europa.eu/sparql;
+  semantic.eea.europa.eu no longer resolves
+  [valipod refs #308822]
+* Change: keep countries.json when the SPARQL fetch fails or is empty; log it,
+  report it in api_tool update_countries, retry hourly while no countries
+  [valipod refs #308822]
+* Change: pass timeout=30 to the countries SPARQL query
+  [valipod refs #308822]
+* Change: point the update_countries console script to
+  update_countries_script; exit code 0 on success, 1 on failure
+  [valipod refs #308822]
+* Change: skip os.mkdir in update_countries when LDAP_DISK_STORAGE is empty
+  [valipod refs #308822]
+* Change: patch _refresh_if_stale in OrganisationsUITest
+  [valipod refs #308822]
+
 4.3 - (2025-01-11)
 ---------------------------
 * Change: fix: PloneSaaS failure due to missing  sparql endpoint - refs #274234

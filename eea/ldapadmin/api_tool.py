@@ -9,7 +9,7 @@ from App.class_init import InitializeClass
 from OFS.SimpleItem import SimpleItem
 
 from eea.ldapadmin.constants import LDAP_DISK_STORAGE
-from .countries import update_countries
+from .countries import load_countries, update_countries
 from .ldapdump import dump_ldap
 
 log = logging.getLogger(__name__)
@@ -49,9 +49,14 @@ class ApiTool(SimpleItem):
     def update_countries(self, REQUEST=None, RESPONSE=None):
         """ Wrapper for update_countries.
         """
-        update_countries()
-        return 'FINISHED update_countries @ {}/'.format(
-            self.absolute_url()
+        count = update_countries()
+        if not count:
+            return 'FAILED update_countries @ {}/: no countries'.format(
+                self.absolute_url()
+            )
+        load_countries()
+        return 'FINISHED update_countries @ {}/: {} countries'.format(
+            self.absolute_url(), count
         )
 
     security.declareProtected(view_management_screens, 'dump_ldap')

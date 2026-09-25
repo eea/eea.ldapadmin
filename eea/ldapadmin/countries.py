@@ -56,33 +56,42 @@ DUMMY = {'code': '',
 
 
 def update_countries():
-    """ Return country data from EEA Semantic Service
-    and store them in json """
+    """ Fetch countries via SPARQL into countries.json; return the count. """
     try:
         s = sparql.Service(SPARQL_ENDPOINT)
-        results = [i for i in s.query(SPARQL_QUERY).fetchone()]
+        results = [i for i in s.query(SPARQL_QUERY, timeout=30).fetchone()]
     except Exception as e:
         logger.error("Couldn't import countries: %s", e)
         results = []
+    if not results:
+        # Keep the existing countries.json on a failed or empty fetch.
+        logger.error("No countries from %s; keeping countries.json",
+                     SPARQL_ENDPOINT)
+        return 0
     countries = []
-    if results:
-        for item in results:
-            (code, name, pub_code, eu, eea, eionet, eun22) = item
-            countries.append({
-                'code': code.value.lower(),
-                'name': name.value,
-                'pub_code': pub_code.value,
-                'eu': eu.value == 'Yes',
-                'eea': eea.value == 'Yes',
-                'eionet': eionet.value == 'Yes',
-                'eun22': eun22.value == 'Yes',
-            })
+    for item in results:
+        (code, name, pub_code, eu, eea, eionet, eun22) = item
+        countries.append({
+            'code': code.value.lower(),
+            'name': name.value,
+            'pub_code': pub_code.value,
+            'eu': eu.value == 'Yes',
+            'eea': eea.value == 'Yes',
+            'eionet': eionet.value == 'Yes',
+            'eun22': eun22.value == 'Yes',
+        })
 
-    if not os.path.isdir(LDAP_DISK_STORAGE):
+    if LDAP_DISK_STORAGE and not os.path.isdir(LDAP_DISK_STORAGE):
         os.mkdir(LDAP_DISK_STORAGE)
     f = open(os.path.join(LDAP_DISK_STORAGE, "countries.json"), "w")
     json.dump(countries, f)
     f.close()
+    return len(countries)
+
+
+def update_countries_script():
+    """ Console script entry point: exit 0 on success, 1 on failure. """
+    return 0 if update_countries() else 1
 
 
 def load_countries(update=False):
@@ -94,6 +103,10 @@ def load_countries(update=False):
         f.close()
     except (IOError, ValueError):
         update_countries()
+        if not os.path.isfile(os.path.join(LDAP_DISK_STORAGE,
+                                           "countries.json")):
+            _country_storage['time'] = time.time()
+            return []
         return load_countries()
     else:
         if update:
@@ -112,14 +125,20 @@ def load_countries(update=False):
         return data
 
 
+def _refresh_if_stale():
+    """ Refetch countries after the timeout, or after 1h if none loaded. """
+    timeout = _country_storage['timeout'] if COUNTRIES else 3600
+    if time.time() - _country_storage['time'] > timeout:
+        load_countries(update=True)
+
+
 def get_country(code):
     """ Return country object for given code """
     code = code.lower()
     pseudos = dict(PSEUDO_COUNTRIES)
     if code in pseudos:
         return pseudos[code]
-    if time.time() - _country_storage['time'] > _country_storage['timeout']:
-        load_countries(update=True)
+    _refresh_if_stale()
     return COUNTRIES.get(code.lower(), DUMMY)
 
 
@@ -130,6 +149,7 @@ def get_country_options(country=None):
         country = ['eu', 'int']
     elif country:
         country = [country]
+    _refresh_if_stale()
     countries = list(COUNTRIES.items())
     if country:
         return [country_data for country_data in countries + PSEUDO_COUNTRIES
