@@ -59,6 +59,10 @@ class OrganisationsUITest(unittest.TestCase):
         self.ui = StubbedOrganisationsEditor()
         user = get_current()
         base_setup(self, user)
+        # No SPARQL fetch or countries.json write from the org forms.
+        patcher = patch('eea.ldapadmin.countries._refresh_if_stale')
+        patcher.start()
+        self.addCleanup(patcher.stop)
         self.ui.checkPermissionView = Mock(return_value=True)
         self.ui.checkPermissionEditOrganisations = Mock(return_value=True)
         self.ui.nfp_for_country = Mock(return_value=None)

@@ -81,12 +81,17 @@ def update_countries():
             'eun22': eun22.value == 'Yes',
         })
 
-    if not os.path.isdir(LDAP_DISK_STORAGE):
+    if LDAP_DISK_STORAGE and not os.path.isdir(LDAP_DISK_STORAGE):
         os.mkdir(LDAP_DISK_STORAGE)
     f = open(os.path.join(LDAP_DISK_STORAGE, "countries.json"), "w")
     json.dump(countries, f)
     f.close()
     return len(countries)
+
+
+def update_countries_script():
+    """ Console script entry point: exit 0 on success, 1 on failure. """
+    return 0 if update_countries() else 1
 
 
 def load_countries(update=False):

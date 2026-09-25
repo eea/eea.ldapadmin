@@ -11,6 +11,13 @@ Changelog
   [valipod refs #308822]
 * Change: pass timeout=30 to the countries SPARQL query
   [valipod refs #308822]
+* Change: point the update_countries console script to
+  update_countries_script; exit code 0 on success, 1 on failure
+  [valipod refs #308822]
+* Change: skip os.mkdir in update_countries when LDAP_DISK_STORAGE is empty
+  [valipod refs #308822]
+* Change: patch _refresh_if_stale in OrganisationsUITest
+  [valipod refs #308822]
 
 4.3 - (2025-01-11)
 ---------------------------
