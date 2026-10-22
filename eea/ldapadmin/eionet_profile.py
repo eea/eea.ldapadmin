@@ -23,7 +23,8 @@ def get_endpoints():
                                                         "config.yaml")), "r")
     except Exception:
         return []
-    config = yaml.load(config_file)
+    with config_file:
+        config = yaml.safe_load(config_file)
     return config.get('endpoints', [])
 
 
