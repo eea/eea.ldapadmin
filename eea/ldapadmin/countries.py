@@ -3,7 +3,7 @@ import os
 import json
 import time
 import logging
-import sparql
+import requests
 
 from eea.ldapadmin.constants import SPARQL_ENDPOINT, SPARQL_QUERY
 from eea.ldapadmin.constants import LDAP_DISK_STORAGE
@@ -55,11 +55,23 @@ DUMMY = {'code': '',
          }
 
 
+def query_sparql(endpoint, query, timeout=30):
+    """ Run a SELECT query; return rows as tuples of values, in column order.
+    Unbound values are returned as ''. """
+    response = requests.post(
+        endpoint, data={'query': query}, timeout=timeout,
+        headers={'Accept': 'application/sparql-results+json'})
+    response.raise_for_status()
+    data = response.json()
+    columns = data['head']['vars']
+    return [tuple(row.get(col, {}).get('value', '') for col in columns)
+            for row in data['results']['bindings']]
+
+
 def update_countries():
     """ Fetch countries via SPARQL into countries.json; return the count. """
     try:
-        s = sparql.Service(SPARQL_ENDPOINT)
-        results = [i for i in s.query(SPARQL_QUERY, timeout=30).fetchone()]
+        results = query_sparql(SPARQL_ENDPOINT, SPARQL_QUERY)
     except Exception as e:
         logger.error("Couldn't import countries: %s", e)
         results = []
@@ -72,13 +84,13 @@ def update_countries():
     for item in results:
         (code, name, pub_code, eu, eea, eionet, eun22) = item
         countries.append({
-            'code': code.value.lower(),
-            'name': name.value,
-            'pub_code': pub_code.value,
-            'eu': eu.value == 'Yes',
-            'eea': eea.value == 'Yes',
-            'eionet': eionet.value == 'Yes',
-            'eun22': eun22.value == 'Yes',
+            'code': code.lower(),
+            'name': name,
+            'pub_code': pub_code,
+            'eu': eu == 'Yes',
+            'eea': eea == 'Yes',
+            'eionet': eionet == 'Yes',
+            'eun22': eun22 == 'Yes',
         })
 
     if LDAP_DISK_STORAGE and not os.path.isdir(LDAP_DISK_STORAGE):
@@ -110,10 +122,7 @@ def load_countries(update=False):
         return load_countries()
     else:
         if update:
-            try:
-                update_countries()
-            except sparql.SparqlException as e:
-                logger.error("Couldn't import countries: %s", e)
+            update_countries()
         f = open(os.path.join(LDAP_DISK_STORAGE, "countries.json"), "r")
         data = json.load(f)
         f.close()

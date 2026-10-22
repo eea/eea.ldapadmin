@@ -12,7 +12,7 @@ import six
 
 from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
-from App.class_init import InitializeClass
+from AccessControl.class_init import InitializeClass
 from plone import api
 from eea.ldapadmin import ldap_config
 from eea.ldapadmin.constants import NETWORK_NAME
