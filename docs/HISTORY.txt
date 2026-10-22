@@ -3,7 +3,7 @@ Changelog
 
 4.5-dev0 - (unreleased)
 ---------------------------
-* Change: Plone 6 / Zope 5 compatibility: import InitializeClass from
+* Change: Plone 6 / Zope 5+ compatibility: import InitializeClass from
   AccessControl.class_init (App.class_init no longer exists)
   [nileshgulia1]
 * Change: fetch countries with requests instead of sparql-client, whose

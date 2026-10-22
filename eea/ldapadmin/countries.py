@@ -122,10 +122,7 @@ def load_countries(update=False):
         return load_countries()
     else:
         if update:
-            try:
-                update_countries()
-            except requests.RequestException as e:
-                logger.error("Couldn't import countries: %s", e)
+            update_countries()
         f = open(os.path.join(LDAP_DISK_STORAGE, "countries.json"), "r")
         data = json.load(f)
         f.close()
