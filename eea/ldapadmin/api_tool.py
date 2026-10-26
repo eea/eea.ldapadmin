@@ -5,7 +5,7 @@ import logging
 
 from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import view, view_management_screens
-from App.class_init import InitializeClass
+from AccessControl.class_init import InitializeClass
 from OFS.SimpleItem import SimpleItem
 
 from eea.ldapadmin.constants import LDAP_DISK_STORAGE
