@@ -1,6 +1,21 @@
 Changelog
 =========
 
+5.0 - (2026-10-27)
+---------------------------
+* Change: Plone 6 / Zope 5+ compatibility: import InitializeClass from
+  AccessControl.class_init (App.class_init no longer exists)
+  [nileshgulia1]
+* Change: fetch countries with requests instead of sparql-client, whose
+  dnspython<2 pin breaks Python 3.12
+  [nileshgulia1]
+* Change: jellyfish>=1.0 (jaro_winkler_similarity); unpin colander; require
+  naaya.ldapdump>=2.0; drop unused py3dns and Python 2 markers; move
+  plone.app.testing and plone.app.robotframework to the test extra
+  [nileshgulia1]
+* Bug fix: read the profile overview config.yaml with yaml.safe_load
+  [nileshgulia1]
+
 4.4 - (2026-09-25)
 ---------------------------
 * Change: set SPARQL_ENDPOINT to https://cr.eionet.europa.eu/sparql;

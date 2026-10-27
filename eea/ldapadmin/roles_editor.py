@@ -26,7 +26,7 @@ import deform
 import xlwt
 from AccessControl import ClassSecurityInfo, Unauthorized
 from AccessControl.Permissions import view, view_management_screens
-from App.class_init import InitializeClass
+from AccessControl.class_init import InitializeClass
 from DateTime import DateTime
 from eea import usersdb
 from eea.ldapadmin import ldap_config, roles_leaders
