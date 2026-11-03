@@ -1,6 +1,6 @@
 <script type="text/javascript">
     /* <![CDATA[ */
-    requirejs(["datatables.net"], function() {
+    jQuery(function($) {
       $.fn.dataTableExt.afnFiltering.push(function(oSettings, aData, iDataIndex){
       console.log('filtering');
         var disabled_type = $("#filter_by_disabled").val();

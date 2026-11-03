@@ -12,47 +12,33 @@
 </h1>
 
 <script type="text/javascript">
-    function getParameterByName(name) {
-        name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
-        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-            results = regex.exec(location.search);
-        return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-    }
-
-    requirejs(["datatables.net"], function() {
+    jQuery(function($) {
       window.data_table = $('#role-mailing-list table.account-datatable').dataTable({
           'aaSorting': [[1, "asc"]],
           'sPaginationType': 'full_numbers',
           'sDom': 'lCfrtip',
           "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
       });
-    });
 
-    $(document).ready(function(){
-        $('.help-tooltip').tipsy({
-            gravity: 'se'
-        });
+      $('.help-tooltip').tipsy({
+          gravity: 'se'
+      });
 
-        var $search_widget = $("#DataTables_Table_0_filter");
-        var $datefilter = $search_widget.clone()
-        $datefilter.attr('id', 'datefilter');
-        $datefilter.insertAfter($search_widget);
-        $datefilter.find('label').html("At date: <input type='text' />");
-        $datefilter.find('input').
-            val(getParameterByName('filter_date')).
-            datepicker({onSelect:function(){
-                var url = document.location.href.replace(location.hash, '');
-                var date = $(this).val();
-                $("<form>").
-                    attr({'action':url, 'method':'GET'}).
-                    append($("<input>").attr({'name':'filter_date', value:date})).
-                    append($("<input>").attr({'name':'role_id', value:getParameterByName('role_id')})).
-                    submit();
-        }});
+      $('#filter-date').on('change', function() {
+          $(this).closest('form').submit();
+      });
     });
 </script>
 
 <tal:block content="structure python:common.buttons_bar('role_all_members', options['role_id'], options['members_count'])"/>
+
+<form method="get" tal:attributes="action string:${common/base_url}/all_members">
+    <label for="filter-date">At date:</label>
+    <input type="date" id="filter-date" name="filter_date"
+           tal:attributes="value request/filter_date | nothing" />
+    <input type="hidden" name="role_id" tal:attributes="value options/role_id" />
+    <input type="submit" value="Apply" class="btn btn-primary" />
+</form>
 
 <tal:block define="users options/users;
                    is_authenticated common/is_authenticated">

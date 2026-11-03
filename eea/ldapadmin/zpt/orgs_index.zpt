@@ -1,7 +1,7 @@
 <div>
   <script type="text/javascript">
     /* <![CDATA[ */
-    requirejs(["datatables.net"], function() {
+    jQuery(function($) {
       window.data_table = $('.dataTable').dataTable({
           'aaSorting': [[1, "asc"]],
           'sPaginationType': 'full_numbers',

@@ -6,20 +6,20 @@ $(document).ready(function(){
      * If one of them is unchecked then uncheck the main select all checkbox.
     */
     $('.account-datatable tbody tr td.checkbox-td input[type="checkbox"]').click(function(){
-        name = $(this).attr('name').split(":list")[0];
+        var name = $(this).attr('name').split(":list")[0];
         if($(this).attr('class') != 'selectall'){
-            if($(this).attr('checked') === false){
-                $('.selectall').attr('checked', false);
-                $(this).attr('checked', false);
+            if($(this).prop('checked') === false){
+                $('.selectall').prop('checked', false);
+                $(this).prop('checked', false);
             }else {
                 var not_all = false;
-                $.each($('.account-datatable tbody tr td.checkbox-td input[@name="' + name + '"][type="checkbox"]'), function(i, e){
-                    if($(this).attr('checked') === false){
+                $.each($('.account-datatable tbody tr td.checkbox-td input[name="' + name + '"][type="checkbox"]'), function(i, e){
+                    if($(this).prop('checked') === false){
                         not_all = true;
                     }
                 });
                 if(not_all === false){
-                    $('.selectall').attr('checked', true);
+                    $('.selectall').prop('checked', true);
                 }
             }
         }
@@ -37,12 +37,12 @@ function selectAll(name, additional_class){
         table_class += '.' + additional_class;
     }
 
-    $('' + table_class + ' tbody tr td.checkbox-td input[@name="' + name + '"][type="checkbox"]').each(function(){
-        $this = $(this);
-        if ( $this.attr('checked') === true ) {
-            $this.attr('checked', false);
+    $('' + table_class + ' tbody tr td.checkbox-td input[name="' + name + '"][type="checkbox"]').each(function(){
+        var $this = $(this);
+        if ( $this.prop('checked') === true ) {
+            $this.prop('checked', false);
         }else {
-            $this.attr('checked', true);
+            $this.prop('checked', true);
         }
     });
     return false;
@@ -53,7 +53,7 @@ function selectAll(name, additional_class){
         /** User admin **/
         jQuery("input[name=send_confirmation]").click(function(ev){
             if(this.checked){
-                jQuery("#confirmation_email").show('blind', {}, 800);
+                jQuery("#confirmation_email").slideDown(800);
                 jQuery.post(
                     'confirmation_email',
                     {'first_name:utf8:ustring': jQuery("#edit-first_name").val(),
@@ -64,7 +64,7 @@ function selectAll(name, additional_class){
                 );
             }
             else{
-                jQuery("#confirmation_email").hide('blind', {}, 600);
+                jQuery("#confirmation_email").slideUp(600);
             }
         });
 

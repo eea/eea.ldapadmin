@@ -8,7 +8,7 @@ $(function () {
 
     leaders.change(function () {
 
-        if($(this).attr('checked')) {
+        if($(this).prop('checked')) {
             var parent = $(this).parent();
             var parents = $(this).parents('tr');
             var alternate =  parents.find('input[name=alternate_list:list]');
@@ -18,7 +18,7 @@ $(function () {
             parent.find('.leader_container').show();
 
             alternate.hide();
-            alternate.attr('checked', false);
+            alternate.prop('checked', false);
             parents.find('.alternate_container').hide();
         }
 
@@ -30,10 +30,10 @@ $(function () {
         var parents = $(this).parents('tr');
         var leader =  parents.find('input[name=leader]');
 
-        if($(this).attr('checked')) {
+        if($(this).prop('checked')) {
             parent.find('.alternate_container').show();
             leader.hide();
-            leader.attr('checked', false);
+            leader.prop('checked', false);
             parents.find('.leader_container').hide();
         } else {
             parent.find('.alternate_container').hide();

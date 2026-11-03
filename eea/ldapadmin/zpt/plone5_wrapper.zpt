@@ -4,16 +4,18 @@
     <link rel="stylesheet" type="text/css" href="/++resource++eea.ldapadmin-www/jquery.ui.potato.menu.css" media="screen" />
 
     <link rel="stylesheet" type="text/css" href="/++resource++eea.ldapadmin-www/jquery.tipsy.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/++resource++eea.ldapadmin-www/datatables/jquery.dataTables.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/++resource++eea.ldapadmin-www/datatables/ColVis.css" media="screen" />
     <link rel="stylesheet" type="text/css" media="screen" href="/++resource++eea.ldapadmin-www/custom.css" />
   </metal:block>
 
   <metal:block fill-slot="javascript_head_slot">
     <script src="/++resource++eea.ldapadmin-www/jquery.ui.potato.menu.1.1-min.js"></script>
     <script type="text/javascript" src="/++resource++eea.ldapadmin-www/jquery.tipsy.js"></script>
+    <script type="text/javascript" src="/++resource++eea.ldapadmin-www/datatables/jquery.dataTables.min.js"></script>
+    <script src="/++resource++eea.ldapadmin-www/datatables/ColVis.min.js"></script>
 
     <script src="/++resource++eea.ldapadmin-www/account.js"></script>
-
-    <script src="/++resource++eea.ldapadmin-www/jquery-migrate-1.2.1.js"></script>
   </metal:block>
 
   <metal:block fill-slot="main">
