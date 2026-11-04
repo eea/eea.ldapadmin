@@ -846,3 +846,101 @@ label.required {
 	background: url(/++resource++eea.ldapadmin-www/mandatory.gif) center right no-repeat;
 	padding-right: 12px;
 }
+
+/* Plone 6 Classic UI */
+
+/* Operations: a compact box at the top right of the content, as the
+   right-column box of the old Eionet theme */
+#content #operations {
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 0.5em 0.75em;
+  margin: 0 0 1em 0;
+}
+
+@media (min-width: 992px) {
+  #content #operations {
+    float: right;
+    width: 16em;
+    margin-left: 1.5em;
+    position: relative;
+    z-index: 1;
+    background-color: #fff;
+  }
+}
+
+#content #operations .portletHeader {
+  padding: 0 0 0.4em 0;
+}
+
+#content #operations a.operations-title {
+  color: #333;
+  font-weight: bold;
+  text-decoration: none;
+  pointer-events: none;
+}
+
+#content #operations ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#content #operations .btn {
+  width: 100%;
+  font-size: 0.875rem;
+  padding: 0.3em 0.6em;
+}
+
+/* DataTables controls: Plone 6 renders labels as blocks */
+.dataTables_wrapper .dataTables_length label,
+.dataTables_wrapper .dataTables_filter label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-weight: normal;
+  margin-bottom: 0.5em;
+}
+
+.dataTables_wrapper .dataTables_length select,
+.dataTables_wrapper .dataTables_filter input {
+  width: auto;
+  display: inline-block;
+}
+
+.dataTables_wrapper .dataTables_info {
+  padding-top: 0.5em;
+}
+
+/* Lists of roles, members and organisations */
+table.account-datatable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1em;
+}
+
+table.account-datatable th,
+table.account-datatable thead td {
+  background-color: #f0f4f5;
+  font-weight: bold;
+}
+
+table.account-datatable th,
+table.account-datatable td {
+  padding: 0.4em 0.6em;
+  border-bottom: 1px solid #dee2e6;
+  vertical-align: top;
+}
+
+/* Role names in headings use the heading font */
+#content h1 tt,
+#content h2 tt {
+  font-family: inherit;
+}
+
+/* Organisation members: active/disabled filter next to the table filter */
+#content #filter_by_disabled {
+  width: auto;
+  display: inline-block;
+  margin: 0 1em 0.5em 0;
+}

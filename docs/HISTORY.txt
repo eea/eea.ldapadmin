@@ -18,7 +18,11 @@ Changelog
   filter widget with a jQuery UI datepicker, which Plone 6 does not provide
   [nileshgulia1]
 * Change: show the Operations box again; it was hidden by custom.css since
-  the 2019 Plone 5 styling rework
+  the 2019 Plone 5 styling rework. On wide screens it is a compact box at the
+  top right of the content
+  [nileshgulia1]
+* Change: Plone 6 layout for the DataTables controls, the role, member and
+  organisation tables, and role names in headings
   [nileshgulia1]
 
 5.0 - (2026-10-27)
