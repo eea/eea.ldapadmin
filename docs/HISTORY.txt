@@ -3,6 +3,31 @@ Changelog
 
 5.1-dev0 - (unreleased)
 ---------------------------
+* Bug fix: replace the RequireJS page scripts with plain jQuery; Plone 6
+  Classic UI no longer ships RequireJS, so DataTables never started and the
+  page scripts threw. DataTables and ColVis are now loaded directly in the
+  page wrapper
+  [nileshgulia1]
+* Bug fix: update account.js, role_leaders.js and the organisation members
+  "select all" for jQuery 3: prop() instead of attr('checked'), quoted
+  attribute selectors without '@', slide effects instead of the jQuery UI
+  'blind' effect
+  [nileshgulia1]
+* Bug fix: roles "all members" date filter: server-rendered form with a
+  native HTML5 date input instead of a runtime clone of the DataTables
+  filter widget with a jQuery UI datepicker, which Plone 6 does not provide
+  [nileshgulia1]
+* Change: show the Operations box again; it was hidden by custom.css since
+  the 2019 Plone 5 styling rework. It is moved to the top of the right
+  column, above the portlets, as on the old Eionet portal, with the same card
+  style as the portlets
+  [nileshgulia1]
+* Change: Plone 6 layout for the DataTables controls, the role, member and
+  organisation tables, and role names in headings
+  [nileshgulia1]
+* Change: user search form with the label, search field, "in" and field
+  types on separate lines, as on the old Eionet portal
+  [nileshgulia1]
 
 5.0 - (2026-10-27)
 ---------------------------

@@ -127,8 +127,8 @@
   </table>
 
   <script>
-    requirejs(["datatables.net"], function() {
-      window.data_table.fnDraw();
+    jQuery(function($) {
+      if (window.data_table) { window.data_table.fnDraw(); }
     });
   </script>
 

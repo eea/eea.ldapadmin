@@ -1,7 +1,3 @@
-#content #operations {
-    display: none;
-}
-
 .portlet ul {
     position: relative;
     list-style: none;
@@ -849,4 +845,94 @@ ul.organisations {
 label.required {
 	background: url(/++resource++eea.ldapadmin-www/mandatory.gif) center right no-repeat;
 	padding-right: 12px;
+}
+
+/* Plone 6 Classic UI */
+
+/* Operations: moved by account.js to the top of the right column, above
+   the portlets, as on the old Eionet portal, with the portlets' card markup */
+#operations a.operations-title {
+  color: inherit;
+  text-decoration: none;
+  pointer-events: none;
+}
+
+#operations ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#operations .btn {
+  width: 100%;
+  font-size: 0.875rem;
+  padding: 0.3em 0.6em;
+}
+
+/* DataTables controls: Plone 6 renders labels as blocks */
+.dataTables_wrapper .dataTables_length label,
+.dataTables_wrapper .dataTables_filter label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-weight: normal;
+  margin-bottom: 0.5em;
+}
+
+.dataTables_wrapper .dataTables_length select,
+.dataTables_wrapper .dataTables_filter input {
+  width: auto;
+  display: inline-block;
+}
+
+.dataTables_wrapper .dataTables_info {
+  padding-top: 0.5em;
+}
+
+/* Lists of roles, members and organisations */
+table.account-datatable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1em;
+}
+
+table.account-datatable th,
+table.account-datatable thead td {
+  background-color: #f0f4f5;
+  font-weight: bold;
+}
+
+table.account-datatable th,
+table.account-datatable td {
+  padding: 0.4em 0.6em;
+  border-bottom: 1px solid #dee2e6;
+  vertical-align: top;
+}
+
+/* Role names in headings use the heading font */
+#content h1 tt,
+#content h2 tt {
+  font-family: inherit;
+}
+
+/* Organisation members: active/disabled filter next to the table filter */
+#content #filter_by_disabled {
+  width: auto;
+  display: inline-block;
+  margin: 0 1em 0.5em 0;
+}
+
+/* User search: label, field, "in" and field types on separate lines, as on
+   the old Eionet portal */
+form.user-search label {
+  display: block;
+  font-weight: bold;
+  margin: 0.75em 0 0.25em 0;
+}
+
+form.user-search #search-query,
+form.user-search #lookup {
+  display: block;
+  width: 100%;
+  max-width: 30em;
 }

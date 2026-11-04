@@ -163,19 +163,17 @@
   });
 
   function initialize_datatable(){
-    requirejs(["datatables.net"], function() {
-      /* since the initialisation is called separately for each new arriving
+    /* since the initialisation is called separately for each new arriving
        table, we need to avoid the ones already initialised (having no-footer) */
-      window.data_table = $('.dataTable').not('.no-footer')
-        .dataTable({
-          "aaSorting": [[0, "asc"]],
-          "sPaginationType": "full_numbers",
-          "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
-          "oLanguage": {
-            "sSearch": "Apply filter _INPUT_ to table"
-          }
-        } )
-    });
+    window.data_table = $('.dataTable').not('.no-footer')
+      .dataTable({
+        "aaSorting": [[0, "asc"]],
+        "sPaginationType": "full_numbers",
+        "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        "oLanguage": {
+          "sSearch": "Apply filter _INPUT_ to table"
+        }
+      });
   }
 </script>
 
