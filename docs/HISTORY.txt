@@ -1,7 +1,7 @@
 Changelog
 =========
 
-5.1-dev0 - (unreleased)
+5.1 - (2026-11-04)
 ---------------------------
 * Bug fix: replace the RequireJS page scripts with plain jQuery; Plone 6
   Classic UI no longer ships RequireJS, so DataTables never started and the
