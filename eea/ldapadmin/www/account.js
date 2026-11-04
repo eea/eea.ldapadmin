@@ -2,6 +2,18 @@ $(document).ready(function(){
     $('.hidden').hide();
 
     /**
+     * Show the Operations box at the top of the right column, above the
+     * portlets, as on the old Eionet portal. Without portlets Plone does not
+     * lay out the right column, so turn it on.
+     */
+    var $operations = $('#content #operations');
+    var $column_two = $('#portal-column-two');
+    if ($operations.length && $column_two.length) {
+        $operations.prependTo($column_two);
+        $('body').addClass('col-two');
+    }
+
+    /**
      * For tables with select all option check if all checkboxes are selected.
      * If one of them is unchecked then uncheck the main select all checkbox.
     */

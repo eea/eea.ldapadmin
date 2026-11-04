@@ -849,44 +849,34 @@ label.required {
 
 /* Plone 6 Classic UI */
 
-/* Operations: a compact box at the top right of the content, as the
-   right-column box of the old Eionet theme */
-#content #operations {
+/* Operations: moved by account.js to the top of the right column, above
+   the portlets, as on the old Eionet portal */
+#operations {
   border: 1px solid #dee2e6;
   border-radius: 4px;
-  padding: 0.5em 0.75em;
-  margin: 0 0 1em 0;
+  padding: 0.75em 1em;
+  margin: 0 0 1rem 0;
+  background-color: #fff;
 }
 
-@media (min-width: 992px) {
-  #content #operations {
-    float: right;
-    width: 16em;
-    margin-left: 1.5em;
-    position: relative;
-    z-index: 1;
-    background-color: #fff;
-  }
+#operations .portletHeader {
+  padding: 0 0 0.5em 0;
 }
 
-#content #operations .portletHeader {
-  padding: 0 0 0.4em 0;
-}
-
-#content #operations a.operations-title {
+#operations a.operations-title {
   color: #333;
   font-weight: bold;
   text-decoration: none;
   pointer-events: none;
 }
 
-#content #operations ul {
+#operations ul {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-#content #operations .btn {
+#operations .btn {
   width: 100%;
   font-size: 0.875rem;
   padding: 0.3em 0.6em;
