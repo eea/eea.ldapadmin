@@ -8,9 +8,10 @@ Changelog
   page scripts threw. DataTables and ColVis are now loaded directly in the
   page wrapper
   [nileshgulia1]
-* Bug fix: update account.js and role_leaders.js for jQuery 3: prop()
-  instead of attr('checked'), attribute selectors without '@', slide
-  effects instead of the jQuery UI 'blind' effect
+* Bug fix: update account.js, role_leaders.js and the organisation members
+  "select all" for jQuery 3: prop() instead of attr('checked'), quoted
+  attribute selectors without '@', slide effects instead of the jQuery UI
+  'blind' effect
   [nileshgulia1]
 * Bug fix: roles "all members" date filter: server-rendered form with a
   native HTML5 date input instead of a runtime clone of the DataTables
