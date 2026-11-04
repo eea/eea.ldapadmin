@@ -9,6 +9,10 @@ $(document).ready(function(){
     var $operations = $('#content #operations');
     var $column_two = $('#portal-column-two');
     if ($operations.length && $column_two.length) {
+        // Same card markup as the Plone 6 portlets below it
+        $operations.addClass('card mb-3');
+        $operations.children('.portletHeader').addClass('card-header');
+        $operations.children('ul').wrap('<div class="card-body"></div>');
         $operations.prependTo($column_two);
         $('body').addClass('col-two');
     }

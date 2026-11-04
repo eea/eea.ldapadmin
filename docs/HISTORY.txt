@@ -19,10 +19,14 @@ Changelog
   [nileshgulia1]
 * Change: show the Operations box again; it was hidden by custom.css since
   the 2019 Plone 5 styling rework. It is moved to the top of the right
-  column, above the portlets, as on the old Eionet portal
+  column, above the portlets, as on the old Eionet portal, with the same card
+  style as the portlets
   [nileshgulia1]
 * Change: Plone 6 layout for the DataTables controls, the role, member and
   organisation tables, and role names in headings
+  [nileshgulia1]
+* Change: user search form with the label, search field, "in" and field
+  types on separate lines, as on the old Eionet portal
   [nileshgulia1]
 
 5.0 - (2026-10-27)

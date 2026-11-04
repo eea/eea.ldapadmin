@@ -850,22 +850,9 @@ label.required {
 /* Plone 6 Classic UI */
 
 /* Operations: moved by account.js to the top of the right column, above
-   the portlets, as on the old Eionet portal */
-#operations {
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  padding: 0.75em 1em;
-  margin: 0 0 1rem 0;
-  background-color: #fff;
-}
-
-#operations .portletHeader {
-  padding: 0 0 0.5em 0;
-}
-
+   the portlets, as on the old Eionet portal, with the portlets' card markup */
 #operations a.operations-title {
-  color: #333;
-  font-weight: bold;
+  color: inherit;
   text-decoration: none;
   pointer-events: none;
 }
@@ -933,4 +920,19 @@ table.account-datatable td {
   width: auto;
   display: inline-block;
   margin: 0 1em 0.5em 0;
+}
+
+/* User search: label, field, "in" and field types on separate lines, as on
+   the old Eionet portal */
+form.user-search label {
+  display: block;
+  font-weight: bold;
+  margin: 0.75em 0 0.25em 0;
+}
+
+form.user-search #search-query,
+form.user-search #lookup {
+  display: block;
+  width: 100%;
+  max-width: 30em;
 }
