@@ -1,6 +1,6 @@
 <script type="text/javascript">
     /* <![CDATA[ */
-    requirejs(["datatables.net"], function() {
+    jQuery(function($) {
       $.fn.dataTableExt.afnFiltering.push(function(oSettings, aData, iDataIndex){
       console.log('filtering');
         var disabled_type = $("#filter_by_disabled").val();
@@ -39,10 +39,10 @@
         $('#checkall').change(function() {
             $this = $(this);
             $('input', $('.dataTable').dataTable().fnGetNodes()).each( function() {
-                if ( $this.attr('checked') == true ) {
-                    $('input', $('.dataTable').dataTable().fnGetNodes()).attr('checked','checked');
+                if ( $this.prop('checked') ) {
+                    $('input', $('.dataTable').dataTable().fnGetNodes()).prop('checked', true);
                 }else {
-                    $('input', $('.dataTable').dataTable().fnGetNodes()).attr('checked',false);
+                    $('input', $('.dataTable').dataTable().fnGetNodes()).prop('checked', false);
                 }
             });
 

@@ -20,7 +20,7 @@
 </div>
 
 <script type="text/javascript">
-    requirejs(["datatables.net"], function() {
+    jQuery(function($) {
       window.data_table = $('.dataTable').dataTable({
           'aaSorting': [[0, "asc"]],
           'sPaginationType': 'full_numbers',
@@ -221,4 +221,4 @@
 </tal:block>
 <div class="clear">&nbsp;</div>
 
-<script src="++resource++eea.ldapadmin-www/roles_tree.js"></script>
+<script src="/++resource++eea.ldapadmin-www/roles_tree.js"></script>

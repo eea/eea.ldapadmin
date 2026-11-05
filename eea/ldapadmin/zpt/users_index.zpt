@@ -1,7 +1,7 @@
 <tal:block content="structure common/admin_menu" />
 
 <script type="text/javascript">
-    requirejs(["datatables.net"], function() {
+    jQuery(function($) {
         window.data_table = $('.dataTable').dataTable({
             'aaSorting': [[0, "asc"]],
             'sPaginationType': 'full_numbers',
@@ -17,7 +17,7 @@
   <h1>User accounts</h1>
 
   <div class="search-form">
-    <form name="search-form">
+    <form name="search-form" class="user-search">
       <label for="search-query">
           Search for:
       </label>

@@ -2,24 +2,40 @@ $(document).ready(function(){
     $('.hidden').hide();
 
     /**
+     * Show the Operations box at the top of the right column, above the
+     * portlets, as on the old Eionet portal. Without portlets Plone does not
+     * lay out the right column, so turn it on.
+     */
+    var $operations = $('#content #operations');
+    var $column_two = $('#portal-column-two');
+    if ($operations.length && $column_two.length) {
+        // Same card markup as the Plone 6 portlets below it
+        $operations.addClass('card mb-3');
+        $operations.children('.portletHeader').addClass('card-header');
+        $operations.children('ul').wrap('<div class="card-body"></div>');
+        $operations.prependTo($column_two);
+        $('body').addClass('col-two');
+    }
+
+    /**
      * For tables with select all option check if all checkboxes are selected.
      * If one of them is unchecked then uncheck the main select all checkbox.
     */
     $('.account-datatable tbody tr td.checkbox-td input[type="checkbox"]').click(function(){
-        name = $(this).attr('name').split(":list")[0];
+        var name = $(this).attr('name').split(":list")[0];
         if($(this).attr('class') != 'selectall'){
-            if($(this).attr('checked') === false){
-                $('.selectall').attr('checked', false);
-                $(this).attr('checked', false);
+            if($(this).prop('checked') === false){
+                $('.selectall').prop('checked', false);
+                $(this).prop('checked', false);
             }else {
                 var not_all = false;
-                $.each($('.account-datatable tbody tr td.checkbox-td input[@name="' + name + '"][type="checkbox"]'), function(i, e){
-                    if($(this).attr('checked') === false){
+                $.each($('.account-datatable tbody tr td.checkbox-td input[name="' + name + '"][type="checkbox"]'), function(i, e){
+                    if($(this).prop('checked') === false){
                         not_all = true;
                     }
                 });
                 if(not_all === false){
-                    $('.selectall').attr('checked', true);
+                    $('.selectall').prop('checked', true);
                 }
             }
         }
@@ -37,12 +53,12 @@ function selectAll(name, additional_class){
         table_class += '.' + additional_class;
     }
 
-    $('' + table_class + ' tbody tr td.checkbox-td input[@name="' + name + '"][type="checkbox"]').each(function(){
-        $this = $(this);
-        if ( $this.attr('checked') === true ) {
-            $this.attr('checked', false);
+    $('' + table_class + ' tbody tr td.checkbox-td input[name="' + name + '"][type="checkbox"]').each(function(){
+        var $this = $(this);
+        if ( $this.prop('checked') === true ) {
+            $this.prop('checked', false);
         }else {
-            $this.attr('checked', true);
+            $this.prop('checked', true);
         }
     });
     return false;
@@ -53,7 +69,7 @@ function selectAll(name, additional_class){
         /** User admin **/
         jQuery("input[name=send_confirmation]").click(function(ev){
             if(this.checked){
-                jQuery("#confirmation_email").show('blind', {}, 800);
+                jQuery("#confirmation_email").slideDown(800);
                 jQuery.post(
                     'confirmation_email',
                     {'first_name:utf8:ustring': jQuery("#edit-first_name").val(),
@@ -64,7 +80,7 @@ function selectAll(name, additional_class){
                 );
             }
             else{
-                jQuery("#confirmation_email").hide('blind', {}, 600);
+                jQuery("#confirmation_email").slideUp(600);
             }
         });
 
