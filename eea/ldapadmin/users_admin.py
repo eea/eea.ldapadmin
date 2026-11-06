@@ -44,6 +44,7 @@ from naaya.ldapdump.interfaces import IDumpReader
 from eea import usersdb
 from eea.usersdb.db_agent import (EmailAlreadyExists, NameAlreadyExists)
 from eea.ldapadmin import eionet_profile
+from eea.ldapadmin import tool_urls
 from eea.ldapadmin.constants import NETWORK_NAME
 from eea.ldapadmin.help_messages import help_messages
 from eea.ldapadmin.ui_common import NaayaViewPageTemplateFile
@@ -291,15 +292,10 @@ class UsersAdmin(SimpleItem, PropertyManager):
         search_name = REQUEST.form.get('name', '')
         lookup = REQUEST.form.get('lookup', '')
 
-        base_url = self.portal_url()
-
-        # if not REQUEST.ACTUAL_URL.endswith('/'):
-        #     base_url += '/'
-
         options.update({
             'search_name': search_name,
             'lookup': lookup,
-            'base_url': base_url + '/directory/user',
+            'base_url': tool_urls.tool_url(self, tool_urls.USER_DETAILS),
         })
 
         if search_name:
@@ -576,7 +572,8 @@ class UsersAdmin(SimpleItem, PropertyManager):
                 if not errors:
                     if not self.checkPermissionEditUsers():
                         return REQUEST.RESPONSE.redirect(
-                            '/directory/user?uid=%s' % user_id)
+                            '%s?uid=%s' % (tool_urls.tool_url(
+                                self, tool_urls.USER_DETAILS), user_id))
                     return REQUEST.RESPONSE.redirect(self.absolute_url())
                 msg = u"Please correct the errors below and try again."
                 msgs.add(msg, type='error')

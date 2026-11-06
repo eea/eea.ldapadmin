@@ -75,7 +75,7 @@
                     </td>
                 </tal:block>
                 <td>
-                    <a tal:attributes="href string:/directory/user?uid=${user_info/id}">
+                    <a tal:attributes="href string:${common/user_details_url}?uid=${user_info/id}">
                       <span tal:content="user_info/full_name" />
                     </a>
                     <tal:block condition="naming|string:">
@@ -111,7 +111,7 @@
                 </td>
 
                 <td>
-                  <a tal:attributes="href string:/eionet-account-tools/eionet_account_tools/organisations/organisation?id=${user_info/organisation}"><span tal:content="user_info/organisation_title|nothing" /></a>
+                  <a tal:attributes="href string:${common/organisations_url}/organisation?id=${user_info/organisation}"><span tal:content="user_info/organisation_title|nothing" /></a>
                     <tal:block condition="user_info/organisation_title|nothing"
                       content="string:("
                       /><span tal:content="user_info/organisation" /><tal:block

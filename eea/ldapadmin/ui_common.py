@@ -8,6 +8,7 @@ from eea.ldapadmin.countries import get_country, get_country_options
 from eea.ldapadmin.logic_common import logged_in_user, _is_authenticated
 from eea.ldapadmin.logic_common import load_template
 from eea.ldapadmin.ldap_config import _get_ldap_agent
+from eea.ldapadmin import tool_urls
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 
@@ -141,6 +142,14 @@ class CommonTemplateLogic(object):
     def _get_request(self):
         ''' get request '''
         return self.context.REQUEST
+
+    def user_details_url(self):
+        ''' URL of the user details page '''
+        return tool_urls.tool_url(self.context, tool_urls.USER_DETAILS)
+
+    def organisations_url(self):
+        ''' URL of the organisations editor '''
+        return tool_urls.tool_url(self.context, tool_urls.ORGS_EDITOR)
 
     def admin_menu(self):
         ''' render the admin menu '''
