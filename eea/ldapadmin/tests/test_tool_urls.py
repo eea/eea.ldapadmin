@@ -31,6 +31,7 @@ class ToolUrlsTest(unittest.TestCase):
         self.context = self.root.tools.dash.members
 
     def test_found(self):
+        ''' tools are found by meta_type '''
         self.assertEqual(
             tool_urls.tool_url(self.context, tool_urls.USER_DETAILS),
             self.root.absolute_url() + '/people/person')
@@ -39,12 +40,14 @@ class ToolUrlsTest(unittest.TestCase):
             self.root.absolute_url() + '/tools/dash/members')
 
     def test_default_path(self):
+        ''' the default path is used when no tool is found '''
         self.assertEqual(
             tool_urls.tool_url(self.context, tool_urls.ORGS_EDITOR),
             self.root.absolute_url() + '/' +
             tool_urls.DEFAULT_PATHS[tool_urls.ORGS_EDITOR])
 
     def test_cached(self):
+        ''' the found path is cached '''
         tool_urls.tool_url(self.context, tool_urls.USER_DETAILS)
         self.root.people._delObject('person')
         self.assertTrue(tool_urls.tool_url(
