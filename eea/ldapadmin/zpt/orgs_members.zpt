@@ -108,7 +108,7 @@
                     </td>
                     <td>
                         <a tal:condition="common/can_edit_organisation"
-                            tal:attributes="href string:directory/user?uid=${member/id}"
+                            tal:attributes="href string:${common/user_details_url}?uid=${member/id}"
                             tal:content="string:${member/first_name} ${member/last_name}" />
                         <tal:block condition="not:common/can_edit_organisation"
                             content="string:${member/first_name} ${member/last_name}"/>

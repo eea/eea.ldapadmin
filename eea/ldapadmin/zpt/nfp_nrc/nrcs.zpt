@@ -13,6 +13,8 @@
   var country_code = '${options/country}';
   var country_name = '${options/country_name}';
   var is_authenticated = ('${common/is_authenticated}' == 'True');
+  var user_details_url = '${common/user_details_url}';
+  var organisations_url = '${common/organisations_url}';
 </script>" />
 
 <script>
@@ -69,7 +71,7 @@
               name.addClass(user_info['ldap_org'] ? '' : 'red');
               name.append(
                 $('<a>')
-                  .attr({href: '/directory/user?uid=' + user_info['id'],
+                  .attr({href: user_details_url + '?uid=' + user_info['id'],
                          target: '_blank'})
                   .text(user_info['full_name'])
               )
@@ -113,7 +115,7 @@
                   ).append('&nbsp;');
                   org.append(
                     $('<a>')
-                      .attr({href: '/ldap-organisations/organisation?id='
+                      .attr({href: organisations_url + '/organisation?id='
                                     + user_info['ldap_org']['id']})
                       .text(user_info['ldap_org']['name'])
                   ).append('&nbsp;');

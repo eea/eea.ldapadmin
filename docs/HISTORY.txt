@@ -3,6 +3,11 @@ Changelog
 
 5.2-dev0 - (unreleased)
 ---------------------------
+* Change: links to the user details page and the organisations editor
+  found by meta type, not hard-coded paths
+  [dumitval]
+* Bug fix: fix the organisation links in the NFP awps page
+  [dumitval]
 
 5.1 - (2026-11-04)
 ---------------------------
