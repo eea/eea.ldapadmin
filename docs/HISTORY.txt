@@ -3,6 +3,8 @@ Changelog
 
 5.3-dev0 - (unreleased)
 ---------------------------
+* Change: no printing of the password reset link on the console
+  [dumitval]
 
 5.2 - (2026-11-06)
 ---------------------------
