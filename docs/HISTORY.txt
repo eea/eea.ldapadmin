@@ -1,6 +1,9 @@
 Changelog
 =========
 
+5.4-dev0 - (unreleased)
+---------------------------
+
 5.3 - (2026-11-09)
 ---------------------------
 * Change: no printing of the password reset link on the console
